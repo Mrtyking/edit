@@ -238,12 +238,14 @@ function drawOverlay(t) {
     const hp = E.outExpo(prog(t, f0 + 0.1, f0 + 0.7)); font(x, 74, 800); x.fillStyle = rgba('#FFFFFF', hp); x.fillText('Todo esto,', 960, 262 + (1 - hp) * 40);
     // the card
     const cp = E.outBack(prog(t, f0 + 0.25, f0 + 0.85), 1.4), cw = 760, ch = 580, cx = 960 - cw / 2, cy = 318;
-    if (cp > 0) { x.save(); x.globalAlpha *= clamp(cp * 1.5); x.translate(960, cy + ch / 2); x.scale(0.9 + 0.1 * cp, 0.9 + 0.1 * cp); x.translate(-960, -(cy + ch / 2));
+    if (cp > 0) { const jolt = t >= f0 + 0.84 ? 3 * Math.sin(prog(t, f0 + 0.84, f0 + 0.98) * Math.PI) : 0; x.save(); x.globalAlpha *= clamp(cp * 1.5); x.translate(960, cy + ch / 2 + jolt); x.scale(0.9 + 0.1 * cp, 0.9 + 0.1 * cp); x.translate(-960, -(cy + ch / 2));
       x.save(); x.shadowColor = rgba(C.accent, 0.55); x.shadowBlur = 60; rr(x, cx, cy, cw, ch, 26); const cg = x.createLinearGradient(cx, cy, cx, cy + ch); cg.addColorStop(0, '#1D1748'); cg.addColorStop(1, '#0E0D1A'); x.fillStyle = cg; x.fill(); x.restore();
       rr(x, cx + 1, cy + 1, cw - 2, ch - 2, 25); x.strokeStyle = 'rgba(146,120,255,0.75)'; x.lineWidth = 2; x.stroke();
       font(x, 40, 800); x.textAlign = 'left'; x.fillStyle = '#fff'; x.fillText('Voznest', cx + 44, cy + 92); font(x, 20, 600); x.fillStyle = C.muted; x.fillText('Todo para hablar. Para todos, siempre.', cx + 44, cy + 128);
-      // $0 lands with a punch
-      const dp = E.outBack(prog(t, f0 + 0.45, f0 + 0.85), 2.6); x.save(); x.translate(cx + cw - 48, cy + 104); x.scale(dp, dp); font(x, 104, 800); x.textAlign = 'right'; x.shadowColor = rgba(C.accent2, 0.9); x.shadowBlur = 30 * dp; x.fillStyle = '#fff'; x.fillText('$0', 0, 0); x.restore();
+      // the price drops: $9.99 rises in, counts down (accelerating) and slams onto $0 — a short press, never past the card's top edge
+      const pa = E.outQuint(prog(t, f0 + 0.4, f0 + 0.55)), dn = E.in(prog(t, f0 + 0.52, f0 + 0.84)), hit = t >= f0 + 0.84, k = hit ? 1 - E.out(prog(t, f0 + 0.84, f0 + 1.0)) : 0;
+      if (pa > 0) { const s = 1 + 0.06 * k; x.save(); x.globalAlpha *= pa; x.translate(cx + cw - 48, cy + 104 + (1 - pa) * 14); x.scale(s, s); font(x, hit ? 104 : 88, 800); x.textAlign = 'right';   // the counting price is a size smaller so $9.99 clears the subtitle; $0 slams in full size
+        x.shadowColor = rgba(C.accent2, hit ? 0.9 : 0.25); x.shadowBlur = hit ? 30 + 34 * k : 10; x.fillStyle = hit ? '#fff' : '#BDB4E8'; x.fillText(hit ? '$0' : `$${(9.99 * (1 - dn)).toFixed(2)}`, 0, 0); x.restore(); }
       ['Hubs, canales e hilos ilimitados', 'Voz, vídeo, compartir pantalla y auditorios', 'Roles, permisos por canal y registro de auditoría', 'Supresión de ruido con IA y subtítulos en directo', 'Emojis y stickers propios, y subidas de 25 MB', 'Bots, webhooks y la API REST completa'].forEach((l, i) => {
         const lp = E.outQuint(prog(t, f0 + 0.6 + i * 0.09, f0 + 0.95 + i * 0.09)); if (lp <= 0) return; const ly = cy + 196 + i * 60;
         x.save(); x.globalAlpha *= lp; x.translate((1 - lp) * 24, 0); x.strokeStyle = C.green; x.lineWidth = 3; x.lineCap = 'round'; x.lineJoin = 'round'; x.beginPath(); x.moveTo(cx + 46, ly - 6); x.lineTo(cx + 55, ly + 3); x.lineTo(cx + 71, ly - 14); x.stroke();
