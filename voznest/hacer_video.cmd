@@ -24,7 +24,9 @@ set "PATH=%ENV%\node;%PATH%"
 
 if exist "%ENV%\ffmpeg\bin\ffmpeg.exe" goto ff_ok
 echo    - Descargando ffmpeg...
-curl.exe -L --fail -# -o "%ENV%\ffmpeg.zip" "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" || goto fail
+curl.exe -L --fail -# -o "%ENV%\ffmpeg.zip" "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+if errorlevel 1 curl.exe -L --fail -# -o "%ENV%\ffmpeg.zip" "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
+if errorlevel 1 goto fail
 if exist "%ENV%\ff_tmp" rmdir /s /q "%ENV%\ff_tmp"
 mkdir "%ENV%\ff_tmp"
 tar -xf "%ENV%\ffmpeg.zip" -C "%ENV%\ff_tmp" || goto fail
