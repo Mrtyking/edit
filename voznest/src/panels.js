@@ -635,7 +635,7 @@ function sceneVoice(ctx, t) {
     [WT.paste - 0.05, ax + 10, by - 18 - 70], [WT.start, ax + 94, by - 18 - 30, 1], [WT.start + 0.7, ax + 200, by - 120], [WT.min - 0.4, PLAYER.x + PLAYER.w - 132, PLAYER.y + 486], [WT.min, PLAYER.x + PLAYER.w - 132, PLAYER.y + 486, 1], [WT.show - 0.35, PLAYER.x + PLAYER.w - 54, PLAYER.y + 30], [WT.show, PLAYER.x + PLAYER.w - 54, PLAYER.y + 30, 1],
     [WT.stop - 0.4, PLAYER.x + PLAYER.w - 24, PLAYER.y + 486], [WT.stop, PLAYER.x + PLAYER.w - 24, PLAYER.y + 486, 1], [WT.stop + 0.5, PLAYER.x + PLAYER.w - 120, PLAYER.y + 600],
     [CM.open, SX + 100, (ROWS.mika ?? 760) + 2, 1], [CM.drag[0], CTXM.x + CTXM.w - 22, CTXM.y + 43.5, 1, undefined, CM.drag[1]], [CM.drag[1], CTXM.x + 16 + (CTXM.w - 38) * 0.65, CTXM.y + 43.5, 0, CM.drag[1] - CM.drag[0]], [CM.hover, CTXM.x + 120, CTXM.y + 212], [CM.kick, CTXM.x + 120, CTXM.y + 212, 1], [CM.kick + 0.45, CTXM.x + 150, CTXM.y + 300],
-    [TL.mission.open, SX + 150, 746, 1], [TL.mission.start, SX + 100, MIS.y + 354, 1], [TL.mission.close, MIS.x + MIS.w - 24, MIS.y + 24, 1], [TL.mission.close + 0.5, MX + 300, MY + 600]]);
+    [TL.mission.open, SX + 150, 746, 1], [TL.mission.start, SX + 100, MIS.y + 354, 1], [TL.mission.start + 0.4, MIS.x + MIS.w - 56, MIS.y + 398], [TL.mission.close, MIS.x + MIS.w - 24, MIS.y + 24, 1], [TL.mission.close + 0.5, MX + 300, MY + 600]]);
 }
 function activitiesMenu(ctx, t, ax, bottom, mp) {
   const w = 300, h = 352, x = ax - 160, y = bottom - h; ctx.save(); ctx.globalAlpha *= mp; ctx.translate(0, (1 - mp) * 16);
@@ -721,7 +721,7 @@ function missions(ctx, t) {   // "Minutos de voz" mission: small card → window
   let ry = by + 44; if (started) { const p = E.outQuint(prog(t, M.start + 0.1, M.start + 0.5)); ctx.save(); ctx.globalAlpha *= p; rr(ctx, W2.x + 28, by + 44, W2.w - 56, 5, 2.5); ctx.fillStyle = '#2A2C35'; ctx.fill(); rr(ctx, W2.x + 28, by + 44, 5, 5, 2.5); ctx.fillStyle = C.accent; ctx.fill();
     txt(ctx, '0 / 200 min', W2.x + 28, by + 66, 11.5, C.muted, 600); txt(ctx, '0%', W2.x + W2.w - 28, by + 66, 11.5, C.muted, 600, 'right'); ctx.restore(); ry = by + 82; }
   box(ctx, W2.x + 28, ry, W2.w - 56, 34, 10, '#22232C', null); ICON(ctx, 'trophy', W2.x + 38, ry + 10, 14, C.accent2); txt(ctx, 'Recompensa', W2.x + 60, ry + 17.5, 12, C.muted, 600); txt(ctx, '+850 XP', W2.x + W2.w - 40, ry + 17.5, 13, C.accent2, 800, 'right');
-  const fy = W2.y + W2.h - 58;
+  const fy = W2.y + W2.h - 68;   // button bottom sits 8 px above the footer line
   if (!started) { button(ctx, W2.x + 16, fy - 24, 172, 40, 'Empezar misión', { color: C.accent, size: 14, press: press(t, M.start), glow: 0.4 }); txt(ctx, 'Ahora no', W2.x + 240, fy - 3.5, 13, '#C9CAD4', 800, 'center'); }
   ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fillRect(W2.x + 16, W2.y + W2.h - 44, W2.w - 32, 1);
   ICON(ctx, 'clock', W2.x + 16, W2.y + W2.h - 29, 13, C.muted); txt(ctx, 'Termina en 2 días', W2.x + 36, W2.y + W2.h - 22, 12, C.muted, 700);
