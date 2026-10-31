@@ -548,6 +548,7 @@ export function voiceTile(ctx, x, y, w, h, who, t, { glow = true } = {}) {
 }
 // copies part of what is already drawn on this canvas (the app itself) into a rect: used for the stream's infinite mirror
 let SNAP = null;
+let LOWQ = null;
 function snapshot(ctx) { const c = ctx.canvas; if (!SNAP || SNAP.width !== c.width || SNAP.height !== c.height) { SNAP = document.createElement('canvas'); SNAP.width = c.width; SNAP.height = c.height; } const x = SNAP.getContext('2d'); x.clearRect(0, 0, c.width, c.height); x.drawImage(c, 0, 0); return SNAP; }
 function fromSnap(ctx, snap, sx, sy, sw, shh, dx, dy, dw, dh) { const m = ctx.getTransform(); ctx.drawImage(snap, m.a * sx + m.e, m.d * sy + m.f, m.a * sw, m.d * shh, dx, dy, dw, dh); }
 // while streaming (like the real app): your stream big, two tiles on its right, the rest below
@@ -763,7 +764,13 @@ function transmitModal(ctx, t, mo) {
   ctx.strokeStyle = C.muted; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x + w - 40, y + 34); ctx.lineTo(x + w - 28, y + 46); ctx.moveTo(x + w - 28, y + 34); ctx.lineTo(x + w - 40, y + 46); ctx.stroke();
   ctx.fillStyle = C.line; ctx.fillRect(x, y + 88, w, 1);
   // preview of the screen (the app itself)
-  const pv = { x: x + 24, y: y + 108, w: 456, h: 257 }; ctx.save(); rr(ctx, pv.x, pv.y, pv.w, pv.h, 12); ctx.clip(); ctx.fillStyle = '#07080B'; ctx.fillRect(pv.x, pv.y, pv.w, pv.h); fromSnap(ctx, snap, 0, 0, W, H, pv.x, pv.y, pv.w, pv.w * H / W); ctx.restore();
+  const pv = { x: x + 24, y: y + 108, w: 456, h: 257 }; ctx.save(); rr(ctx, pv.x, pv.y, pv.w, pv.h, 12); ctx.clip(); ctx.fillStyle = '#07080B'; ctx.fillRect(pv.x, pv.y, pv.w, pv.h); fromSnap(ctx, snap, 0, 0, W, H, pv.x, pv.y, pv.w, pv.w * H / W);
+  // at 30 fps the preview is soft and low-res; switching to 60 fps sharpens it
+  const lq = 1 - E.inOut(prog(t, S.fps + 0.08, S.fps + 0.5));
+  if (lq > 0) { const m = ctx.getTransform(), lw = 96, lh = Math.round(lw * H / W); if (!LOWQ) { LOWQ = document.createElement('canvas'); LOWQ.width = lw; LOWQ.height = lh; }
+    const lx = LOWQ.getContext('2d'); lx.imageSmoothingQuality = 'low'; lx.drawImage(snap, m.e, m.f, m.a * W, m.d * H, 0, 0, lw, lh);
+    ctx.save(); ctx.globalAlpha *= lq; ctx.filter = 'blur(2.5px)'; ctx.drawImage(LOWQ, pv.x - 4, pv.y - 4, pv.w + 8, pv.w * H / W + 8); ctx.restore(); }
+  ctx.restore();
   rr(ctx, pv.x + 0.5, pv.y + 0.5, pv.w - 1, pv.h - 1, 12); ctx.strokeStyle = 'rgba(250,204,21,0.45)'; ctx.lineWidth = 1.5; ctx.stroke();
   rr(ctx, pv.x + 10, pv.y + 10, 104, 24, 7); ctx.fillStyle = 'rgba(8,8,12,0.8)'; ctx.fill(); ctx.beginPath(); ctx.arc(pv.x + 24, pv.y + 22, 4, 0, 7); ctx.fillStyle = C.green; ctx.fill(); txt(ctx, 'Vista previa', pv.x + 34, pv.y + 22.5, 12, '#fff', 800);
   txt(ctx, 'Pantalla 1', x + 24, y + 392, 15, '#fff', 700); ICON(ctx, 'volume', x + 290, y + 384, 15, C.green); txt(ctx, 'Con sonido', x + 310, y + 392, 12.5, C.green, 700);
