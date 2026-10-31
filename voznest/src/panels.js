@@ -110,8 +110,8 @@ function userCard(ctx, t, { voice = null } = {}) {
     box(ctx, SX + 8, 808, SW - 16, 86, 14, '#141623', 'rgba(124,92,255,0.45)');
     ctx.beginPath(); ctx.arc(SX + 40, 851, 17, 0, 7); ctx.fillStyle = '#4F7CFF'; ctx.fill(); ICON(ctx, 'mic', SX + 31, 842, 18, '#fff');
     font(ctx, 10, 800); ctx.fillStyle = C.accent2; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; spaced(ctx, 'MINUTOS DE VOZ', SX + 70, 832, 1.6);
-    txt(ctx, 'Chat de voz', SX + 70, 851, 14, C.text, 800); txt(ctx, 'Pasa 200 minutos en voz · +850 XP', SX + 70, 869, 11.5, C.muted, 600);
-    rr(ctx, SX + 150, 884, 18, 3, 1.5); ctx.fillStyle = C.accent; ctx.fill(); rr(ctx, SX + 172, 884, 8, 3, 1.5); ctx.fillStyle = '#2A2D36'; ctx.fill();
+    const st = misState(t); txt(ctx, 'Chat de voz', SX + 70, 851, 14, C.text, 800); txt(ctx, st ? st.line : 'Pasa 200 minutos en voz · +850 XP', SX + 70, 869, 11.5, st && st.done ? C.green : C.muted, st && st.done ? 800 : 600);
+    if (st) misBar(ctx, SX + 70, 881, SW - 102, st); else { rr(ctx, SX + 150, 884, 18, 3, 1.5); ctx.fillStyle = C.accent; ctx.fill(); rr(ctx, SX + 172, 884, 8, 3, 1.5); ctx.fillStyle = '#2A2D36'; ctx.fill(); }
   }
   box(ctx, SX + 8, y, SW - 16, 76, 14, '#121419', C.line);
   const g = ctx.createLinearGradient(SX + 8, y, SX + SW - 8, y); g.addColorStop(0, 'rgba(124,92,255,0.25)'); g.addColorStop(1, 'rgba(225,75,216,0.12)'); rr(ctx, SX + 10, y + 2, SW - 20, 36, 12); ctx.fillStyle = g; ctx.fill();
@@ -561,6 +561,10 @@ function sceneVoice(ctx, t) {
   const T = TL.voice, S = TL.stream; titlebar(ctx, 'Voznest · Sala general'); rail(ctx, t, [['voznest', -9]], 'voznest');
   const CM = TL.ctxm; HOVER = t > S.hoverNova - 0.05 && t < S.hoverKai - 0.1 ? 'nova' : t > S.hoverKai - 0.05 && t < S.out ? 'kai' : t > CM.open - 0.1 && t < CM.kick + 0.05 ? 'mika' : null;
   sidebarHub(ctx, t, 'voznest', 'Sala general', HUB_CATS('Sala general', t >= CM.kick + 0.15 ? 3 : 4), { voiceMembers: ['Sala general', [['nova', T.join, S.live + 0.1], ['luna', T.join + 0.08], ['kai', T.join + 0.16, S.live + 0.3], ['mika', T.join + 0.24, undefined, CM.kick + 0.05]]], watching: [TL.watch.start + 0.1, TL.watch.stop + 0.05] });
+  // when the mission card docks above the voice panel, the channel list scrolls under it (fade) instead of showing through
+  const mcq = E.outQuint(prog(t, TL.mission.card, TL.mission.card + 0.3));
+  if (mcq > 0) { ctx.save(); ctx.globalAlpha *= mcq; const fg = ctx.createLinearGradient(0, 684, 0, 700); fg.addColorStop(0, rgba(C.bg2, 0)); fg.addColorStop(1, C.bg2);
+    ctx.fillStyle = fg; ctx.fillRect(SX + 1, 684, SW - 2, 16); ctx.fillStyle = C.bg2; ctx.fillRect(SX + 1, 700, SW - 2, 120); ctx.restore(); }
   userCard(ctx, t, { voice: 'Sala general' }); mainBox(ctx);
   ICON(ctx, 'headphones', MX + 22, MY + 20, 18, C.muted); txt(ctx, 'Sala general', MX + 50, MY + 30, 17, '#fff', 800);
   ICON(ctx, 'activity', MX + MW - 230, MY + 20, 16, C.green); txt(ctx, '24 ms', MX + MW - 208, MY + 29, 13.5, C.green, 800); ICON(ctx, 'userplus', MX + MW - 150, MY + 20, 16, C.text); txt(ctx, 'Invitar', MX + MW - 128, MY + 29, 13.5, C.text, 700);
@@ -572,6 +576,8 @@ function sceneVoice(ctx, t) {
     const m = SMALL(i), r0 = { x: lerp(g.x, n.x, lay), y: lerp(g.y, n.y, lay), w: lerp(g.w, n.w, lay), h: lerp(g.h, n.h, lay) };
     const r = { x: lerp(r0.x, m.x, wl), y: lerp(r0.y, m.y, wl), w: lerp(r0.w, m.w, wl), h: lerp(r0.h, m.h, wl) }; if (w === 'nova') novaR = r;
     ctx.save(); ctx.translate(r.x + r.w / 2, r.y + r.h / 2); ctx.scale(p, p); ctx.translate(-(r.x + r.w / 2), -(r.y + r.h / 2)); ctx.globalAlpha *= clamp(p) * (1 - gone);
+    // while main.js lifts a 3D copy of this tile toward the camera (LAYERS tileLuna / tileKai), the original dims to an empty slot
+    const LIFT = { luna: [12.4, 13.15], kai: [12.95, 13.75] }[w]; if (LIFT) { const u = E.outBack(prog(t, LIFT[0], LIFT[0] + 0.45), 1.4) * (1 - E.inOut(prog(t, LIFT[1] - 0.35, LIFT[1]))); ctx.globalAlpha *= 1 - 0.8 * clamp(u * 1.5); }
     ctx.save(); ctx.translate(r.x, r.y); ctx.scale(r.w / TILE.w, r.h / TILE.h); voiceTile(ctx, 0, 0, TILE.w, TILE.h, w, t); ctx.restore();
     if (w === 'kai' && t > S.live + 0.3) liveTag(ctx, r.x + 12, r.y + 12, E.outBack(prog(t, S.live + 0.3, S.live + 0.6), 2));
     ctx.restore(); });
@@ -680,13 +686,18 @@ function watchPlayer(ctx, t, wl) {
   ctx.restore();
 }
 const MIS = { x: SX + 4, y: 262, w: SW - 4, h: 430 };   // stays inside the left column, clear of the stream
+// "Minutos de voz" mission state shared by every sidebar card: not started → minutes count up after "Empezar misión" → completed when the profile gets +850 XP
+function misState(t) { const M = TL.mission; if (t < M.start + 0.05) return null; const done = t >= TL.profile.xp + 0.1, f = done ? 1 : E.inOut(prog(t, M.start + 0.6, TL.profile.xp + 0.1));
+  return { f, done, line: done ? 'Completada · +850 XP' : `${Math.round(200 * f)} / 200 min · Pasa 200 minutos en voz` }; }
+function misBar(ctx, x, y, w, st) { rr(ctx, x, y, w, 4, 2); ctx.fillStyle = '#2A2D36'; ctx.fill(); if (st.f > 0.005) { rr(ctx, x, y, Math.max(4, w * st.f), 4, 2); ctx.fillStyle = st.done ? C.green : C.accent; ctx.fill(); } }
 function missions(ctx, t) {   // "Minutos de voz" mission: small card → window → Empezar misión → live progress
   const M = TL.mission, started = t >= M.start + 0.05, cq = E.outQuint(prog(t, M.card, M.card + 0.3)), cy = 702;
   ctx.save(); ctx.globalAlpha *= cq; ctx.translate(0, (1 - cq) * 14);
   box(ctx, SX + 8, cy, SW - 16, 92, 14, '#141623', 'rgba(124,92,255,0.55)'); ctx.beginPath(); ctx.arc(SX + 40, cy + 44, 17, 0, 7); ctx.fillStyle = '#4F7CFF'; ctx.fill(); ICON(ctx, 'mic', SX + 31, cy + 35, 18, '#fff');
   font(ctx, 10, 800); ctx.fillStyle = C.accent2; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; spaced(ctx, 'MINUTOS DE VOZ', SX + 70, cy + 22, 1.6);
-  txt(ctx, 'Chat de voz', SX + 70, cy + 42, 14, C.text, 800); txt(ctx, started ? '0 / 200 min · Pasa 200 minutos en voz' : 'Pasa 200 minutos en voz · +850 XP', SX + 70, cy + 61, 11.5, C.muted, 600);
-  rr(ctx, SX + 150, cy + 78, 18, 3, 1.5); ctx.fillStyle = C.accent; ctx.fill(); rr(ctx, SX + 172, cy + 78, 8, 3, 1.5); ctx.fillStyle = '#2A2D36'; ctx.fill(); ctx.restore();
+  const st = misState(t); txt(ctx, 'Chat de voz', SX + 70, cy + 42, 14, C.text, 800); txt(ctx, st ? st.line : 'Pasa 200 minutos en voz · +850 XP', SX + 70, cy + 61, 11.5, C.muted, 600);
+  if (st) misBar(ctx, SX + 70, cy + 75, SW - 102, st); else { rr(ctx, SX + 150, cy + 78, 18, 3, 1.5); ctx.fillStyle = C.accent; ctx.fill(); rr(ctx, SX + 172, cy + 78, 8, 3, 1.5); ctx.fillStyle = '#2A2D36'; ctx.fill(); }
+  ctx.restore();
   // the mission window
   const q = E.outQuint(prog(t, M.open + 0.04, M.open + 0.3)) * (1 - prog(t, M.close + 0.03, M.close + 0.18)); if (q <= 0) return;
   const W2 = MIS; ctx.save(); ctx.globalAlpha *= q; ctx.translate(W2.x, W2.y + W2.h); ctx.scale(0.96 + 0.04 * q, 0.96 + 0.04 * q); ctx.translate(-W2.x, -W2.y - W2.h);
@@ -878,7 +889,7 @@ function sceneProfile(ctx, t) {
   const xpp = E.outBack(prog(t, T.xp + 0.1, T.xp + 0.4), 2.5) * (1 - prog(t, T.xp + 1.2, T.xp + 1.5)); if (xpp > 0) { ctx.save(); ctx.globalAlpha = clamp(xpp); pill(ctx, cx + 86, xy - 2 + 8 * (1 - clamp(xpp)), '+850 XP · Minutos de voz', C.accent, { size: 11, h: 24, solid: true }); ctx.restore(); }
 }
 function sceneHub(ctx, t) {
-  const T = TL.hub, made = t >= T.create + 0.12; titlebar(ctx, made ? 'Pixel Club · #general' : 'Personas');
+  const T = TL.hub, made = t >= T.create + 0.02;   // the hub exists as soon as you click Crearlo: the closing modal reveals it, not the old page titlebar(ctx, made ? 'Pixel Club · #general' : 'Personas');
   rail(ctx, t, [['voznest', -9], ['pixel', T.create + 0.12]], made ? 'pixel' : 'home');
   if (!made) { sidebarHome(ctx, t, 'Personas', [['kai', 'Kai', '¡ya te agregué!', '9:58', -9], ...HOME_CHATS]); userCard(ctx, t); mainBox(ctx); personasPage(ctx, t, { connected: 3 }); }
   else {
@@ -888,8 +899,8 @@ function sceneHub(ctx, t) {
     txt(ctx, '¡Bienvenido a Pixel Club!', MX + MW / 2, MY + 440, 32, '#fff', 800, 'center'); txt(ctx, 'Este es el principio de #general. Invita a tu gente y empezad a hablar.', MX + MW / 2, MY + 478, 15, C.muted, 600, 'center');
     [['Administrador', '#F59E0B'], ['Moderador', '#22C55E'], ['Capitán', '#EC4899'], ['Jugador', '#60A5FA']].forEach(([r, c], i) => pill(ctx, MX + MW / 2 - 260 + i * 132, MY + 520, r, c, { size: 12, h: 28, icon: 'dot' }));
     button(ctx, MX + MW / 2 - 130, MY + 580, 260, 50, 'Invitar amigos', { color: C.accent, icon: 'userplus', size: 16, glow: 0.4 }); ctx.restore(); inputBar(ctx, MX + 24, MW - 48, 'Escribe en #general…'); }
-  const mo = prog(t, T.start + 0.05, T.start + 0.3) * (1 - prog(t, T.create + 0.02, T.create + 0.2));
-  if (mo > 0) { ctx.fillStyle = `rgba(3,3,8,${0.62 * mo})`; ctx.fillRect(0, 38, W, H); ctx.save(); ctx.globalAlpha = mo; const s = 0.95 + 0.05 * E.outBack(clamp(mo), 2); ctx.translate(800, 508); ctx.scale(s, s); ctx.translate(-800, -508); hubModal(ctx, t, T); ctx.restore(); }
+  const mc = E.inOut(prog(t, T.create + 0.04, T.create + 0.2)), mo = prog(t, T.start + 0.05, T.start + 0.3) * (1 - mc);
+  if (mo > 0) { ctx.fillStyle = `rgba(3,3,8,${0.62 * mo})`; ctx.fillRect(0, 38, W, H); ctx.save(); ctx.globalAlpha = mo; const s = (0.95 + 0.05 * E.outBack(clamp(mo), 2)) * (1 - 0.04 * mc); ctx.translate(800, 508); ctx.scale(s, s); ctx.translate(-800, -508); hubModal(ctx, t, T); ctx.restore(); }
   const { x, y, w, h } = HUBM;
   cursor(ctx, t, [[T.name[0] - 0.45, 1000, 640], [T.name[0], x + 340, y + 199, 1], [T.pick, x + 161, y + 306 + 2 * 82 + 37, 1], [T.create, x + w - 90, y + h - 38, 1], [T.create + 0.4, 1100, 860]]);
 }
