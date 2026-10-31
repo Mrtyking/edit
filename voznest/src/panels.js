@@ -377,8 +377,10 @@ function hubModal(ctx, t, T) {
   txt(ctx, 'Vista previa', px, y + 160, 15.5, '#fff', 800); box(ctx, px, py, pw, 540, 14, '#101116', 'rgba(255,255,255,0.09)');
   ctx.save(); ctx.globalAlpha = fade; if (nm.length >= 2) hubIcon(ctx, px + 14, py + 14, 28, 'pixel'); else { rr(ctx, px + 14, py + 14, 28, 28, 8); ctx.fillStyle = '#9333EA'; ctx.fill(); txt(ctx, '?', px + 28, py + 29, 14, '#fff', 800, 'center'); }
   txt(ctx, nm.length >= 2 ? nm : tp.name, px + 52, py + 29, 15, '#fff', 800); ctx.fillStyle = C.line; ctx.fillRect(px, py + 54, pw, 1);
+  // rows tighten so the longest template still ends above the roles divider (py + 430)
+  const nCh = tp.cats.reduce((n, [, c]) => n + c.length, 0), nCat = tp.cats.length, rowH = Math.min(26, (338 - nCat * 22 - (nCat - 1) * 6) / (nCh - 1));
   let yy = py + 76; for (const [cat, chs] of tp.cats) { font(ctx, 10.5, 800); ctx.fillStyle = '#AEB2BE'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; spaced(ctx, cat, px + 16, yy, 0.8); yy += 22;
-    for (const c of chs) { ICON(ctx, CH_ICON(c), px + 16, yy - 8, 15, '#C9CAD4', 1.8); txt(ctx, c, px + 40, yy, 13.5, '#E4E4EC', 600); yy += 26; } yy += 6; }
+    for (const c of chs) { ICON(ctx, CH_ICON(c), px + 16, yy - 8, 15, '#C9CAD4', 1.8); txt(ctx, c, px + 40, yy, 13.5, '#E4E4EC', 600); yy += rowH; } yy += 6; }
   ctx.fillStyle = C.line; ctx.fillRect(px, py + 430, pw, 1); let rx = px + 12, ry = py + 446;
   for (const [r, c] of tp.roles) { font(ctx, 11, 800); const rw = ctx.measureText(r).width + 32; if (rx + rw > px + pw - 8) { rx = px + 12; ry += 28; } rr(ctx, rx, ry, rw, 22, 6); ctx.fillStyle = rgba(c, 0.14); ctx.fill(); ICON(ctx, 'crown', rx + 6, ry + 5, 11, c, 2.2); txt(ctx, r, rx + 21, ry + 11.5, 11, c, 800); rx += rw + 6; }
   ctx.restore(); txt(ctx, tp.count, px, py + 562, 12.5, '#AEB2BE', 600);
