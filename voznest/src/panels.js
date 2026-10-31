@@ -1,7 +1,7 @@
 // The Voznest app window (all scenes) and the pieces that pop out of it, drawn with Canvas 2D in logical pixels.
 // Every name, message and number here is demo data.
 import { C, E, clamp, lerp, prog, hash, rr, rgba, font, mono, spaced, txt, button, ICON, emblem, shade } from './lib.js';
-import { TL, SCENES, sh } from './timeline.js';
+import { TL, SCENES, sh, SLOW } from './timeline.js';
 import { RECTS } from './webrects.js';
 
 export const W = 1600, H = 1000;
@@ -103,7 +103,7 @@ function userCard(ctx, t, { voice = null } = {}) {
   let y = 908;
   if (voice) {
     box(ctx, SX + 8, 800, SW - 16, 100, 14, '#14161C', 'rgba(47,210,126,0.25)'); ctx.beginPath(); ctx.arc(SX + 26, 822, 4, 0, 7); ctx.fillStyle = C.green; ctx.fill();
-    txt(ctx, voice, SX + 36, 822, 14, C.text, 800); const up = Math.max(0, t - TL.voice.join); txt(ctx, `Voznest · 0:${String(Math.floor(up)).padStart(2, '0')}`, SX + 24, 843, 12, C.muted, 600);
+    txt(ctx, voice, SX + 36, 822, 14, C.text, 800); const up = Math.max(0, t - TL.voice.join) * SLOW; txt(ctx, `Voznest · 0:${String(Math.floor(up)).padStart(2, '0')}`, SX + 24, 843, 12, C.muted, 600);
     ICON(ctx, 'activity', SX + SW - 46, 812, 18, C.green);
     hangup(ctx, SX + 22, 858, 52, 32); ['video', 'screen', 'hand', 'volume'].forEach((ic, i) => ibtn(ctx, SX + 86 + i * 50, 858, 32, ic, { fill: i === 3 ? '#2A2550' : '#1D2028', color: i === 3 ? C.accent2 : C.muted }));
   } else {
@@ -827,7 +827,7 @@ function dmCall(ctx, t) {
   [['nova', -110], ['kai', 110]].forEach(([w, dx]) => { const lv = w === 'kai' ? clamp(0.5 + 0.5 * Math.sin(t * 15)) * prog(t, T.call + 0.2, T.call + 0.4) : 0, x = MX + cw / 2 + dx, y = MY + 190;
     for (let k = 0; k < 2; k++) if (lv) { ctx.beginPath(); ctx.arc(x, y, 64 + k * 12 + lv * 8, 0, 7); ctx.strokeStyle = rgba(C.green, (0.45 - k * 0.2) * lv); ctx.lineWidth = 3; ctx.stroke(); }
     avatar(ctx, x, y, 56, w, { ring: C.green }); });
-  ctx.beginPath(); ctx.arc(MX + cw / 2 - 92, MY + 300, 4, 0, 7); ctx.fillStyle = C.green; ctx.fill(); const up = Math.max(0, t - T.call);
+  ctx.beginPath(); ctx.arc(MX + cw / 2 - 92, MY + 300, 4, 0, 7); ctx.fillStyle = C.green; ctx.fill(); const up = Math.max(0, t - T.answer) * SLOW;   // real seconds since you picked up
   txt(ctx, `En llamada · 00:${String(Math.floor(up)).padStart(2, '0')}`, MX + cw / 2 - 80, MY + 300, 15, '#fff', 700);
   const bx = MX + cw / 2 - 270; ['video', 'screen', 'mic', 'headphones', 'smile', 'rec', 'sparkles'].forEach((ic, i) => { const x = bx + i * 58;
     if (ic === 'rec') { rr(ctx, x, MY + 338, 46, 46, 14); ctx.fillStyle = '#1D2028'; ctx.fill(); ctx.beginPath(); ctx.arc(x + 23, MY + 361, 9, 0, 7); ctx.fillStyle = C.red; ctx.fill(); } else ibtn(ctx, x, MY + 338, 46, ic, { color: C.text }); });
