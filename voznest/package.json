@@ -1,0 +1,6 @@
+{
+  "name": "voznest-promo",
+  "private": true,
+  "description": "Render del promo de Voznest (ver LEEME_PC.txt)",
+  "dependencies": { "playwright": "1.63.0" }
+}

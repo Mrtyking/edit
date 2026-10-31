@@ -1,0 +1,7 @@
+*.bat -text
+*.cmd -text
+*.wav binary
+*.jpg binary
+*.png binary
+*.woff2 binary
+*.ttf binary
