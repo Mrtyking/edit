@@ -56,10 +56,10 @@ function hangup(ctx, x, y, w, h) { ctx.save(); ctx.shadowColor = 'rgba(240,82,82
 function cursor(ctx, t, keys) {
   if (t < keys[0][0] - 0.25 || t > keys[keys.length - 1][0] + 0.6) return;
   let x = keys[0][1], y = keys[0][2];
-  for (let i = 1; i < keys.length; i++) { const [t1, x1, y1] = keys[i], [, x0, y0] = keys[i - 1]; const dur = Math.min(0.32, t1 - keys[i - 1][0]); const p = E.inOut(prog(t, t1 - dur, t1)); if (t >= t1 - dur) { x = lerp(x0, x1, p); y = lerp(y0, y1, p); } }
-  let cl = 0; for (const k of keys) if (k[3] && t >= k[0] && t < k[0] + 0.3) cl = (t - k[0]) / 0.3;
+  for (let i = 1; i < keys.length; i++) { const [t1, x1, y1] = keys[i], [, x0, y0] = keys[i - 1]; const dur = keys[i][4] ?? Math.min(0.32, t1 - keys[i - 1][0]); const p = E.inOut(prog(t, t1 - dur, t1)); if (t >= t1 - dur) { x = lerp(x0, x1, p); y = lerp(y0, y1, p); } }
+  let cl = 0, held = false; for (const k of keys) { if (k[3] && t >= k[0] && t < k[0] + 0.3) cl = (t - k[0]) / 0.3; if (k[5] && t >= k[0] + 0.15 && t < k[5]) held = true; }   // k[4] = move time, k[5] = button held until (drags)
   const fade = clamp((t - keys[0][0] + 0.25) / 0.2) * (1 - prog(t, keys[keys.length - 1][0] + 0.3, keys[keys.length - 1][0] + 0.6));
-  ctx.save(); ctx.globalAlpha *= fade; const s = 1.35 * (1 - (cl > 0 ? 0.15 * Math.sin(cl * Math.PI) : 0)); ctx.translate(x, y); ctx.scale(s, s);
+  ctx.save(); ctx.globalAlpha *= fade; const s = 1.35 * (1 - (held ? 0.12 : cl > 0 ? 0.15 * Math.sin(cl * Math.PI) : 0)); ctx.translate(x, y); ctx.scale(s, s);
   const p = new Path2D('M0 0L0 17L4.5 13L7.6 20L10.4 18.8L7.4 12L13 12Z');
   ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2; ctx.fillStyle = '#fff'; ctx.fill(p);
   ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.strokeStyle = '#0A0A10'; ctx.lineWidth = 1.3; ctx.lineJoin = 'round'; ctx.stroke(p); ctx.restore();
@@ -175,14 +175,14 @@ function sidebarHub(ctx, t, hub, active, cats, { built = -1, voiceMembers = null
       ctx.restore(); y += 34;
       if (voiceMembers && name === voiceMembers[0] && watching) { const q = E.outQuint(prog(t, watching[0], watching[0] + 0.3)) * (1 - E.inOut(prog(t, watching[1], watching[1] + 0.3)));
         if (q > 0) { ctx.save(); ctx.globalAlpha *= q; ICON(ctx, 'tv', SX + 50, y - 10, 14, C.accent2); txt(ctx, 'Viendo', SX + 72, y - 2, 12.5, C.accent2, 800); txtFit(ctx, '· Motion Showreel 2026', SX + 120, y - 2, SW - 140, 12, C.muted, 600); ctx.restore(); y += 26 * q; } }
-      if (voiceMembers && name === voiceMembers[0]) for (const [who, at2, live] of voiceMembers[1]) { const q = E.outQuint(prog(t, at2, at2 + 0.3)); if (q <= 0) continue;
+      if (voiceMembers && name === voiceMembers[0]) for (const [who, at2, live, gone] of voiceMembers[1]) { const g0 = gone ?? 99, fo = E.inOut(prog(t, g0, g0 + 0.22)), lv = E.inOut(prog(t, g0 + 0.18, g0 + 0.45)), q = E.outQuint(prog(t, at2, at2 + 0.3)) * (1 - fo); if (q <= 0 && lv >= 1) continue; if (q <= 0 && !(gone != null && t > g0)) continue;   // leaving: fade + slide, then the gap closes
         ROWS[who] = y - 2; const hov = HOVER === who; if (hov) { rr(ctx, SX + 40, y - 15, SW - 52, 26, 7); ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fill(); }
         const talk = speakLevel(who, t), muted = who === 'mika';   // same state as the voice tiles
-        ctx.save(); ctx.globalAlpha *= q; avatar(ctx, SX + 58, y - 2, 10, who, talk > 0 ? { ring: rgba(C.green, 0.5 + 0.5 * talk) } : {}); const nw2 = txt(ctx, who, SX + 76, y - 1, 12.5, hov ? '#fff' : '#D4D4E8', hov ? 800 : 600);
+        ctx.save(); ctx.globalAlpha *= q; ctx.translate(-24 * fo, 0); avatar(ctx, SX + 58, y - 2, 10, who, talk > 0 ? { ring: rgba(C.green, 0.5 + 0.5 * talk) } : {}); const nw2 = txt(ctx, who, SX + 76, y - 1, 12.5, hov ? '#fff' : '#D4D4E8', hov ? 800 : 600);
         if (muted) ICON(ctx, 'micoff', SX + SW - 36, y - 8, 14, '#9CA3AF');
         const lp = E.outBack(prog(t, live ?? 99, (live ?? 99) + 0.35), 2); if (lp > 0 && who === 'nova') { ICON(ctx, 'eye', SX + SW - 46, y - 8, 12, C.muted); txt(ctx, '2', SX + SW - 30, y - 1, 11, C.muted, 700); }
         if (lp > 0) { ctx.save(); ctx.translate(SX + SW - (who === 'nova' ? 76 : 40), y - 2); ctx.scale(lp, lp); rr(ctx, -21, -9, 42, 18, 5); ctx.fillStyle = C.red; ctx.fill(); font(ctx, 9.5, 800); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('LIVE', 0, 0.5); ctx.restore(); }
-        ctx.restore(); y += 26; }
+        ctx.restore(); y += 26 * (1 - lv); }
     });
     y += 6;
   }
@@ -243,9 +243,9 @@ function sceneWeb(ctx, t) {
     piece(ctx, 'home', 'badge', { a: rise(t, 0.05), dy: (1 - rise(t, 0.05)) * 14 });
     ['l1', 'l2', 'l3', 'l4', 'l5', 'l6'].forEach((k, i) => { const p = rise(t, 0.1 + i * 0.06, 0.55); piece(ctx, 'home', k, { clip: true, dy: (1 - p) * 80 }); });
     piece(ctx, 'home', 'para', { a: rise(t, 0.5), dy: (1 - rise(t, 0.5)) * 16 });
+    if (t >= T.click1 - 0.3) { const [bx, by] = cap('home', 315, 892), g = clamp((t - T.click1 + 0.3) * 4) * (1 - prog(t, T.nav, T.nav + 0.2));   // hover glow sits behind the button so its text stays readable
+      ctx.save(); ctx.shadowColor = rgba(C.accent, 0.75 * g); ctx.shadowBlur = 26 * g; rr(ctx, bx + 2, by + 2, 219, 43, 9); ctx.fillStyle = rgba('#1A1530', g); ctx.fill(); ctx.restore(); }
     piece(ctx, 'home', 'btns', { a: rise(t, 0.56), dy: (1 - rise(t, 0.56)) * 16 });
-    if (t >= T.click1 - 0.3) { const [bx, by] = cap('home', 315, 892); const p = press(t, T.click1); ctx.save(); ctx.translate(bx + 112, by + 23); ctx.scale(1 - 0.04 * p, 1 - 0.04 * p); ctx.translate(-(bx + 112), -(by + 23));
-      ctx.shadowColor = 'rgba(255,255,255,0.5)'; ctx.shadowBlur = 24 * clamp((t - T.click1 + 0.3) * 4); rr(ctx, bx, by, 223, 47, 9); ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore(); }
     piece(ctx, 'home', 'checks', { a: rise(t, 0.62) }); piece(ctx, 'home', 'small', { a: rise(t, 0.66) });
     piece(ctx, 'home', 'mock', { a: rise(t, 0.25), sc: 0.96 + 0.04 * rise(t, 0.25) });
     piece(ctx, 'home', 'spark', { a: rise(t, 0.45), sc: 0.8 + 0.2 * rise(t, 0.45) + 0.06 * Math.sin(t * 6) }); piece(ctx, 'home', 'grab', { a: rise(t, 0.75) });
@@ -465,10 +465,10 @@ function membersPanel(ctx, t, { openAt = 99 } = {}) {
   ctx.restore();
   if (openAt < 99) cursor(ctx, t, [[openAt - 0.5, x + 40, y - 160], [openAt, x + 150, y - 33, 1], [openAt + 0.9, x + 170, y + 60]]);
 }
-const HUB_CATS = (active) => [
+const HUB_CATS = (active, inVoice = 4) => [
   ['INFORMACIÓN', [['library', 'bienvenida'], ['file', 'reglas'], ['bell', 'anuncios']]],
   ['COMUNIDAD', [['message', 'general'], ['image', 'clips'], ['smile', 'memes']]],
-  ['VOZ', [['headphones', 'Sala general', active === 'Sala general' ? '04/10' : '00/10'], ['play', 'Partida 1', '00/06'], ['play', 'Partida 2', '00/06']]],
+  ['VOZ', [['headphones', 'Sala general', active === 'Sala general' ? `0${inVoice}/10` : '00/10'], ['play', 'Partida 1', '00/06'], ['play', 'Partida 2', '00/06']]],
 ];
 function sceneInvite(ctx, t) {
   const T = TL.invite, inHub = t >= T.hub; titlebar(ctx, inHub ? 'Voznest · #bienvenida' : 'Personas');
@@ -558,19 +558,19 @@ function broadcastIcon(ctx, x, y, r, color) { ctx.save(); ctx.strokeStyle = colo
   for (const k of [0.5, 0.85]) for (const sgn of [-1, 1]) { ctx.beginPath(); ctx.arc(x, y, r * k, sgn > 0 ? -0.7 : Math.PI - 0.7, sgn > 0 ? 0.7 : Math.PI + 0.7); ctx.stroke(); } ctx.restore(); }
 function sceneVoice(ctx, t) {
   const T = TL.voice, S = TL.stream; titlebar(ctx, 'Voznest · Sala general'); rail(ctx, t, [['voznest', -9]], 'voznest');
-  const CM = TL.ctxm; HOVER = t > S.hoverNova - 0.05 && t < S.hoverKai - 0.1 ? 'nova' : t > S.hoverKai - 0.05 && t < S.out ? 'kai' : t > CM.open - 0.1 && t < CM.close + 0.1 ? 'mika' : null;
-  sidebarHub(ctx, t, 'voznest', 'Sala general', HUB_CATS('Sala general'), { voiceMembers: ['Sala general', [['nova', T.join, S.live + 0.1], ['luna', T.join + 0.08], ['kai', T.join + 0.16, S.live + 0.3], ['mika', T.join + 0.24]]], watching: [TL.watch.start + 0.1, TL.watch.stop + 0.05] });
+  const CM = TL.ctxm; HOVER = t > S.hoverNova - 0.05 && t < S.hoverKai - 0.1 ? 'nova' : t > S.hoverKai - 0.05 && t < S.out ? 'kai' : t > CM.open - 0.1 && t < CM.kick + 0.05 ? 'mika' : null;
+  sidebarHub(ctx, t, 'voznest', 'Sala general', HUB_CATS('Sala general', t >= CM.kick + 0.15 ? 3 : 4), { voiceMembers: ['Sala general', [['nova', T.join, S.live + 0.1], ['luna', T.join + 0.08], ['kai', T.join + 0.16, S.live + 0.3], ['mika', T.join + 0.24, undefined, CM.kick + 0.05]]], watching: [TL.watch.start + 0.1, TL.watch.stop + 0.05] });
   userCard(ctx, t, { voice: 'Sala general' }); mainBox(ctx);
   ICON(ctx, 'headphones', MX + 22, MY + 20, 18, C.muted); txt(ctx, 'Sala general', MX + 50, MY + 30, 17, '#fff', 800);
   ICON(ctx, 'activity', MX + MW - 230, MY + 20, 16, C.green); txt(ctx, '24 ms', MX + MW - 208, MY + 29, 13.5, C.green, 800); ICON(ctx, 'userplus', MX + MW - 150, MY + 20, 16, C.text); txt(ctx, 'Invitar', MX + MW - 128, MY + 29, 13.5, C.text, 700);
   ctx.fillStyle = C.line; ctx.fillRect(MX, MY + 58, MW, 1);
   // tiles: 2×2 grid → (after "Transmitir") big stream + a column of voice tiles
   const WT = TL.watch, lay = E.inOut(prog(t, S.live, S.live + 0.5)), wl = E.inOut(prog(t, WT.start + 0.05, WT.start + 0.6)) * (1 - E.inOut(prog(t, WT.min + 0.06, WT.min + 0.45))) + E.inOut(prog(t, WT.show + 0.06, WT.show + 0.45)) * (1 - E.inOut(prog(t, WT.stop + 0.06, WT.stop + 0.55))); let side = 0, novaR = STREAM;
-  TILES.forEach(([w, cx, cy], i) => { const p = E.outBack(prog(t, T.join + 0.1 + i * 0.08, T.join + 0.5 + i * 0.08), 1.6); if (p <= 0) return;
+  TILES.forEach(([w, cx, cy], i) => { const gone = w === 'mika' ? E.inOut(prog(t, CM.kick + 0.05, CM.kick + 0.45)) : 0, p = E.outBack(prog(t, T.join + 0.1 + i * 0.08, T.join + 0.5 + i * 0.08), 1.6) * (1 - 0.35 * gone); if (p <= 0 || gone >= 1) return;
     const g = { x: TILE.x0 + cx * (TILE.w + TILE.gap), y: TILE.y0 + cy * (TILE.h + TILE.gap), w: TILE.w, h: TILE.h }, n = w === 'nova' ? STREAM : SIDE(side++);
     const m = SMALL(i), r0 = { x: lerp(g.x, n.x, lay), y: lerp(g.y, n.y, lay), w: lerp(g.w, n.w, lay), h: lerp(g.h, n.h, lay) };
     const r = { x: lerp(r0.x, m.x, wl), y: lerp(r0.y, m.y, wl), w: lerp(r0.w, m.w, wl), h: lerp(r0.h, m.h, wl) }; if (w === 'nova') novaR = r;
-    ctx.save(); ctx.translate(r.x + r.w / 2, r.y + r.h / 2); ctx.scale(p, p); ctx.translate(-(r.x + r.w / 2), -(r.y + r.h / 2)); ctx.globalAlpha *= clamp(p);
+    ctx.save(); ctx.translate(r.x + r.w / 2, r.y + r.h / 2); ctx.scale(p, p); ctx.translate(-(r.x + r.w / 2), -(r.y + r.h / 2)); ctx.globalAlpha *= clamp(p) * (1 - gone);
     ctx.save(); ctx.translate(r.x, r.y); ctx.scale(r.w / TILE.w, r.h / TILE.h); voiceTile(ctx, 0, 0, TILE.w, TILE.h, w, t); ctx.restore();
     if (w === 'kai' && t > S.live + 0.3) liveTag(ctx, r.x + 12, r.y + 12, E.outBack(prog(t, S.live + 0.3, S.live + 0.6), 2));
     ctx.restore(); });
@@ -622,7 +622,7 @@ function sceneVoice(ctx, t) {
     [S.hoverNova, SX + 110, (ROWS.nova ?? 520) + 2], [S.hoverKai, SX + 104, (ROWS.kai ?? 570) + 2], [WT.acts, ax + 4, by + 30, 1], [WT.pick, ax - 60, by - 18 - 318, 1],
     [WT.paste - 0.05, ax + 10, by - 18 - 70], [WT.start, ax + 94, by - 18 - 30, 1], [WT.start + 0.7, ax + 200, by - 120], [WT.min - 0.4, PLAYER.x + PLAYER.w - 132, PLAYER.y + 486], [WT.min, PLAYER.x + PLAYER.w - 132, PLAYER.y + 486, 1], [WT.show - 0.35, PLAYER.x + PLAYER.w - 54, PLAYER.y + 30], [WT.show, PLAYER.x + PLAYER.w - 54, PLAYER.y + 30, 1],
     [WT.stop - 0.4, PLAYER.x + PLAYER.w - 24, PLAYER.y + 486], [WT.stop, PLAYER.x + PLAYER.w - 24, PLAYER.y + 486, 1], [WT.stop + 0.5, PLAYER.x + PLAYER.w - 120, PLAYER.y + 600],
-    [CM.open, SX + 100, (ROWS.mika ?? 760) + 2, 1], [CM.drag[0], CTXM.x + CTXM.w - 22, CTXM.y + 43, 1], [CM.drag[1], CTXM.x + 16 + (CTXM.w - 38) * 0.65, CTXM.y + 43], [CM.hover, CTXM.x + 110, CTXM.y + 236], [CM.close, MX + 520, MY + 520, 1],
+    [CM.open, SX + 100, (ROWS.mika ?? 760) + 2, 1], [CM.drag[0], CTXM.x + CTXM.w - 22, CTXM.y + 43.5, 1, undefined, CM.drag[1]], [CM.drag[1], CTXM.x + 16 + (CTXM.w - 38) * 0.65, CTXM.y + 43.5, 0, CM.drag[1] - CM.drag[0]], [CM.hover, CTXM.x + 120, CTXM.y + 212], [CM.kick, CTXM.x + 120, CTXM.y + 212, 1], [CM.kick + 0.45, CTXM.x + 150, CTXM.y + 300],
     [TL.mission.open, SX + 150, 746, 1], [TL.mission.start, SX + 100, MIS.y + 354, 1], [TL.mission.close, MIS.x + MIS.w - 24, MIS.y + 24, 1], [TL.mission.close + 0.5, MX + 300, MY + 600]]);
 }
 function activitiesMenu(ctx, t, ax, bottom, mp) {
@@ -713,11 +713,12 @@ function missions(ctx, t) {   // "Minutos de voz" mission: small card → window
 }
 const CTXM = { x: SX + 132, y: MY + 112, w: 296, h: 744 };
 function userMenu(ctx, t, q) {   // right-click on a voice member: what you see depends on your role
-  const CM = TL.ctxm, M = CTXM, vol = Math.round(lerp(100, 65, E.inOut(prog(t, CM.drag[0], CM.drag[1])))); ctx.save(); ctx.globalAlpha *= q; ctx.translate(0, (1 - q) * 10);
+  const CM = TL.ctxm, M = CTXM, vf = lerp(100, 65, E.inOut(prog(t, CM.drag[0], CM.drag[1]))), vol = Math.round(vf); ctx.save(); ctx.globalAlpha *= q; ctx.translate(0, (1 - q) * 10);
   ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.65)'; ctx.shadowBlur = 34; ctx.shadowOffsetY = 12; rr(ctx, M.x, M.y, M.w, M.h, 14); ctx.fillStyle = '#16171D'; ctx.fill(); ctx.restore();
   rr(ctx, M.x + 0.5, M.y + 0.5, M.w - 1, M.h - 1, 14); ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1; ctx.stroke();
   txt(ctx, 'Volumen del usuario', M.x + 16, M.y + 20, 12, C.muted, 700); txt(ctx, `${vol}%`, M.x + M.w - 16, M.y + 20, 12, '#fff', 800, 'right');
-  const sw = M.w - 38, f = vol / 100; rr(ctx, M.x + 16, M.y + 41, sw, 5, 2.5); ctx.fillStyle = '#2A2C35'; ctx.fill(); rr(ctx, M.x + 16, M.y + 41, sw * f, 5, 2.5); ctx.fillStyle = C.accent; ctx.fill();
+  // knob moves smoothly (the label rounds)
+  const sw = M.w - 38, f = vf / 100; rr(ctx, M.x + 16, M.y + 41, sw, 5, 2.5); ctx.fillStyle = '#2A2C35'; ctx.fill(); rr(ctx, M.x + 16, M.y + 41, sw * f, 5, 2.5); ctx.fillStyle = C.accent; ctx.fill();
   ctx.beginPath(); ctx.arc(M.x + 16 + sw * f, M.y + 43.5, 8, 0, 7); ctx.fillStyle = C.accent2; ctx.fill();
   const items = [['volume', 'Silenciar para mí', 'box'], ['micoff', 'Apagar su micrófono para todos', 'box'], ['headphones', 'Cortar su audio', 'box'], ['link', 'Enviar a la sala', 'more'], ['phone', 'Sacar de la sala', 'red'], '-',
     ['users', 'Ver perfil'], ['message', 'Enviar un mensaje'], ['phone', 'Llamada de voz'], ['video', 'Videollamada'], ['pencil', 'Nota privada…'], '-',

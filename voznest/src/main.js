@@ -336,6 +336,8 @@ function renderSub(t, jx, jy, seed) {
   for (let i = 1; i < BL.length; i++) { downP.u.tSrc.value = BL[i - 1].d.texture; downP.u.uTx.value.set(1 / BL[i - 1].d.width, 1 / BL[i - 1].d.height); run(downP, BL[i].d); }
   for (let i = BL.length - 2; i >= 0; i--) { upP.u.tSrc.value = (i === BL.length - 2 ? BL[i + 1].d : BL[i + 1].u).texture; upP.u.tAdd.value = BL[i].d.texture; upP.u.uTx.value.set(1 / BL[i + 1].d.width, 1 / BL[i + 1].d.height); run(upP, BL[i].u); }
   mark('bloom');
+  // the white "Download for Windows" button fills a lot of the frame at the first click: less bloom there so its text doesn't wash out
+  finalP.u.uBloom.value = 0.5 * (1 - 0.85 * E.inOut(prog(t, 0.55, 0.9)) * (1 - E.inOut(prog(t, TL.web.nav, TL.web.nav + 0.3))));
   finalP.u.uFocus.value = FOCUS; finalP.u.uAp.value = apQ; finalP.u.uMax.value = maxQ; finalP.u.uSeed.value = seed;
   finalP.u.uWorld.value = E.inOut(prog(t, -0.6, 0.05)) * (1 - E.inOut(prog(t, TL.free - 0.3, TL.free + 0.55)));
   finalP.u.uFade.value = E.inOut(prog(t, -INTRO, -INTRO + 0.7)) * (1 - E.inOut(prog(t, DUR - 0.9, DUR - 0.05)));

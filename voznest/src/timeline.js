@@ -27,7 +27,7 @@ TL.stream = { cursor: 13.85, click: 14.0, modal: 14.05, fps: 14.55, preview: 14.
 // Actividades → Ver juntos: a YouTube video plays for the whole room
 TL.watch = { acts: 18.15, pick: 18.65, dialog: 18.72, paste: 19.05, start: 19.5, play: 19.62, min: 20.75, show: 21.7, stop: 22.75, end: STREAM_AT + STREAM_LEN };
 // right-click on a voice member: volume slider, moderation options (Sacar de la sala…)
-TL.ctxm = { open: 23.5, drag: [23.95, 24.45], hover: 24.75, close: 25.3 };
+TL.ctxm = { open: 23.5, drag: [23.95, 24.45], hover: 24.7, kick: 24.95, close: 24.98 };   // kick = click "Sacar de la sala": the menu closes and mika leaves the voice
 // missions: the "Minutos de voz" card → mission window → Empezar misión → progress 0 / 200 min
 TL.mission = { card: 25.4, open: 25.65, start: 26.35, close: 27.35 };
 // min = mini-player button → floating mini-player + bar "Reproduciendo en el minirreproductor · Recuperar" · show = Recuperar · stop = red square "Terminar para todos"
