@@ -1,45 +1,63 @@
 @echo off
-rem ============================================================
-rem  HACER VIDEO VOZNEST
-rem  Doble clic y listo: baja la ultima version que dejo Claude,
-rem  instala lo que falte, y hace el video con tu tarjeta grafica.
-rem  Todo se guarda en la carpeta Voznest_Video junto a este .bat
-rem  (el video final queda en Voznest_Video\videos).
-rem ============================================================
+rem ==========================================================================
+rem  VOZNEST - Render del promo
+rem  Doble clic y listo: baja la ultima version del proyecto, prepara lo que
+rem  haga falta y hace el video con tu tarjeta grafica.
+rem  Todo queda en la carpeta Voznest_Video, junto a este archivo.
+rem ==========================================================================
 setlocal EnableExtensions
-title Video Voznest
+title Voznest - Render del promo
+for /F %%e in ('echo prompt $E^| cmd') do set "ESC=%%e"
+set "C1=%ESC%[96m" & set "OK=%ESC%[92m" & set "ERR=%ESC%[91m" & set "DIM=%ESC%[90m" & set "B=%ESC%[1;97m" & set "R=%ESC%[0m"
 set "BASE=%~dp0Voznest_Video"
+set "LOG=%BASE%\registro.txt"
 set "BRANCH=claude/bold-noether-63jrhe"
 set "ZIP=https://github.com/Mrtyking/edit/archive/refs/heads/%BRANCH%.zip"
 if not exist "%BASE%" mkdir "%BASE%"
+echo ==== %date% %time% ==== > "%LOG%"
 
+cls
 echo.
-echo  [1/4] Bajando la ultima version del proyecto...
+echo   %B%VOZNEST%R%  %DIM%^|%R%  Render del promo
+echo   %DIM%------------------------------------------------------------%R%
+echo.
+echo   %C1%[1/4]%R% Proyecto
+echo         Buscando la ultima version...
 if exist "%BASE%\descarga" rmdir /s /q "%BASE%\descarga"
 if exist "%BASE%\descarga.zip" del /q "%BASE%\descarga.zip"
-curl.exe -L --fail -# -o "%BASE%\descarga.zip" "%ZIP%"
-if errorlevel 1 goto offline
+curl.exe -sSL --fail -o "%BASE%\descarga.zip" "%ZIP%" >>"%LOG%" 2>&1 || goto offline
 mkdir "%BASE%\descarga"
-tar -xf "%BASE%\descarga.zip" -C "%BASE%\descarga"
-if errorlevel 1 goto offline
+tar -xf "%BASE%\descarga.zip" -C "%BASE%\descarga" >>"%LOG%" 2>&1 || goto offline
 set "SRC="
-for /d %%D in ("%BASE%\descarga\*") do set "SRC=%%D\voznest"
-if not exist "%SRC%\hacer_video.cmd" goto offline
-robocopy "%SRC%" "%BASE%\proyecto" /MIR /XD node_modules /NFL /NDL /NJH /NJS /NP >nul
+for /d %%D in ("%BASE%\descarga\*") do set "SRC=%%D"
+if not exist "%SRC%\voznest\hacer_video.cmd" goto offline
+robocopy "%SRC%\voznest" "%BASE%\proyecto" /MIR /XD node_modules /NFL /NDL /NJH /NJS /NP >>"%LOG%" 2>&1
 if errorlevel 8 goto offline
-rmdir /s /q "%BASE%\descarga"
-del /q "%BASE%\descarga.zip"
-echo    Proyecto al dia.
+copy /y "%SRC%\HACER_VIDEO_VOZNEST.bat" "%BASE%\lanzador_nuevo.bat" >nul 2>nul
+rmdir /s /q "%BASE%\descarga" & del /q "%BASE%\descarga.zip"
+set /p VER=<"%BASE%\proyecto\VERSION.txt"
+echo         %OK%OK%R%  Al dia %DIM%- %VER%%R%
 goto run
 
 :offline
 if exist "%BASE%\proyecto\hacer_video.cmd" (
-  echo    No se pudo bajar la version nueva: uso la que ya tenias.
+  echo         %DIM%Sin conexion: se usa la version que ya tenias.%R%
   goto run
 )
-echo    No se pudo bajar el proyecto. Revisa tu internet y vuelve a abrirlo.
-pause
+echo         %ERR%No se pudo bajar el proyecto.%R% Revisa tu internet y vuelve a abrirlo.
+echo         %DIM%Detalles: %LOG%%R%
+echo.
+pause >nul
 exit /b 1
 
 :run
 call "%BASE%\proyecto\hacer_video.cmd" "%BASE%"
+rem el lanzador se actualiza solo; el bloque entero se lee antes de ejecutarse, asi que puede reemplazarse a si mismo
+(
+  if exist "%BASE%\lanzador_nuevo.bat" (
+    fc /b "%BASE%\lanzador_nuevo.bat" "%~f0" >nul 2>nul
+    if errorlevel 1 copy /y "%BASE%\lanzador_nuevo.bat" "%~f0" >nul 2>nul
+    del /q "%BASE%\lanzador_nuevo.bat" >nul 2>nul
+  )
+  exit /b
+)

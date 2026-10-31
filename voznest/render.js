@@ -26,7 +26,7 @@ function serve() {
 }
 async function openPage(port) {
   const browser = await chromium.launch(GPU
-    ? { channel: 'chromium', args: ['--ignore-gpu-blocklist', '--enable-gpu', '--enable-gpu-rasterization', '--enable-unsafe-swiftshader', ...(process.platform === 'win32' ? ['--use-angle=d3d11'] : [])] }
+    ? { channel: 'chromium', args: ['--ignore-gpu-blocklist', '--enable-gpu', '--enable-gpu-rasterization', '--enable-zero-copy', '--disable-gpu-vsync', '--disable-frame-rate-limit', '--force-gpu-mem-available-mb=4096', '--enable-unsafe-swiftshader', ...(process.platform === 'win32' ? ['--use-angle=d3d11'] : [])] }
     : { args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-accelerated-2d-canvas'] });
   const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
   page.on('console', m => { if (m.type() === 'error' && !/status of 404/.test(m.text())) console.error('[page]', m.text()); });
@@ -34,12 +34,25 @@ async function openPage(port) {
   await page.goto(`http://127.0.0.1:${port}/voznest.html?scale=${SCALE}&sub=${SUB}`);
   await page.waitForFunction(() => window.READY === true, null, { timeout: 120000 });
   if (!shown) { shown = true; const gpu = await page.evaluate(() => { const g = document.createElement('canvas').getContext('webgl2'), e = g.getExtension('WEBGL_debug_renderer_info'); return e ? g.getParameter(e.UNMASKED_RENDERER_WEBGL) : g.getParameter(g.RENDERER); });
-    console.log('GPU usada:', gpu); if (GPU && /swiftshader|llvmpipe|basic render/i.test(gpu)) console.log('  (aviso: no se esta usando la tarjeta grafica, ira mas lento)'); }
+    const name = (gpu.match(/^ANGLE \([^,]+, (.+?)(?: \(0x[0-9a-f]+\))?(?: Direct3D| \(|,|$)/i) || [])[1] || gpu;
+    console.log(`  Tarjeta grafica   ${name}`); if (GPU && /swiftshader|llvmpipe|basic render/i.test(gpu)) console.log('  (aviso: no se esta usando la tarjeta grafica, ira mas lento)'); }
   return { browser, page };
 }
-const RW = 1920 * SCALE, RH = 1080 * SCALE;
-const RAWIN = ['-f', 'rawvideo', '-pix_fmt', 'rgba', '-s', `${RW}x${RH}`, '-framerate', '60', '-i', '-', '-vf', 'vflip'];
-const raw = async (page, f) => Buffer.from(await page.evaluate(i => window.grabRaw(i), f), 'base64');
+const RW = 1920 * SCALE, RH = 1080 * SCALE;   // the page renders at this size too
+// frames arrive already converted to YUV 4:2:0 (BT.709) by the GPU (see grabYUV in src/main.js): 1.5 bytes/pixel, no colour conversion in ffmpeg
+const RAWIN = ['-f', 'rawvideo', '-pix_fmt', 'yuv420p', '-s', `${RW}x${RH}`, '-framerate', '60', '-i', '-'];
+const TAGS = ['-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv'];
+const raw = async (page, f) => Buffer.from(await page.evaluate(i => window.grabYUV(i), f), 'base64');
+// video encoder: the graphics card's own encoder (NVIDIA NVENC) when there is one, else x264 on the CPU
+const ENCODERS = {
+  nvenc: ['-c:v', 'h264_nvenc', '-preset', 'p7', '-tune', 'hq', '-rc', 'vbr', '-cq', '15', '-b:v', '0', '-maxrate', '150M', '-bufsize', '300M', '-spatial-aq', '1', '-temporal-aq', '1', '-profile:v', 'high', '-pix_fmt', 'yuv420p'],
+  x264: ['-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-profile:v', 'high', '-level', '5.2', '-pix_fmt', 'yuv420p'],
+};
+const pickEncoder = () => new Promise(res => {
+  const want = opt('enc', GPU ? 'auto' : 'x264'); if (want !== 'auto') return res(want);
+  const p = spawn('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'color=black:s=1920x1080:r=60:d=0.2', '-c:v', 'h264_nvenc', '-f', 'null', '-']);
+  p.on('error', () => res('x264')); p.on('close', c => res(c === 0 ? 'nvenc' : 'x264'));
+});
 
 (async () => {
   const srv = await serve(), port = srv.address().port;
@@ -48,7 +61,7 @@ const raw = async (page, f) => Buffer.from(await page.evaluate(i => window.grabR
     const { browser, page } = await openPage(port);
     for (const ts of args.slice(2).filter(a => !a.startsWith('--') && !isNaN(+a) && args[args.indexOf(a) - 1] !== '--scale' && args[args.indexOf(a) - 1] !== '--sub')) {
       const t0 = Date.now(); const buf = await raw(page, Math.round(+ts * 60));
-      await new Promise(r => { const ff = spawn('ffmpeg', ['-y', '-v', 'error', ...RAWIN, '-frames:v', '1', path.join(dir, `t${ts}.png`)]); ff.on('close', r); ff.stdin.end(buf); });
+      await new Promise(r => { const ff = spawn('ffmpeg', ['-y', '-v', 'error', ...RAWIN, '-vf', 'scale=in_color_matrix=bt709:in_range=tv,format=rgb24', '-frames:v', '1', path.join(dir, `t${ts}.png`)]); ff.on('close', r); ff.stdin.end(buf); });
       console.log(`t=${ts}  ${((Date.now() - t0) / 1000).toFixed(1)}s`);
     }
     await browser.close(); srv.close(); return;
@@ -61,7 +74,8 @@ const raw = async (page, f) => Buffer.from(await page.evaluate(i => window.grabR
   const crypto = require('crypto'), h = crypto.createHash('sha1');
   const walk = d => fs.readdirSync(d, { withFileTypes: true }).sort((x, y) => x.name < y.name ? -1 : 1).forEach(e => { const f = path.join(d, e.name); if (e.isDirectory()) walk(f); else { h.update(e.name); h.update(fs.readFileSync(f)); } });
   for (const d of ['src', 'assets', 'fonts', 'vendor']) if (fs.existsSync(path.join(ROOT, d))) walk(path.join(ROOT, d));
-  h.update(fs.readFileSync(path.join(ROOT, 'voznest.html'))); h.update(`${SCALE}|${SUB}|${CH}`);
+  const ENC = await pickEncoder(); console.log(`  Codificador       ${ENC === 'nvenc' ? 'NVENC (en la tarjeta grafica)' : 'x264 (en el procesador)'}`);
+  h.update(fs.readFileSync(path.join(ROOT, 'voznest.html'))); h.update(`${SCALE}|${SUB}|${CH}|${ENC}`);
   const sig = h.digest('hex'), sigFile = path.join(tmp, 'firma.txt');
   if (!fs.existsSync(sigFile) || fs.readFileSync(sigFile, 'utf8') !== sig) {
     for (const f of fs.readdirSync(tmp)) fs.rmSync(path.join(tmp, f), { force: true, recursive: true });
@@ -76,19 +90,21 @@ const raw = async (page, f) => Buffer.from(await page.evaluate(i => window.grabR
   const progress = () => {
     if (!TTY && done % 30 && done !== n) return;
     const el = (Date.now() - T0) / 1000, fps = done / el, left = (n - done) / Math.max(fps, 1e-6), pct = (base + done) / FR;
-    const bar = '#'.repeat(Math.round(pct * 30)).padEnd(30, '.'), eta = left >= 60 ? `${Math.floor(left / 60)} min ${String(Math.round(left % 60)).padStart(2, '0')} s` : `${Math.round(left)} s`;
-    const line = `  [${bar}] ${(pct * 100).toFixed(1)}%   frame ${base + done}/${FR}   ${fps.toFixed(1)} fps   faltan ~${eta}   `;
-    if (TTY) process.stdout.write('\r' + line); else console.log(line.trim());
+    const bar = '\u2588'.repeat(Math.round(pct * 30)).padEnd(30, '\u2591'), eta = left >= 60 ? `${Math.floor(left / 60)} min ${String(Math.round(left % 60)).padStart(2, '0')} s` : `${Math.round(left)} s`;
+    const line = `  ${bar}  ${(pct * 100).toFixed(1).padStart(5)}%   ${String(base + done).padStart(String(FR).length)}/${FR} frames   ${fps.toFixed(1).padStart(5)} fps   quedan ${eta}`;
+    if (TTY) process.stdout.write('\r' + line.padEnd(100)); else console.log(line.trim());
     process.title = `${(pct * 100).toFixed(0)}% - video Voznest`;
   };
-  if (n) console.log(base ? `Continuando: ${base} frames ya hechos, faltan ${n}.` : `Renderizando ${FR} frames (${(FR / 60).toFixed(1)} s a 60 fps) con ${WORKERS} procesos...`);
+  console.log(`  Video             ${RW}x${RH} a 60 fps, ${(FR / 60).toFixed(1)} s (${FR} frames)`);
+  console.log(`  Procesos          ${WORKERS} en paralelo, ${SUB} muestras por frame`);
+  if (base && n) console.log(`  Continuando       ${base} frames ya estaban hechos`);
+  console.log('');
   const worker = async () => {
     if (!todo.length) return;
     const { browser, page } = await openPage(port);
     while (todo.length) {
       const [a, z] = todo.shift(), file = name([a]), part = file.replace('.mp4', '.part.mp4');
-      const ff = spawn('ffmpeg', ['-y', '-v', 'error', ...RAWIN,
-        '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-profile:v', 'high', '-level', '5.2', '-pix_fmt', 'yuv420p', part], { stdio: ['pipe', 'inherit', 'inherit'] });
+      const ff = spawn('ffmpeg', ['-y', '-v', 'error', ...RAWIN, ...ENCODERS[ENC], ...TAGS, part], { stdio: ['pipe', 'inherit', 'inherit'] });
       for (let f = a; f < z; f++) {
         const buf = await raw(page, f);
         if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
@@ -101,9 +117,9 @@ const raw = async (page, f) => Buffer.from(await page.evaluate(i => window.grabR
   await Promise.all([...Array(WORKERS).keys()].map(worker));
   if (TTY && n) process.stdout.write('\n');
   const missing = grid.filter(c => !fs.existsSync(name(c)));
-  if (missing.length) { console.log(`parcial: faltan ${missing.length} trozos (desde frame ${missing[0][0]}); vuelve a ejecutar para continuar`); srv.close(); return; }
+  if (missing.length) { console.log(`  Render parcial: faltan ${missing.length} trozos (desde el frame ${missing[0][0]})`); srv.close(); return; }
   fs.writeFileSync(path.join(tmp, 'list.txt'), grid.map(c => `file '${name(c).replace(/\\/g, '/')}'`).join('\n'));
   await new Promise(r => spawn('ffmpeg', ['-y', '-v', 'error', '-f', 'concat', '-safe', '0', '-i', path.join(tmp, 'list.txt'), '-c', 'copy', '-movflags', '+faststart', out], { stdio: 'inherit' }).on('close', r));
   fs.rmSync(tmp, { recursive: true, force: true }); srv.close();
-  console.log(`listo: ${out}  (${((Date.now() - T0) / 60000).toFixed(1)} min)`);
+  console.log(`  Render terminado en ${((Date.now() - T0) / 60000).toFixed(1)} min`);
 })();

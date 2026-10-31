@@ -618,7 +618,7 @@ function sceneVoice(ctx, t) {
   if (dp > 0) watchDialog(ctx, t, ax, by - 18, dp);
   const cmq = E.outQuint(prog(t, CM.open + 0.03, CM.open + 0.25)) * (1 - prog(t, CM.close + 0.02, CM.close + 0.14)); if (cmq > 0) userMenu(ctx, t, cmq);
   if (t > TL.mission.card) missions(ctx, t);
-  cursor(ctx, t, [[S.cursor - 0.2, 900, 640], [S.click, bx + 3 * 62 + 30, by + 30, 1], [S.fps, 1278, 552, 1], [S.preview, 520, 760, 1], [S.go, 1180, 822, 1],
+  cursor(ctx, t, [[S.cursor - 0.2, 900, 640], [S.click, bx + 3 * 62 + 30, by + 30, 1], [S.fps, 1176, 368, 1], [S.preview, 500, 734, 1], [S.go, 1180, 822, 1],
     [S.hoverNova, SX + 110, (ROWS.nova ?? 520) + 2], [S.hoverKai, SX + 104, (ROWS.kai ?? 570) + 2], [WT.acts, ax + 4, by + 30, 1], [WT.pick, ax - 60, by - 18 - 318, 1],
     [WT.paste - 0.05, ax + 10, by - 18 - 70], [WT.start, ax + 94, by - 18 - 30, 1], [WT.start + 0.7, ax + 200, by - 120], [WT.min - 0.4, PLAYER.x + PLAYER.w - 132, PLAYER.y + 486], [WT.min, PLAYER.x + PLAYER.w - 132, PLAYER.y + 486, 1], [WT.show - 0.35, PLAYER.x + PLAYER.w - 54, PLAYER.y + 30], [WT.show, PLAYER.x + PLAYER.w - 54, PLAYER.y + 30, 1],
     [WT.stop - 0.4, PLAYER.x + PLAYER.w - 24, PLAYER.y + 486], [WT.stop, PLAYER.x + PLAYER.w - 24, PLAYER.y + 486, 1], [WT.stop + 0.5, PLAYER.x + PLAYER.w - 120, PLAYER.y + 600],
@@ -725,7 +725,7 @@ function userMenu(ctx, t, q) {   // right-click on a voice member: what you see 
     ['pencil', 'Poner apodo en el hub'], ['shield', 'Roles', 'more'], '-', ['userplus', 'Enviar solicitud de amistad'], ['shield', 'Bloquear', 'red'], ['flag', 'Denunciar…', 'red'], '-', ['shield', 'Moderar', 'more'], '-', ['file', 'Copiar user ID']];
   let y = M.y + 66;
   for (const it of items) { if (it === '-') { ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fillRect(M.x + 12, y + 3, M.w - 24, 1); y += 10; continue; }
-    const [ic, label, kind] = it, red = kind === 'red', hov = label === 'Sacar de la sala' && t > CM.hover - 0.15 && t < CM.close - 0.05;
+    const [ic, label, kind] = it, red = kind === 'red', hov = label === 'Sacar de la sala' && t > CM.hover - 0.15 && t < CM.kick + 0.2;
     if (hov) { rr(ctx, M.x + 6, y, M.w - 12, 32, 8); ctx.fillStyle = 'rgba(240,82,82,0.16)'; ctx.fill(); }
     ICON(ctx, ic, M.x + 16, y + 8, 15, red ? '#F87171' : C.muted); txt(ctx, label, M.x + 42, y + 16.5, 13.5, red ? '#F87171' : '#E4E4EC', 700);
     if (kind === 'box') { rr(ctx, M.x + M.w - 30, y + 9, 14, 14, 3); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1.4; ctx.stroke(); }

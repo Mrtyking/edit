@@ -317,6 +317,21 @@ const finalP = mkPass(`uniform sampler2D tScene, tDof, tDepth, tBloom, tOv; unif
 const accP = mkPass(`uniform sampler2D tSrc; uniform float uW; varying vec2 vUv; void main(){ gl_FragColor = vec4(texture2D(tSrc, vUv).rgb * uW, 1.); }`, { tSrc: { value: rtFinal.texture }, uW: { value: 1 } },
   { transparent: true, blending: THREE.AdditiveBlending });
 const outP = mkPass(`uniform sampler2D tSrc; varying vec2 vUv; void main(){ gl_FragColor = vec4(texture2D(tSrc, vUv).rgb, 1.); }`, { tSrc: { value: rtAcc.texture } });
+// GPU colour conversion for the encoder: the finished frame → planar YUV 4:2:0 (BT.709, TV range) packed 4 bytes per texel.
+// Output rows top→bottom: H rows of Y, then H/4 rows of U, then H/4 rows of V (each row = W bytes). 1.5 bytes/pixel instead of 4.
+const rtYUV = new THREE.WebGLRenderTarget(RW / 4, RH * 3 / 2, { type: THREE.UnsignedByteType, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthBuffer: false });
+const yuvP = mkPass(`precision highp float; uniform sampler2D tSrc; uniform vec2 uRes; varying vec2 vUv;
+  vec3 px(float x, float y) { return clamp(texture2D(tSrc, vec2((x + .5) / uRes.x, 1. - (y + .5) / uRes.y)).rgb, 0., 1.); }
+  float Yv(vec3 c) { return (16. + 219. * dot(c, vec3(.2126, .7152, .0722))) / 255.; }
+  float Cv(vec3 c, bool v) { return (128. + 224. * (v ? dot(c, vec3(.5, -.454153, -.045847)) : dot(c, vec3(-.114572, -.385428, .5)))) / 255.; }
+  float chroma(float k, bool v) { float hw = uRes.x * .5, cy = floor(k / hw), cx = k - cy * hw, X = cx * 2., Y = cy * 2.;
+    return Cv((px(X, Y) + px(X + 1., Y) + px(X, Y + 1.) + px(X + 1., Y + 1.)) * .25, v); }
+  void main() {
+    float row = floor(gl_FragCoord.y), col = floor(gl_FragCoord.x), H = uRes.y; vec4 o;
+    if (row < H) { float x = col * 4.; o = vec4(Yv(px(x, row)), Yv(px(x + 1., row)), Yv(px(x + 2., row)), Yv(px(x + 3., row))); }
+    else { float r = row - H; bool v = r >= H * .25; if (v) r -= H * .25; float k = r * uRes.x + col * 4.;
+      o = vec4(chroma(k, v), chroma(k + 1., v), chroma(k + 2., v), chroma(k + 3., v)); }
+    gl_FragColor = o; }`, { tSrc: { value: rtAcc.texture }, uRes: { value: new THREE.Vector2(RW, RH) } });
 
 const PROF = {}; const gl = renderer.getContext(); const px1 = new Uint8Array(4);
 function mark(name) { if (!window.PROF) return; renderer.setRenderTarget(null); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px1); const n = performance.now(); if (PROF._t) PROF[name] = (PROF[name] || 0) + n - PROF._t; PROF._t = n; }
@@ -358,6 +373,8 @@ window.renderAt = fi => renderFrame(fi);
 const RAW = new Uint8Array(RW * RH * 4);
 window.grabRaw = fi => { renderFrame(fi); renderer.setRenderTarget(null); gl.readPixels(0, 0, RW, RH, gl.RGBA, gl.UNSIGNED_BYTE, RAW);
   let s = ''; const CH = 0x8000; for (let i = 0; i < RAW.length; i += CH) s += String.fromCharCode.apply(null, RAW.subarray(i, i + CH)); return btoa(s); };
+const YUV = new Uint8Array(RW * RH * 3 / 2);
+window.grabYUV = fi => { renderFrame(fi); run(yuvP, rtYUV); renderer.readRenderTargetPixels(rtYUV, 0, 0, RW / 4, RH * 3 / 2, YUV); return YUV.toBase64 ? YUV.toBase64() : null; };
 window.FRAMES = Math.round(LENGTH * FPS);
 
 // ---------------------------------------------------------------- boot
