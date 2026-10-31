@@ -1,1 +1,1 @@
-31 oct 2026 - revision final: mision, hub, tarjetas de voz
+31 oct 2026 - la app se abre desde el instalador

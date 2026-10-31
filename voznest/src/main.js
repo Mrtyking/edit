@@ -87,7 +87,7 @@ const WEBL = [ // [page, key, show, hide, lift in, lift out, z]
   ['home', 'lobby', 0.3, TL.web.nav, 0.62, 1.3, 1.3], ['home', 'react', 0.36, TL.web.nav, 0.68, 1.3, 1.6], ['home', 'movie', 0.42, TL.web.nav, 0.74, 1.3, 1.4],
   ['home', 'phone', 0.48, TL.web.nav, 0.8, 1.3, 1.9], ['home', 'emoji', 0.54, TL.web.nav, 0.86, 1.3, 2.4],
   ['download', 'mock', TL.web.nav + 0.15, TL.web.install[0], TL.web.nav + 0.45, TL.web.install[0] - 0.05, 1.3],
-  ['signup', 'mock', TL.signup.start, TL.invite.start, TL.signup.start + 0.25, TL.invite.start - 0.1, 1.5],
+  ['signup', 'mock', TL.signup.start + 0.34, TL.invite.start, TL.signup.start + 0.5, TL.invite.start - 0.1, 1.5],   // appears once the app window has opened
 ].map(([pg, k, a, b, l0, l1, z]) => { const [x0, y0, x1, y1] = RECTS[pg][k], w = (x1 - x0) * P.S_, h = (y1 - y0) * P.S_;
   const p = new Panel(imgDef(`${pg}_${k}`, w, h), { dyn: [a, a], vis: [a - 0.05, b + 0.05], margin: 10 }); p.web = { ax: (x0 + x1) / 2 * P.S_, ay: P.PAGE_Y[pg] + (y0 + y1) / 2 * P.S_, a, b, l0, l1, z }; return p; });
 const chip = new Panel(P.layers.inviteChip, { dyn: [TL.invite.fly[0], TL.invite.paste], vis: [TL.invite.fly[0] - 0.05, TL.invite.paste + 0.1], margin: 20 });

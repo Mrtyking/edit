@@ -277,12 +277,17 @@ function sceneWeb(ctx, t) {
   ctx.restore();
   // installer
   const ip = prog(t, T.install[0], T.install[0] + 0.15);
-  if (ip > 0) { ctx.fillStyle = `rgba(4,4,8,${0.7 * ip})`; ctx.fillRect(0, 0, W, H); ctx.save(); ctx.globalAlpha = ip; const s = 0.94 + 0.06 * E.outBack(ip);
+  const done = E.outBack(prog(t, T.install[1] - 0.14, T.install[1] - 0.02), 2);   // ✓ "Voznest instalado" just before the app window opens
+  if (ip > 0) { ctx.fillStyle = `rgba(4,4,8,${(0.7 + 0.22 * prog(t, T.install[0] + 0.2, T.install[1])) * ip})`; ctx.fillRect(0, 0, W, H); ctx.save(); ctx.globalAlpha = ip; const s = 0.94 + 0.06 * E.outBack(ip);
     ctx.translate(800, 500); ctx.scale(s, s); ctx.translate(-800, -500);
     ctx.save(); ctx.shadowColor = rgba(C.accent, 0.4); ctx.shadowBlur = 60; rr(ctx, 560, 330, 480, 330, 22); ctx.fillStyle = '#101117'; ctx.fill(); ctx.restore(); rr(ctx, 560.5, 330.5, 479, 329, 22); ctx.strokeStyle = 'rgba(160,140,255,0.35)'; ctx.stroke();
-    emblem(ctx, 800, 430, 110); txt(ctx, 'Instalando Voznest…', 800, 528, 22, '#fff', 800, 'center');
-    const p = E.inOut(prog(t, T.install[0] + 0.05, T.install[1] - 0.05)); rr(ctx, 620, 568, 360, 8, 4); ctx.fillStyle = '#23252E'; ctx.fill(); rr(ctx, 620, 568, 360 * p, 8, 4); ctx.fillStyle = C.accent; ctx.fill();
-    txt(ctx, `${Math.round(p * 100)}%`, 800, 606, 14, C.muted, 700, 'center'); ctx.restore(); }
+    emblem(ctx, 800, 430, 110);
+    const p = E.inOut(prog(t, T.install[0] + 0.05, T.install[1] - 0.16)); rr(ctx, 620, 568, 360, 8, 4); ctx.fillStyle = '#23252E'; ctx.fill(); rr(ctx, 620, 568, 360 * p, 8, 4); ctx.fillStyle = done > 0 ? C.green : C.accent; ctx.fill();
+    if (done <= 0) { txt(ctx, 'Instalando Voznest…', 800, 528, 22, '#fff', 800, 'center'); txt(ctx, `${Math.round(p * 100)}%`, 800, 606, 14, C.muted, 700, 'center'); }
+    else { const d = clamp(done); ctx.save(); ctx.globalAlpha *= d; txt(ctx, 'Voznest instalado', 812, 528, 22, '#fff', 800, 'center');
+      ctx.save(); ctx.translate(694, 527); ctx.scale(done, done); ctx.beginPath(); ctx.arc(0, 0, 12, 0, 7); ctx.fillStyle = C.green; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(-5, 0.5); ctx.lineTo(-1.5, 4); ctx.lineTo(5.5, -4); ctx.stroke(); ctx.restore();
+      txt(ctx, 'Abriendo la app…', 800, 606, 14, C.muted, 700, 'center'); ctx.restore(); }
+    ctx.restore(); }
   const [c1x, c1y] = cap('home', 449, 920), [c2x, c2y] = cap('download', 537, 423);
   cursor(ctx, t, [[0.75, 1100, 760], [T.click1, c1x, c1y, 1], [T.click2, c2x, c2y, 1], [T.click2 + 0.55, 1200, 300]]);
 }
@@ -909,8 +914,13 @@ const DRAW = { web: sceneWeb, signup: sceneSignup, invite: sceneInvite, chat: sc
 export function sceneAt(t) { let k = 0; for (let i = 0; i < SCENES.length; i++) if (t >= SCENES[i][1]) k = i; return k; }
 // the app window: draws the current scene, cross-dissolving from the previous one with a short slide
 export const app = { w: W, h: H, tex: 2, draw(ctx, t) {
-  frameWin(ctx); const k = sceneAt(t), [name, at] = SCENES[k], p = k > 0 && DRAW[SCENES[k - 1][0]] !== DRAW[name] ? E.inOut(prog(t, at, at + 0.3)) : 1;
+  frameWin(ctx); const k = sceneAt(t), [name, at] = SCENES[k], p = k > 0 && DRAW[SCENES[k - 1][0]] !== DRAW[name] ? E.inOut(prog(t, at, at + (name === 'signup' ? 0.36 : 0.3))) : 1;
   if (p < 1) { ctx.save(); DRAW[SCENES[k - 1][0]](ctx, at - 0.001); ctx.restore(); }
+  if (p < 1 && name === 'signup') {   // the app window grows out of the installer card (560,330 480×330) to fill the frame
+    const z = E.inOut(prog(t, at, at + 0.36)), R = { x: lerp(560, 0, z), y: lerp(330, 0, z), w: lerp(480, W, z), h: lerp(330, H, z) };
+    ctx.save(); ctx.globalAlpha = clamp(prog(t, at, at + 0.1)); rr(ctx, R.x, R.y, R.w, R.h, lerp(22, 18, z)); ctx.clip(); ctx.fillStyle = C.bg; ctx.fillRect(R.x, R.y, R.w, R.h);
+    ctx.translate(R.x, R.y); ctx.scale(R.w / W, R.h / H); DRAW[name](ctx, Math.max(t, at)); ctx.restore(); return;
+  }
   ctx.save(); if (p < 1) { ctx.globalAlpha = p; ctx.translate(0, (1 - p) * 26); } DRAW[name](ctx, Math.max(t, at)); ctx.restore();
 } };
 
