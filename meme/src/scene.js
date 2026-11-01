@@ -24,7 +24,7 @@ const measure = (ctx, s, size, w = 700, fam = 'ID', ls = -0.025) => { font(ctx, 
 const IMG = {}; const REEL = [];
 const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
 export async function load() {
-  IMG.dog = await loadImg('assets/dog.png'); IMG.sorry = await loadImg('assets/sorry.png');
+  IMG.dog = await loadImg('assets/reaction.png'); IMG.sorry = await loadImg('assets/sorry.png');
   for (let i = 1; i <= 372; i++) REEL.push(loadImg(`assets/reel/f_${String(i).padStart(3, '0')}.jpg`));
   for (let i = 0; i < REEL.length; i++) REEL[i] = await REEL[i];
 }
