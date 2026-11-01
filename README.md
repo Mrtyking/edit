@@ -8,3 +8,9 @@ It downloads the latest version of the project, installs what it needs (Node.js,
 
 - `voznest/` – the project (`src/` scenes, `render.js` renderer, `stems/mix.wav` final audio mix)
 - `voznest/hacer_video.cmd` – build steps run by the `.bat`
+
+## Meme edit ("the edit is still being edited")
+
+On Windows: download **[HACER_VIDEO_MEME.bat](https://github.com/Mrtyking/edit/raw/claude/bold-noether-63jrhe/HACER_VIDEO_MEME.bat)** and double-click it. Same flow as the Voznest one; if it sits next to `HACER_VIDEO_VOZNEST.bat` it reuses that environment (no new downloads). The video lands in `Meme_Video\videos`.
+
+- `meme/` – the project (`src/scene.js` scenes, `render.js` renderer, `stems/mix.wav` final audio)

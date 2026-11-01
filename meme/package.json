@@ -1,0 +1,6 @@
+{
+  "name": "meme-edit",
+  "private": true,
+  "description": "Render del meme edit (ver LEEME_PC.txt)",
+  "dependencies": { "playwright": "1.63.0" }
+}
