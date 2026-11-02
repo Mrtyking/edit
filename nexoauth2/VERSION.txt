@@ -1,1 +1,1 @@
-2 nov 2026 - v10.11: otro sonido para los checks Passed
+2 nov 2026 - v10.12: sonido en listas y tarjetas que aparecen animadas

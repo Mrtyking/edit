@@ -151,6 +151,16 @@ ED = T['editor']; DET = load('Ui Sound Effects/Ui Click Digital 03.wav'); last =
 for j in range(1, 601):
     u = j / 600; e = 4 * u ** 3 if u < 0.5 else 1 - (-2 * u + 2) ** 3 / 2; v = round(10 + 12 * e)
     if v != last: last = v; add(pitch(DET, (v - 10) * 0.6), ED['radius'][0] + u * (ED['radius'][1] - ED['radius'][0]), -17, 0.4, 'onset', 'sube el Base radius (un tic por paso)' if v == 11 else '')
+# lists and cards that animate in: a soft cascade, one light tick per item as it lands
+ROWTICK = DET; CARDPOP = load('Pop/Slow And Smooth Pop.wav', 0, 0.6, 0.1)
+MBR, PRF, SEC, IPT, ANL = T['members'], T['profile'], T['security'], T['ip'], T['analytics']
+for i in range(11): add(pitch(ROWTICK, -3 + i * 0.4), MBR['rows'][0] + i * 0.055 + 0.04, -19, -0.4 + i * 0.07, 'onset', 'aparece la lista de miembros' if i == 0 else '')
+for i in range(8): add(PASS, PRF['checks'][0] + i * 0.09 + 0.1, -14, 0.35, 'onset', 'checks del perfil' if i == 0 else '')
+for i in range(6): add(CARDPOP, SEC['cards'][0] + i * 0.1 + 0.05, -15, -0.3 + 0.12 * i, 'onset', 'tarjetas de seguridad' if i == 0 else '')
+for i in range(4): add(CARDPOP, IPT['cards'][0] + i * 0.12 + 0.05, -14, 0.4, 'onset', 'resultados de la IP' if i == 0 else '')
+for i in range(5): add(CARDPOP, ANL['kpis'][0] + i * 0.06 + 0.05, -16, -0.4 + 0.2 * i, 'onset', 'KPIs de analytics' if i == 0 else '')
+for i in range(4): add(CARDPOP, T['pricing'][0] + 0.4 + i * 0.1, -13, -0.45 + 0.3 * i, 'onset', 'entran los 4 planes' if i == 0 else '')
+for i in range(3): add(PASS, T['bots']['done'] + 0.45 + i * 0.12, -15, 0, 'onset', 'lista: bot verificado' if i == 0 else '')
 add(pitch(TICK, 12), V2['risk'] + 0.05, -13, 0, 'onset', 'riesgo 0 / 100')
 add(SUCCESS, T['verified']['open'] - 1.05, -3, 0, 'onset', "You're verified")
 add(DISCORD, T['dlog']['arrive'] + 0.02, -3, 0.2, 'onset', 'notificación de Discord: llega el log')

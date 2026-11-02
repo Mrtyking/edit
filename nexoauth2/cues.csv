@@ -34,6 +34,7 @@ segundo,que_suena
 23.66,se marcan los 7 permisos
 24.70,clic (bots)
 25.30,bot conectado
+25.70,lista: bot verificado
 26.15,clic (bots)
 27.07,tarjeta: Design every pixel.
 27.95,clic (pages)
@@ -61,16 +62,21 @@ segundo,que_suena
 56.37,notificación de Discord: llega el log
 57.42,una pieza sale de la página en 3D
 58.87,tarjeta: Know every member.
+58.99,aparece la lista de miembros
 60.60,clic (members)
+61.30,checks del perfil
 62.17,una pieza sale de la página en 3D
 63.45,montaje: SECURITY CENTER
+63.95,tarjetas de seguridad
 66.45,montaje: MEMBER MAP
 67.72,una pieza sale de la página en 3D
 69.85,montaje: IP TRACKER
 69.97,escribe la IP
 70.65,clic (ip)
 71.92,cae el pin en Austin
+71.95,resultados de la IP
 73.05,montaje: ANALYTICS
+73.20,KPIs de analytics
 76.85,montaje: TEMP MAIL
 77.08,correo temporal
 77.50,clic (tempmail)
@@ -82,6 +88,7 @@ segundo,que_suena
 79.77,nuevo dueño
 81.30,clic (transfer)
 81.60,"la ventana se va, entra Pricing"
+82.40,entran los 4 planes
 86.00,aire final
 86.31,final: el logo encaja (mismo golpe de la intro)
 86.72,brillo del logo
