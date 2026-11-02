@@ -22,7 +22,6 @@ const seg = new Intl.Segmenter('es', { granularity: 'grapheme' });
 const graphemes = s => Array.from(seg.segment(s), g => g.segment);
 const isEmoji = g => /\p{Extended_Pictographic}/u.test(g);
 
-const FX_SEQ = ['pop', 'arc', 'slide', 'zoom', 'wave', 'spin', 'letters', 'vertical', 'drop', 'arc2'];
 
 window.setup = async (cfg) => {
   CFG = cfg;
@@ -33,10 +32,8 @@ window.setup = async (cfg) => {
   const cs = cfg.cuts;
   SEGS = cs.map((c, i) => {
     const t1 = i + 1 < cs.length ? cs[i + 1].t : Math.min(cfg.dur, c.t + cfg.lastHold);
-    return { i, t0: c.t, t1, text: c.text, font: c.font, fx: c.fx || FX_SEQ[i % FX_SEQ.length], color: (cfg.colors || {})[i], bg: (cfg.bg && cfg.bg[i]) || "black" };
+    return { i, t0: c.t, t1, text: c.text, font: c.font, color: (cfg.colors || {})[i], bg: (cfg.bg && cfg.bg[i]) || "black" };
   });
-  // vertical solo para textos cortos
-  SEGS.forEach(s => { if (s.fx === 'vertical' && graphemes(s.text).length > 12) s.fx = 'slide'; });
   return SEGS.length;
 };
 
@@ -98,67 +95,110 @@ function drawGlyphs(ctx, s, text, size, place) {
   return tot;
 }
 
-/* una sub-muestra del texto del tramo s en tiempo absoluto t */
+/* ---------- movimiento estilo edit: cada tramo tiene una "cámara" que nunca se queda quieta ---------- */
+const ENTRIES = ['whip', 'slide', 'flip', 'zoomIn', 'drop', 'bendIn'];
+const EXITS = ['whip', 'zoomOut', 'flip', 'slide', 'bendOut', 'spinOut'];
+const POS = [[0.5, 0.42], [0.5, 0.5], [0.42, 0.36], [0.58, 0.6], [0.5, 0.3], [0.45, 0.55], [0.56, 0.44], [0.5, 0.66]];
+const rnd = (s, k) => hash(s.i * 13.37 + k * 7.1);
+const sgn = (s, k) => rnd(s, k) < 0.5 ? -1 : 1;
+const sm = k => k * k * (3 - 2 * k);
+function plan(s) {
+  if (s.plan) return s.plan;
+  const p = {};
+  p.pos = POS[s.i % POS.length];
+  p.entry = ENTRIES[(s.i * 5 + 1) % ENTRIES.length];
+  p.exit = EXITS[(s.i * 7 + 3) % EXITS.length];
+  // deriva continua (de -> a) durante todo el tramo
+  p.dx = sgn(s, 1) * (70 + 90 * rnd(s, 2)); p.dy = sgn(s, 3) * (30 + 60 * rnd(s, 4));
+  p.r0 = sgn(s, 5) * (0.06 + 0.22 * rnd(s, 6)); p.r1 = p.r0 - sgn(s, 5) * (0.2 + 0.25 * rnd(s, 7));
+  p.yaw0 = sgn(s, 8) * (0.25 + 0.35 * rnd(s, 9)); p.yaw1 = -p.yaw0 * (0.4 + 0.6 * rnd(s, 10));
+  p.pitch = (rnd(s, 11) - 0.5) * 0.5;
+  p.k0 = (rnd(s, 12) < 0.55 ? sgn(s, 13) * (0.0006 + 0.0012 * rnd(s, 14)) : 0); p.k1 = p.k0 * (0.4 + rnd(s, 15));
+  p.wave = rnd(s, 16) < 0.3 ? 18 + 20 * rnd(s, 17) : 0;
+  p.sc0 = 0.84 + 0.08 * rnd(s, 18); p.sc1 = p.sc0 + 0.16 + 0.1 * rnd(s, 19);
+  p.side = sgn(s, 20);
+  return (s.plan = p);
+}
+/* estado del bloque en un instante: devuelve transformaciones */
+function stateAt(s, lt, dur) {
+  const p = plan(s);
+  const ein = Math.min(0.2, dur * 0.35), eout = Math.min(0.16, dur * 0.3);
+  const u = sm(clamp(lt / dur));
+  const st = {
+    x: S * p.pos[0] + lerp(-p.dx / 2, p.dx / 2, u), y: S * p.pos[1] + lerp(-p.dy / 2, p.dy / 2, u),
+    rot: lerp(p.r0, p.r1, u), yaw: lerp(p.yaw0, p.yaw1, u), pitch: p.pitch * (1 - u),
+    sc: lerp(p.sc0, p.sc1, u), k: lerp(p.k0, p.k1, u), wave: p.wave, wph: lt * 5, alpha: 1,
+  };
+  const ki = clamp(lt / ein), a = 1 - eExpo(ki);          // a: 1 al empezar -> 0
+  if (a > 0.0005) switch (p.entry) {
+    case 'whip': st.rot += p.side * 1.9 * a; st.sc *= 1 + 0.6 * a; st.x += p.side * 120 * a; break;
+    case 'slide': st.x += p.side * S * 0.9 * a; st.yaw += p.side * 0.6 * a; break;
+    case 'flip': st.yaw += p.side * 1.45 * a; break;
+    case 'zoomIn': st.sc *= lerp(1, 0.08, a); st.rot += p.side * 0.5 * a; break;
+    case 'drop': st.y -= S * 0.7 * a; st.rot += p.side * 0.6 * a; break;
+    case 'bendIn': st.k += p.side * 0.006 * a; st.rot -= p.side * 1.2 * a; st.sc *= 1 + 0.4 * a; break;
+  }
+  const ko = clamp((lt - (dur - eout)) / eout), b = ko * ko * ko;  // b: 0 -> 1 al final, acelerando
+  if (b > 0.0005) switch (p.exit) {
+    case 'whip': st.rot -= p.side * 2.2 * b; st.x -= p.side * 200 * b; st.sc *= 1 + 0.5 * b; break;
+    case 'zoomOut': st.sc *= 1 + 4 * b; st.alpha = 1 - b * 0.9; break;
+    case 'flip': st.yaw -= p.side * 1.5 * b; break;
+    case 'slide': st.x -= p.side * S * 1.0 * b; st.yaw -= p.side * 0.5 * b; break;
+    case 'bendOut': st.k -= p.side * 0.007 * b; st.rot += p.side * 1.4 * b; st.y -= 160 * b; break;
+    case 'spinOut': st.rot += p.side * 3.2 * b; st.sc *= 1 - 0.85 * b; break;
+  }
+  return st;
+}
+const layoutCache = new Map();
+function layout(ctx, s) {
+  if (layoutCache.has(s.i)) return layoutCache.get(s.i);
+  const lines = splitLines(s.text);
+  const size = fitSize(ctx, s.font, lines, S * (lines.length > 1 ? 0.5 : 0.56), lines.length > 1 ? 84 : 96);
+  ctx.font = `${size}px "${s.font}", "Noto Color Emoji"`;
+  const lh = size * 1.06, gl = [];
+  let maxw = 0;
+  lines.forEach((ln, li) => {
+    const gs = graphemes(ln), ws = gs.map(g => gW(ctx, g, size)), w = ws.reduce((a, b) => a + b, 0); maxw = Math.max(maxw, w);
+    let x = -w / 2; const y = (li - (lines.length - 1) / 2) * lh;
+    gs.forEach((g, k) => { if (g !== ' ') gl.push({ g, x: x + ws[k] / 2, y }); x += ws[k]; });
+  });
+  const L0 = { size, gl, w: maxw };
+  layoutCache.set(s.i, L0); return L0;
+}
+/* una sub-muestra del texto del tramo s en el tiempo absoluto t */
 function drawSeg(ctx, s, t) {
   const lt = t - s.t0, dur = s.t1 - s.t0;
   if (lt < 0 || lt > dur) return;
-  const ein = Math.min(0.24, dur * 0.45), eout = Math.min(0.09, dur * 0.2);
-  const ki = clamp(lt / ein), ko = clamp((lt - (dur - eout)) / eout);
-  const lines = splitLines(s.text);
-  const maxW = S * (lines.length > 1 ? 0.86 : 0.84);
-  const size = fitSize(ctx, s.font, lines, maxW, lines.length > 1 ? 140 : 180);
-  const r = hash(s.i + 1), side = r < 0.5 ? -1 : 1;
+  const Lo = layout(ctx, s), st = stateAt(s, lt, dur), D = 900;
   ctx.save();
-  ctx.translate(S / 2, S / 2 + (hash(s.i + 7) - 0.5) * 120);
-  // deriva suave mientras está en pantalla
-  const drift = lt / Math.max(dur, 0.4);
-  ctx.rotate(side * (0.02 + 0.03 * r) * (drift - 0.3));
-  ctx.scale(1 + 0.05 * drift, 1 + 0.05 * drift);
-  // salida: crece y se desvanece
-  if (ko > 0) { const k = eOut(ko); ctx.globalAlpha *= 1 - k; ctx.scale(1 + 0.35 * k, 1 + 0.35 * k); ctx.translate(0, -30 * k); }
-  const A = ctx.globalAlpha;
-  switch (s.fx) {
-    case 'pop': { const k = eBack(ki); ctx.globalAlpha = A * clamp(ki * 3); ctx.scale(lerp(0.25, 1, k), lerp(0.25, 1, k)); ctx.rotate(side * 0.18 * (1 - eOut(ki))); drawLines(ctx, s, lines, size); break; }
-    case 'zoom': { const k = eExpo(ki); const sc = lerp(3.2, 1, k); ctx.scale(sc, sc); ctx.globalAlpha = A * clamp(ki * 2.5); drawLines(ctx, s, lines, size); break; }
-    case 'slide': { const k = eExpo(ki); ctx.translate(side * S * 1.1 * (1 - k), 0); ctx.rotate(-side * 0.08 * (1 - k)); drawLines(ctx, s, lines, size); break; }
-    case 'drop': { const k = eBack(ki); ctx.translate(0, -S * 0.9 * (1 - k)); ctx.rotate(side * 0.25 * (1 - eOut(ki))); drawLines(ctx, s, lines, size); break; }
-    case 'spin': { const k = eBack(ki); const ang = (1 - k) * Math.PI * 0.5 * side; ctx.scale(Math.max(0.02, Math.cos(ang)), 1 + 0.15 * Math.abs(Math.sin(ang))); ctx.globalAlpha = A * clamp(ki * 3); drawLines(ctx, s, lines, size); break; }
-    case 'vertical': { const k = eExpo(ki); ctx.rotate(-Math.PI / 2 * side); ctx.translate(side * -S * 1.0 * (1 - k), 0); drawLines(ctx, s, [s.text], fitSize(ctx, s.font, [s.text], S * 0.8, 170)); break; }
-    case 'letters': {
-      const span = Math.min(0.4, dur * 0.6);
-      if (lines.length > 1) { ctx.translate(0, -size * 0.55); }
-      let off = 0;
-      lines.forEach((ln, li) => {
-        ctx.save(); ctx.translate(0, li * size * 1.08);
-        const n0 = off; off += graphemes(ln).length; const N = graphemes(s.text).length;
-        drawGlyphs(ctx, s, ln, size, (c, k, n, cx) => { const kk = clamp((lt - span * (n0 + k) / N) / 0.12); const e = eBack(kk); c.globalAlpha = A * clamp(kk * 3); c.translate(cx, 40 * (1 - e)); c.scale(lerp(0.2, 1, e), lerp(0.2, 1, e)); });
-        ctx.restore();
-      });
-      break;
-    }
-    case 'wave': {
-      const amp = lerp(70, 16, eOut(clamp(lt / 0.6)));
-      if (lines.length > 1) ctx.translate(0, -size * 0.55);
-      lines.forEach((ln, li) => { ctx.save(); ctx.translate(0, li * size * 1.12);
-        drawGlyphs(ctx, s, ln, size * 0.95, (c, k, n, cx) => { const ph = k * 0.55 - lt * 7; const kk = clamp((lt - k * 0.02) / 0.14); c.globalAlpha = A * kk; c.translate(cx, Math.sin(ph) * amp); c.rotate(Math.cos(ph) * 0.18); });
-        ctx.restore(); });
-      break;
-    }
-    case 'arc': case 'arc2': {
-      // texto curvado sobre un arco que entra girando
-      const k = eExpo(ki), up = s.fx === 'arc' ? 1 : -1;
-      const sz = Math.min(size, lines.length > 1 ? 104 : 140);
-      ctx.font = `${sz}px "${s.font}", "Noto Color Emoji"`;
-      const tot = richW(ctx, s.text, sz);
-      const R = Math.max(S * 0.42, tot / 2.1);
-      ctx.rotate(side * 0.9 * (1 - k)); ctx.globalAlpha = A * clamp(ki * 2.5);
-      const sc = lerp(1.6, 1, k); ctx.scale(sc, sc);
-      drawGlyphs(ctx, s, s.text, sz, (c, kk, n, cx) => { const a = cx / R; c.translate(Math.sin(a) * R, up * (R - Math.cos(a) * R) * 1.0 - up * R * 0.12); c.rotate(a * up); });
-      break;
-    }
-    default: drawLines(ctx, s, lines, size);
+  ctx.font = `${Lo.size}px "${s.font}", "Noto Color Emoji"`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = fillFor(ctx, s, Lo.size, Lo.w);
+  ctx.globalAlpha = st.alpha;
+  const cy = Math.cos(st.yaw), sy = Math.sin(st.yaw), cp = Math.cos(st.pitch), sp = Math.sin(st.pitch);
+  const cr = Math.cos(st.rot), sr = Math.sin(st.rot);
+  for (const q of Lo.gl) {
+    // curva (arco) + onda
+    let x = q.x, y = q.y, ang = 0;
+    if (Math.abs(st.k) > 1e-6) { const th = x * st.k, R = 1 / st.k; const yy = y; x = Math.sin(th) * (R - yy); y = R - Math.cos(th) * (R - yy); ang = th; }
+    if (st.wave) { const ph = q.x * 0.012 + st.wph; y += Math.sin(ph) * st.wave; ang += Math.atan(Math.cos(ph) * st.wave * 0.012); }
+    // 3D: giro en Y (yaw) y X (pitch) con perspectiva
+    const X3 = x * cy, Z1 = x * sy, Y3 = y * cp, Z = Z1 + y * sp;
+    const f = D / (D + Z * st.sc); if (f <= 0.05) continue;
+    const px = X3 * f * st.sc, py = Y3 * f * st.sc;
+    // rotación y posición del bloque
+    const sx = st.x + px * cr - py * sr, syy = st.y + px * sr + py * cr;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.translate(sx, syy); ctx.rotate(st.rot + ang); ctx.scale(st.sc * f * Math.max(0.04, Math.abs(cy)), st.sc * f * Math.max(0.2, Math.abs(cp)));
+    if (isEmo(q.g)) drawEmo(ctx, q.g, 0, 0, Lo.size); else ctx.fillText(q.g, 0, 0);
   }
   ctx.restore();
+}
+/* cuántas sub-muestras pide este instante (más en los latigazos) */
+function needK(t) {
+  for (const s of SEGS) { const lt = t - s.t0, dur = s.t1 - s.t0; if (lt < -0.05 || lt > dur + 0.05) continue;
+    const ein = Math.min(0.2, dur * 0.35), eout = Math.min(0.16, dur * 0.3);
+    if (lt < ein + 0.04 || lt > dur - eout - 0.04) return 24; }
+  return 6;
 }
 
 /* ---------- fondo ---------- */
@@ -212,7 +252,7 @@ window.frame = async (t) => {
   const mode = await drawBg(t);
   // texto con motion blur por sub-muestras (obturador de medio cuadro)
   LX.clearRect(0, 0, S, S);
-  const K = 8, sh = 0.5 / CFG.fps;
+  const K = needK(t), sh = 0.9 / CFG.fps;
   const act = SEGS.filter(s => t + sh >= s.t0 && t - sh <= s.t1);
   if (act.length) {
     LX.globalCompositeOperation = 'lighter';
@@ -223,14 +263,9 @@ window.frame = async (t) => {
       LX.globalAlpha = 1 / K; LX.drawImage(T, 0, 0);
     }
     LX.globalCompositeOperation = 'source-over'; LX.globalAlpha = 1;
-    // temblor en cada corte
-    const sNow = act.find(s => t >= s.t0) || act[0];
-    const since = t - sNow.t0, shk = since < 0.12 ? (1 - since / 0.12) * 9 : 0;
-    const dx = (hash(Math.floor(t * 60)) - 0.5) * shk, dy = (hash(Math.floor(t * 60) + 9) - 0.5) * shk;
     X.save();
-    X.shadowColor = mode === 'black' ? 'rgba(220,210,255,0.55)' : 'rgba(0,0,0,0.85)'; X.shadowBlur = mode === 'black' ? 26 : 30;
-    X.drawImage(L, dx, dy);
-    X.shadowColor = 'rgba(255,255,255,0.35)'; X.shadowBlur = 8; X.drawImage(L, dx, dy);
+    X.shadowColor = mode === 'black' ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.75)'; X.shadowBlur = mode === 'black' ? 14 : 22;
+    X.drawImage(L, 0, 0);
     X.restore();
   }
   vignette(mode === 'full' ? 0.45 : 0.6);
