@@ -205,7 +205,8 @@ function templateModal(ctx, t) {
     const hov = cur[0] >= r[0] && cur[0] <= r[0] + r[2] && cur[1] >= r[1] && cur[1] <= r[1] + r[3]; tplCard(ctx, r, tp, i === sel, hov); ctx.restore(); });
   const fy = MOD.y + 690;
   txt(ctx, 'Page name', MOD.x + 18, fy, 13.5, '#fff', 700); input(ctx, MOD.x + 18, fy + 14, 314, 34, '', { ph: `${TPL[sel][0]} page`, size: 14 });
-  txt(ctx, 'Server', MOD.x + 342, fy, 13.5, '#fff', 700); dropdown(ctx, MOD.x + 342, fy + 14, 314, 34, '      ' + DEMO.server, { size: 14 }); serverIcon(ctx, MOD.x + 354, fy + 22, 18);
+  txt(ctx, 'Server', MOD.x + 342, fy, 13.5, '#fff', 700); dropdown(ctx, MOD.x + 342, fy + 14, 314, 34, '', { size: 14 }); serverIcon(ctx, MOD.x + 353, fy + 20, 22);
+  ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(MOD.x + 384, fy + 22, 1, 18); txt(ctx, DEMO.server, MOD.x + 396, fy + 31.5, 14, C.text, 600); chip(ctx, MOD.x + 620, fy + 21, '2,418', '#A1A1AA', { size: 10.5, h: 20, align: 'right' });
   divider(ctx, MOD.x, MOD.x + MOD.w, MOD.y + MOD.h - 66, 0.08);
   txt(ctx, 'Cancel', CREATE[0] - 66, CREATE[1] + 18, 15, '#fff', 700);
   const busy = t >= P.create + 0.05; btn(ctx, ...CREATE, busy ? '' : 'Create and open editor', { icon: 'file', size: 14.5, prs: press(t, P.create) }); if (busy) spinner(ctx, CREATE[0] + CREATE[2] / 2, CREATE[1] + CREATE[3] / 2, 9, t);

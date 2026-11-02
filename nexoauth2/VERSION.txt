@@ -1,1 +1,1 @@
-2 nov 2026 - v5: logo oficial de Cloudflare en el captcha
+2 nov 2026 - v6: modal de conectar bot con espacios correctos, campo Server mejorado

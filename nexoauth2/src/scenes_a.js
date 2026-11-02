@@ -127,8 +127,8 @@ function dash0(ctx, t) {
   [[844, 680], [1553, 680]].forEach(([cx, cy]) => { rr(ctx, cx - 26, cy - 46, 52, 52, 14); ctx.fillStyle = '#141416'; ctx.fill(); ICON(ctx, 'chart', cx - 12, cy - 32, 24, '#5B5B63'); txt(ctx, 'No data yet', cx, cy + 28, 14.5, '#71717A', 600, 'center'); });
 }
 // ================================================================ Bots + "Connect your Discord bot"
-const B = TL.bots, MX = 700, MW = 520;
-const STEP_H = [372, 410, 800, 478];
+const B = TL.bots, MX = 680, MW = 560;
+const STEP_H = [424, 452, 800, 478];
 const stepAt = t => t < B.next1 + 0.05 ? 0 : t < B.next2 + 0.05 ? 1 : t < B.done ? 2 : 3;
 const modalY = h => 562 - h / 2;
 // button rects (page coords) for each step — the cursor aims at these
@@ -142,7 +142,7 @@ function stepper(ctx, x, y, s, t) {
   L2.forEach((n, i) => { const done = i < s, on = i === s;
     ctx.beginPath(); ctx.arc(cx + 12, y, 12, 0, 7); ctx.fillStyle = done ? 'rgba(34,197,94,0.12)' : on ? 'rgba(255,45,45,0.16)' : 'transparent'; ctx.fill(); ctx.strokeStyle = done ? 'rgba(34,197,94,0.6)' : on ? C.red : '#3A3A40'; ctx.lineWidth = 1.3; ctx.stroke();
     if (done) checkMark(ctx, cx + 12, y, 7, C.green, 1, 2); else txt(ctx, String(i + 1), cx + 12, y + 0.5, 12, on ? '#fff' : '#8A8A93', 700, 'center');
-    const w = txt(ctx, n, cx + 32, y + 1, 13.5, on ? '#fff' : '#8A8A93', on ? 700 : 600); cx += 32 + w + 10; if (i < 3) { ctx.fillStyle = '#3A3A40'; ctx.fillRect(cx, y, 16, 1); cx += 26; } });
+    const w = txt(ctx, n, cx + 30, y + 1, 13.5, on ? '#fff' : '#8A8A93', on ? 700 : 600); cx += 30 + w + 10; if (i < 3) { ctx.fillStyle = '#3A3A40'; ctx.fillRect(cx, y, 14, 1); cx += 24; } });
 }
 function connectModal(ctx, t) {
   const op = E.outBack(prog(t, B.modal, B.modal + 0.35), 1.3), cl = E.inOut(prog(t, B.close, B.close + 0.3)); if (op <= 0 || cl >= 1) return;
@@ -216,8 +216,8 @@ const SC = {
   dash0: { draw: dash0, chrome: () => ({ url: DASH }), cursor: [[16.65, 900, 640], [17.35, 80, 203, false, 0.65], [TL.dash0.bots, 80, 203, true], [17.95, 80, 203]] },
   bots: { draw: bots, chrome: () => ({ url: DASH + '/bots' }),
     cursor: [[18.65, 1300, 760], [19.0, 1719, 169, false, 0.4], [B.connect, 1719, 169, true],
-      [20.8, ...ctr(NEXT(0)), false, 0.5], [B.next1, ...ctr(NEXT(0)), true], [22.25, ...ctr(NEXT(1)), false, 0.45], [B.next2, ...ctr(NEXT(1)), true],
-      [23.5, ...ctr(NEXT(2)), false, 0.55], [B.connectBtn, ...ctr(NEXT(2)), true], [24.95, ...aimR(NEXT(3)), false, 0.55], [B.close, ...aimR(NEXT(3)), true], [25.7, ...aimR(NEXT(3))]] },
+      [20.8, ...aimR(NEXT(0)), false, 0.5], [B.next1, ...aimR(NEXT(0)), true], [22.25, ...aimR(NEXT(1)), false, 0.45], [B.next2, ...aimR(NEXT(1)), true],
+      [23.5, ...aimR(NEXT(2)), false, 0.55], [B.connectBtn, ...aimR(NEXT(2)), true], [24.95, ...aimR(NEXT(3)), false, 0.55], [B.close, ...aimR(NEXT(3)), true], [25.7, ...aimR(NEXT(3))]] },
 };
 export const SCENES = SC;
 export const LAYERS = [
