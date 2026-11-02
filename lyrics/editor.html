@@ -119,6 +119,10 @@ button:disabled{opacity:.35;cursor:default}
 .fopt .fs{font-size:24px!important;line-height:1.2;color:var(--fg);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fopt .fn{font-size:11px;color:var(--mute);font-family:var(--f-body);font-weight:600}
 .fopt.on{border-color:var(--lilac);box-shadow:0 0 0 1px var(--lilac) inset}
+.missing{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.45);border-radius:var(--r);padding:12px 14px}
+.missing div{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1 1 240px}
+.missing b{font-family:var(--f-show);font-size:17px;font-weight:600}
+.missing div>span{color:var(--mute);font-size:13px}
 @media (max-width:720px){
   .studio{grid-template-columns:1fr}
   .screen{width:min(100%,250px);margin:0 auto}
@@ -163,6 +167,11 @@ button:disabled{opacity:.35;cursor:default}
       <button id="newBtn" class="file"><svg class="i"><use href="#i-up"/></svg>Nuevo corte<input id="fileIn" type="file" accept="video/*,audio/*,.mov,.mp4,.m4a,.mp3,.wav" aria-label="Subir corte"></button>
     </div>
     <span id="status" class="status"><i></i><span>Conectando</span></span>
+  </div>
+
+  <div id="missing" class="missing" hidden>
+    <div><b>Falta el audio de esta canción</b><span>Tus partes y letras están guardadas. Elige otra vez <span id="missName">el corte</span> y queda guardado en este equipo.</span></div>
+    <button class="file"><svg class="i"><use href="#i-up"/></svg>Cargar audio<input id="reIn" type="file" accept="video/*,audio/*,.mov,.mp4,.m4a,.mp3,.wav" aria-label="Cargar audio de esta canción"></button>
   </div>
 
   <section class="studio">
@@ -497,8 +506,25 @@ async function openSong(id) {
     media.src = cur.media.url; status('Cargando audio', 'busy');
     try { const r = await fetch(cur.media.url); await analyze(await r.arrayBuffer()); status('Guardado', 'ok'); }
     catch (e) { status('Audio listo, sin onda', 'ok'); }
-  } else if (localUrl) media.src = localUrl;
-  else status('Elige otra vez "' + ((cur.media && cur.media.name) || 'el archivo') + '" con Nuevo corte', 'bad');
+  } else {
+    const blob = await idbGet(cur.id);
+    if (blob && cur && cur.id === id) await useLocal(blob, false);
+    else { media.removeAttribute('src'); media.load(); showMissing(true); status('Falta el audio', 'bad'); }
+  }
+  renderList();
+}
+/* audio guardado en este equipo (sin límite de 20 MB) */
+function idb() { return new Promise((res, rej) => { try { const r = indexedDB.open('lyr-audio', 1); r.onupgradeneeded = () => r.result.createObjectStore('a'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); } catch (e) { rej(e); } }); }
+async function idbPut(k, v) { try { const d = await idb(); await new Promise((res, rej) => { const t = d.transaction('a', 'readwrite'); t.objectStore('a').put(v, k); t.oncomplete = res; t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); return true; } catch (e) { return false; } }
+async function idbGet(k) { try { const d = await idb(); return await new Promise((res) => { const r = d.transaction('a').objectStore('a').get(k); r.onsuccess = () => res(r.result || null); r.onerror = () => res(null); }); } catch (e) { return null; } }
+function showMissing(on) { $('missing').hidden = !on; if (on && cur) $('missName').textContent = (cur.media && cur.media.name) ? '"' + cur.media.name + '"' : 'el corte'; }
+async function useLocal(blob, store) {
+  if (localUrl) URL.revokeObjectURL(localUrl);
+  localUrl = URL.createObjectURL(blob); media.src = localUrl; showMissing(false);
+  status('Leyendo audio', 'busy');
+  await analyze(await blob.arrayBuffer());
+  if (store) { const ok = await idbPut(cur.id, blob); status(ok ? 'Audio guardado en este equipo' : 'Audio listo, pero este navegador no lo guarda', ok ? 'ok' : 'bad'); }
+  else status('Audio listo', 'ok');
   renderList();
 }
 $('songSel').onchange = e => { if (e.target.value) openSong(e.target.value); };
@@ -508,17 +534,14 @@ $('fileIn').onchange = async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
   if (localUrl) URL.revokeObjectURL(localUrl);
   localUrl = URL.createObjectURL(f); media.src = localUrl;
-  if (cur && !(cur.media && cur.media.url) && cur.media && cur.media.name === f.name) {
-    status('Leyendo audio', 'busy'); await analyze(await f.arrayBuffer()); renderList();
-    status('Audio listo (está en tu equipo)', 'ok'); return;
-  }
   const id = 's' + Date.now().toString(36);
   cur = { id, title: f.name.replace(/\.[^.]+$/, '').slice(0, 60), media: null, dur: 0, cuts: [], createdAt: Date.now() };
-  past = []; future = []; selCut = null; viewStart = 0; updUndo(); setTitle();
+  past = []; future = []; selCut = null; viewStart = 0; updUndo(); setTitle(); showMissing(false);
   renderList();
   status('Leyendo audio', 'busy');
   await analyze(await f.arrayBuffer());
   cur.dur = dur;
+  const kept = await idbPut(id, f);
   if (assets) {
     status('Subiendo corte', 'busy');
     const up = type => assets.upload(f, type ? { type } : undefined);
@@ -528,13 +551,21 @@ $('fileIn').onchange = async e => {
     } catch (err) {
       cur.media = { id: null, url: null, type: f.type, name: f.name, size: f.size };
       await save();
-      status(err && err.code === 'too_large' ? 'Pesa más de 20 MB: mándamelo por el chat' : 'No se subió: mándamelo por el chat', 'bad');
+      status(kept ? 'Audio guardado en este equipo. Mándame el archivo por el chat' : 'No se subió: mándamelo por el chat', kept ? 'ok' : 'bad');
       return;
     }
   }
   await save();
   if (!assets) status('Sin conexión: mándame el corte por el chat', 'bad');
   try { localStorage.setItem('lyr-last', id); } catch (e) {}
+};
+
+$('reIn').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f || !cur) return;
+  if (!cur.media || !cur.media.url) { cur.media = Object.assign({}, cur.media || {}, { id: null, url: null, type: f.type, name: f.name, size: f.size }); }
+  await useLocal(f, true);
+  if (!cur.dur) cur.dur = dur;
+  scheduleSave();
 };
 
 /* ---------- controles ---------- */
