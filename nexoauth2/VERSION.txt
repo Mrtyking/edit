@@ -1,1 +1,1 @@
-2 nov 2026 - v1: promo NexOAuth2 (estudio blanco/grafito, buscador nuevo, flujo completo, SFX sin musica)
+2 nov 2026 - v2: el embed reproduce tu GIF (se baja solo en tu PC)

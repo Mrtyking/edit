@@ -374,14 +374,25 @@ window.grabYUV = fi => { renderFrame(fi); run(yuvP, rtYUV); renderer.readRenderT
 window.FRAMES = Math.round(DUR * FPS);
 
 // ---------------------------------------------------------------- boot
+async function decodeGif(buf) {
+  const dec = new ImageDecoder({ data: buf, type: 'image/gif' }); await dec.tracks.ready; const n = dec.tracks.selectedTrack.frameCount;
+  const keep = Math.max(1, Math.ceil(n / 150)), frames = [], delays = [];   // at most 150 frames kept (delays of skipped ones merged)
+  for (let i = 0; i < n; i++) {
+    const { image } = await dec.decode({ frameIndex: i }); const d = Math.max(20, (image.duration || 100000) / 1000);
+    if (i % keep === 0) { const w = Math.min(960, image.displayWidth), h = Math.round(w * image.displayHeight / image.displayWidth);
+      frames.push(await createImageBitmap(image, { resizeWidth: w, resizeHeight: h, resizeQuality: 'high' })); delays.push(d); } else delays[delays.length - 1] += d;
+    image.close();
+  }
+  dec.close(); return { frames, delays, total: delays.reduce((a, b) => a + b, 0) };
+}
 (async () => {
   for (const w of [500, 600, 700, 800]) await document.fonts.load(`${w} 40px MAN`);
   for (const w of [600, 700, 800]) await document.fonts.load(`${w} 40px SORA`);
   await document.fonts.load('500 40px JBM');
   const load = src => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
   const lg = await load('assets/logo.png'); if (lg) setLogo(lg);
-  // the embed GIF (optional): frames sheet + timing, made by herramientas/gif_frames.py
-  let embedSheet = null, embedMeta = null; try { const r = await fetch('assets/embed/sheet.json'); if (r.ok) { embedMeta = await r.json(); embedSheet = await load('assets/embed/sheet.jpg'); } } catch (e) {}
-  setImages({ logo: lg, embedSheet, embedMeta });
+  // the embed GIF (optional, assets/embed.gif): every frame decoded once, already composited, with its own delay
+  let embedGif = null; try { const r = await fetch('assets/embed.gif'); if (r.ok && 'ImageDecoder' in window) embedGif = await decodeGif(await r.arrayBuffer()); } catch (e) { console.warn('embed.gif:', e.message); }
+  setImages({ logo: lg, embedGif });
   window.READY = true;
 })();

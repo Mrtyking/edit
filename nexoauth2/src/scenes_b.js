@@ -39,16 +39,19 @@ export function banner() {
   const v = c.createRadialGradient(w / 2, h / 2, h * 0.3, w / 2, h / 2, w * 0.7); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.65)'); c.fillStyle = v; c.fillRect(0, 0, w, h);
   return BAN = cv;
 }
-// the embed media: the user's own GIF when its frames are in assets/embed/ (sheet.jpg + sheet.json, see herramientas/gif_frames.py),
-// otherwise our banner. Frames are picked from the video time, so every render is identical.
+// the embed media: the user's own GIF (assets/embed.gif, downloaded by hacer_video.cmd on the PC that renders) decoded frame by frame
+// in main.js; frames are picked from the video time, so every render is identical. Without it, our banner is shown.
 let GIF = null;
-export function setImages(m) { if (m.embedSheet && m.embedMeta) GIF = { img: m.embedSheet, ...m.embedMeta }; }
+export function setImages(m) { if (m.embedGif && m.embedGif.frames.length) GIF = m.embedGif; }
 function embedMedia(t) {
   if (!GIF) return banner();
-  if (!GIF.cv) { GIF.cv = document.createElement('canvas'); GIF.cv.width = GIF.fw; GIF.cv.height = GIF.fh; GIF.last = -1; }
   let ms = (t * 1000) % GIF.total, i = 0; while (i < GIF.delays.length - 1 && ms >= GIF.delays[i]) { ms -= GIF.delays[i]; i++; }
-  if (i !== GIF.last) { const c = GIF.cv.getContext('2d'), col = i % GIF.cols, row = Math.floor(i / GIF.cols); c.clearRect(0, 0, GIF.fw, GIF.fh); c.drawImage(GIF.img, col * GIF.fw, row * GIF.fh, GIF.fw, GIF.fh, 0, 0, GIF.fw, GIF.fh); GIF.last = i; }
-  return GIF.cv;
+  return GIF.frames[i];
+}
+// draws img filling w×h without stretching (cover: crops the overflow)
+function drawCover(ctx, img, x, y, w, h) {
+  const iw = img.width, ih = img.height, k = Math.max(w / iw, h / ih), sw = w / k, sh = h / k;
+  ctx.drawImage(img, (iw - sw) / 2, (ih - sh) / 2, sw, sh, x, y, w, h);
 }
 // welcome embed (Discord components v2: text, media and the link button inside one container)
 export const EMB = { title: 'Welcome to Nova Arcade', desc: 'Verify to unlock every channel.', w: 556 };
@@ -60,7 +63,7 @@ export function welcomeEmbed(ctx, t, x, y, { w = EMB.w, title = EMB.title, desc 
   if (title) txt(ctx, title, x0, y + 24, 19, DC.head, 800); else if (ph) txt(ctx, 'Embed title', x0, y + 24, 19, 'rgba(242,243,245,0.25)', 800);
   if (desc) txt(ctx, desc, x0, y + 49, 15, DC.text, 500); else if (ph) txt(ctx, 'Write a description…', x0, y + 49, 15, 'rgba(219,222,225,0.25)', 500);
   if (img > 0) { const ih = iw * 0.5625, B = embedMedia(t); ctx.save(); rr(ctx, x0, y + 67, iw, ih * img, 6); ctx.clip(); ctx.globalAlpha *= clamp(img * 1.6);
-    const s = 1.06 - 0.06 * img; ctx.translate(x0 + iw / 2, y + 67 + ih / 2); ctx.scale(s, s); ctx.drawImage(B, -iw / 2, -ih / 2, iw, ih); ctx.restore(); }
+    const s = 1.06 - 0.06 * img; ctx.translate(x0 + iw / 2, y + 67 + ih / 2); ctx.scale(s, s); drawCover(ctx, B, -iw / 2, -ih / 2, iw, ih); ctx.restore(); }
   const by = y + 67 + IMG_BLOCK * img;
   if (btnK > 0) { ctx.save(); ctx.globalAlpha *= clamp(btnK * 1.5); const k = 1 - prs * 0.05; ctx.translate(x0 + 52, by + 16); ctx.scale(k, k); ctx.translate(-x0 - 52, -by - 16);
     rr(ctx, x0, by, 104, 32, 4); ctx.fillStyle = hover ? '#6D6F78' : DC.btn; ctx.fill(); const tw = txt(ctx, 'Verify', x0 + 14, by + 16.5, 14.5, '#fff', 600); ICON(ctx, 'external', x0 + 22 + tw, by + 9, 14, '#fff', 2.2); ctx.restore(); }

@@ -54,6 +54,14 @@ echo         Descargando el navegador de render %DIM%(~200 MB, solo la primera v
 call npx --yes playwright install chromium --no-shell >>"%LOG%" 2>&1 || goto fail
 echo ok> "%ENV%\navegador_ok_%PWV%"
 :pw_ok
+rem el GIF del embed (no va en el repo): se baja en este PC; si no hay internet se usa el que ya estaba, y si nunca se pudo, el banner
+set "GIF1=https://cdn.nekotina.com/guilds/1439677751832350774/dbfb77f3-f3b4-4c94-8689-aacb6b2e6d12.gif"
+set "GIF2=https://images-ext-1.discordapp.net/external/7Rxlmto8ZhytEPKoCAw99zxDH1YGt_fr670oxEBorTI/https/cdn.nekotina.com/guilds/1439677751832350774/dbfb77f3-f3b4-4c94-8689-aacb6b2e6d12.gif?width=768&height=432"
+if exist "%BASE%\embed_nuevo.gif" del /q "%BASE%\embed_nuevo.gif"
+call :getgif "%GIF1%"
+if not exist "%BASE%\embed_nuevo.gif" call :getgif "%GIF2%"
+if exist "%BASE%\embed_nuevo.gif" move /y "%BASE%\embed_nuevo.gif" "%BASE%\embed.gif" >nul
+if exist "%BASE%\embed.gif" (copy /y "%BASE%\embed.gif" "%PROJ%assets\embed.gif" >nul) else echo         %DIM%No se pudo bajar el GIF del embed: se usa el banner.%R%
 echo         %OK%OK%R%  Listo
 
 echo.
@@ -111,3 +119,9 @@ echo         %DIM%%LOG%%R%
 echo.
 pause >nul
 exit /b 1
+
+:getgif
+rem baja %1 y solo lo deja si de verdad es un GIF (no una pagina de error)
+curl.exe -sSL --fail -A "Mozilla/5.0" -o "%BASE%\embed_nuevo.gif" %1 >>"%LOG%" 2>&1
+if exist "%BASE%\embed_nuevo.gif" findstr /b /m /c:"GIF8" "%BASE%\embed_nuevo.gif" >nul 2>nul || del /q "%BASE%\embed_nuevo.gif"
+exit /b 0

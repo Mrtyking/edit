@@ -21,4 +21,4 @@ On Windows: download **[HACER_VIDEO_NEXOAUTH2.bat](https://github.com/Mrtyking/e
 
 - `nexoauth2/` – the project: `src/timeline.js` (every timing), `src/search.js` (opening search), `src/scenes_*.js` (the site, Discord and dashboard scenes), `src/main.js` (3D studio, camera, title cards, pricing, CTA), `stems/mix.wav` (final sound design, SFX only)
 - `nexoauth2/audio.py` – rebuilds `stems/mix.wav` from the timeline (needs the SFX pack, which is not in this repo)
-- `nexoauth2/herramientas/gif_frames.py` – turns the embed GIF into `assets/embed/sheet.jpg` + `sheet.json`; when those exist the Discord embed plays that GIF, otherwise it shows the built-in banner
+- The Discord embed plays the server's own GIF: `hacer_video.cmd` downloads it on the PC that renders (its link is at the top of the GIF step) into `assets/embed.gif`, and the renderer decodes it frame by frame. Without it, the embed shows the built-in banner.
