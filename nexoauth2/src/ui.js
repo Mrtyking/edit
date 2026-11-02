@@ -250,6 +250,7 @@ export function browserChrome(ctx, url, { title = 'NexOAuth2', lock = true, disc
 }
 
 // ---------------------------------------------------------------- mouse cursor: keys = [t, x, y, click?, moveTime?, holdUntil?]
+const CURSOR_PATH = new Path2D('M0.5 0.6Q0 0 0 0.9L0 18.6Q0 19.8 0.9 19L6.6 13.9Q7 13.5 7.6 13.5L14.7 13.5Q15.9 13.5 15 12.6L1.4 0.6Q0.9 0.2 0.5 0.6Z');
 export function cursor(ctx, t, keys, { hand = null } = {}) {
   if (!keys || !keys.length || t < keys[0][0] - 0.25 || t > keys[keys.length - 1][0] + 0.6) return;
   let x = keys[0][1], y = keys[0][2];
@@ -257,9 +258,10 @@ export function cursor(ctx, t, keys, { hand = null } = {}) {
   let cl = 0, held = false; for (const k of keys) { if (k[3] && t >= k[0] && t < k[0] + 0.28) cl = (t - k[0]) / 0.28; if (k[5] && t >= k[0] && t < k[5]) held = true; }
   const fade = clamp((t - keys[0][0] + 0.25) / 0.2) * (1 - prog(t, keys[keys.length - 1][0] + 0.3, keys[keys.length - 1][0] + 0.6));
   ctx.save(); ctx.globalAlpha *= fade; const s = 1.5 * (1 - (held ? 0.12 : cl > 0 ? 0.16 * Math.sin(cl * Math.PI) : 0)); ctx.translate(x, y); ctx.scale(s, s);
-  const p = new Path2D('M0 0L0 17L4.5 13L7.6 20L10.4 18.8L7.4 12L13 12Z');
-  ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2; ctx.fillStyle = '#fff'; ctx.fill(p);
-  ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.strokeStyle = '#0A0A0C'; ctx.lineWidth = 1.3; ctx.lineJoin = 'round'; ctx.stroke(p); ctx.restore();
+  // modern tail-less arrow (white, thin dark outline, rounded corners, soft drop shadow)
+  const p = CURSOR_PATH;
+  ctx.lineJoin = 'round'; ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 3; ctx.fillStyle = '#FFFFFF'; ctx.fill(p);
+  ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.strokeStyle = '#111114'; ctx.lineWidth = 1.5; ctx.stroke(p); ctx.restore();
   return [x, y];
 }
 // the cursor's position at time t (for hover states)

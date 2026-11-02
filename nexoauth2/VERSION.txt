@@ -1,1 +1,1 @@
-2 nov 2026 - v6: modal de conectar bot con espacios correctos, campo Server mejorado
+2 nov 2026 - v7: cursor nuevo (flecha moderna sin cola)
