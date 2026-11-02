@@ -1,1 +1,1 @@
-2 nov 2026 - v4: modal del bot sin texto encima de la linea, brillo del logo ya no se queda pegado
+2 nov 2026 - v5: logo oficial de Cloudflare en el captcha
