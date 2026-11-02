@@ -166,7 +166,7 @@ const SIDE = {
   org: [['Temp mail', 'at'], ['IP tracker', 'radar'], ['Team', 'users'], ['Developers', 'code'], ['Billing', 'card'], ['Settings', 'cog']],
 };
 export const SIDE_Y = {};   // item → y (for the cursor)
-export function sidebar(ctx, t, active, { bot = true, hover = null } = {}) {
+export function sidebar(ctx, t, active, { bot = true, hover = null } = {}) {   // bot: true | 'empty' (no bot connected yet)
   ctx.fillStyle = '#09090A'; ctx.fillRect(0, 0, 256, PH); ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(255, 0, 1, PH);
   logo(ctx, 27, 24, 30); wordmark(ctx, 52, 24, 19);
   rr(ctx, 223, 16, 18, 16, 3); ctx.strokeStyle = C.dim; ctx.lineWidth = 1.4; ctx.stroke(); ctx.fillStyle = C.dim; ctx.fillRect(229, 17, 1.4, 14);
@@ -178,10 +178,12 @@ export function sidebar(ctx, t, active, { bot = true, hover = null } = {}) {
     else if (hv) { rr(ctx, 10, y - 17, 234, 34, 9); ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fill(); }
     ICON(ctx, ic, 20, y - 8, 16, on ? C.red2 : '#8A8A93', 1.9); txt(ctx, n, 46, y + 1, 14.5, on ? '#fff' : '#D4D4D8', on ? 700 : 600); y += 36; };
   sec('WORKSPACE'); SIDE.workspace.forEach(item); y += 4;
-  if (bot) {
-    sec('BOT WORKSPACE'); panel(ctx, 10, y - 8, 234, 50, 12, { fill: '#0F0F11' }); botTile(ctx, 20, y + 1, 32, { status: C.green }); txt(ctx, DEMO.bot, 62, y + 9, 14.5, C.text, 700); txt(ctx, 'Online', 62, y + 27, 11.5, C.dim, 600); ICON(ctx, 'chevD', 220, y + 10, 12, C.dim);
-    y += 66; SIDE.bot.forEach(item); y += 6;
-  }
+  // the bot section is always listed; before the first bot is connected (bot === 'empty') it invites to connect one
+  sec('BOT WORKSPACE');
+  if (bot === 'empty') { rr(ctx, 10.5, y - 7.5, 233, 49, 12); ctx.setLineDash([4, 4]); ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+    rr(ctx, 20, y + 1, 32, 32, 9); ctx.fillStyle = 'rgba(255,45,45,0.1)'; ctx.fill(); ICON(ctx, 'plus', 28, y + 9, 16, C.red2, 2.2); txt(ctx, 'Connect a bot', 62, y + 9, 14.5, C.text, 700); txt(ctx, 'No bot yet', 62, y + 27, 11.5, C.dim, 600); }
+  else { panel(ctx, 10, y - 8, 234, 50, 12, { fill: '#0F0F11' }); botTile(ctx, 20, y + 1, 32, { status: C.green }); txt(ctx, DEMO.bot, 62, y + 9, 14.5, C.text, 700); txt(ctx, 'Online', 62, y + 27, 11.5, C.dim, 600); ICON(ctx, 'chevD', 220, y + 10, 12, C.dim); }
+  y += 66; ctx.save(); if (bot === 'empty') ctx.globalAlpha *= 0.55; SIDE.bot.forEach(item); ctx.restore(); y += 6;
   sec('ORGANIZATION'); SIDE.org.forEach(item);
   panel(ctx, 10, PH - 96, 234, 78, 12, { fill: '#0F0F11', stroke: 'rgba(255,45,45,0.22)' }); ICON(ctx, 'sparkles', 22, PH - 82, 15, C.red2); txt(ctx, 'Plan Business', 44, PH - 74, 13.5, C.text, 700);
   txt(ctx, '13 seats · unlimited bots', 22, PH - 50, 11.5, C.dim, 600); rr(ctx, 22, PH - 34, 210, 4, 2); ctx.fillStyle = '#1F1F23'; ctx.fill(); rr(ctx, 22, PH - 34, 22, 4, 2); ctx.fillStyle = C.red; ctx.fill();

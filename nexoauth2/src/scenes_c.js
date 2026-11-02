@@ -113,8 +113,6 @@ function vpage2(ctx, t) {
   vpageBg(ctx, t);
   const ck = [0, 1, 2].map(i => E.out(prog(t, V2.checks[0] + i * 0.22, V2.checks[0] + i * 0.22 + 0.3))), rk = E.inOut(prog(t, V2.risk, V2.risk + 0.4));
   verifyCard(ctx, t, 960, CARD_TOP, { R: 22, badge: 1, checks: ck, risk: rk > 0 ? rk : null });
-  // a scan line runs over the checks while they resolve
-  const sp = prog(t, V2.checks[0] - 0.1, V2.checks[1] + 0.2); if (sp > 0 && sp < 1) { const y = CARD_TOP + 40 + 32 + 85 + 48 + 100 + 8 + 86 * sp; const g = ctx.createLinearGradient(0, y - 20, 0, y + 2); g.addColorStop(0, 'rgba(34,197,94,0)'); g.addColorStop(1, 'rgba(34,197,94,0.35)'); ctx.fillStyle = g; ctx.fillRect(960 - 168, y - 20, 336, 22); }
 }
 function verified(ctx, t) {
   vpageBg(ctx, t); const g = ctx.createRadialGradient(960, 470, 0, 960, 470, 700); g.addColorStop(0, `rgba(255,40,60,${0.18 * E.out(prog(t, 53.7, 54.4))})`); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, PW, PH);

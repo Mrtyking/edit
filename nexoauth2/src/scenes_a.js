@@ -109,7 +109,7 @@ function signup(ctx, t) {
 }
 // ================================================================ dashboard overview (empty on day one)
 function overviewHead(ctx, t, empty) {
-  pageBg(ctx); sidebar(ctx, t, 'Overview', { bot: !empty, hover: empty && t > TL.dash0.bots - 0.25 ? 'Bots' : null }); topbar(ctx, ['Dashboard']);
+  pageBg(ctx); sidebar(ctx, t, 'Overview', { bot: empty ? 'empty' : true, hover: empty && t > TL.dash0.bots - 0.25 ? 'Bots' : null }); topbar(ctx, ['Dashboard']);
   pageTitle(ctx, 380, 121, `Welcome back, ${DEMO.first}`, "Here's what's happening across your verification infrastructure today.", { kicker: 'WORKSPACE · MAIN WORKSPACE', size: 32 });
   btn(ctx, 1524, 131, 130, 34, 'Connect bot', { kind: 'dark', icon: 'plus', size: 14 }); btn(ctx, 1664, 131, 116, 34, 'Open editor', { icon: 'wand', size: 14 });
 }
@@ -180,7 +180,7 @@ function connectModal(ctx, t) {
 }
 function bots(ctx, t) {
   const has = t >= B.card;
-  pageBg(ctx); sidebar(ctx, t, 'Bots', { bot: has }); topbar(ctx, ['Dashboard', 'Bots']);
+  pageBg(ctx); sidebar(ctx, t, 'Bots', { bot: has ? true : 'empty' }); topbar(ctx, ['Dashboard', 'Bots']);
   pageTitle(ctx, 388, 121, 'Bots', ['Each connected Discord application gets its own isolated workspace with servers, pages,', 'members and rules.'], { kicker: 'INFRASTRUCTURE', size: 32 });
   btn(ctx, 1652, 151, 134, 36, 'Connect bot', { icon: 'plus', size: 14.5, prs: press(t, B.connect) });
   input(ctx, 388, 211, 287, 36, '', { ph: 'Search by name or application ID', icon: 'search', size: 14 });

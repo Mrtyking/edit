@@ -192,11 +192,10 @@ function streak(x, t, a, cy, w) {   // anamorphic red light line
 function drawOverlay(t) {
   const x = octx; x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, RW, RH); x.setTransform(PX, 0, 0, PX, 0, 0);
   DK = darkAt(t); const INK = mixHex('#1D1D1F', '#F5F5F7', DK), INK2 = mixHex('#6E6E73', '#A1A1A6', DK), VEIL = a => mixRGBA('#F5F5F7', '#121214', DK, a);
-  // ---- intro: a red line of light → the hexagon builds itself → wordmark → "Verification, Reimagined."
+  // ---- intro: the hexagon builds itself → wordmark → "Verification, Reimagined."
   const I = TL.intro;
   if (t < I.out[1]) {
     const out = E.inOut(prog(t, I.out[0], I.out[1])); x.save(); x.globalAlpha = (1 - out) * (1 - out); x.translate(960, 470); x.scale(1 + out * 0.35, 1 + out * 0.35); x.translate(-960, -470);
-    const sk = prog(t, I.streak[0], I.streak[1]); streak(x, t, Math.sin(Math.PI * clamp(sk)) * (1 - prog(t, I.build[0] + 0.4, I.build[0] + 1.0)), 430, 120 + 900 * E.out(sk));
     const b = prog(t, I.build[0], I.build[1]); if (b > 0) {
       const lock = t > I.build[0] + 0.62 ? Math.exp(-(t - I.build[0] - 0.62) * 5) : 0;
       logo(x, 960, 410, 330, { build: b, shine: prog(t, I.shine[0], I.shine[1]), glow: clamp(b * 1.3) * (0.8 + 0.6 * lock) });

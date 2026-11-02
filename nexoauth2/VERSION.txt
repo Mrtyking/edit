@@ -1,1 +1,1 @@
-2 nov 2026 - v2: el embed reproduce tu GIF (se baja solo en tu PC)
+2 nov 2026 - v3: sin linea roja en la intro, logo se arma limpio, menu completo, sin linea verde en los checks

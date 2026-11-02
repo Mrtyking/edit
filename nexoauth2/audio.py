@@ -71,7 +71,7 @@ T = TL
 I = T['intro']
 add(load(W + 'Cinematic Long Whoosh.wav', 0, 4.6, 1.2), 0.0, -16, 0, 'start', 'aire de fondo de la intro')
 add(load(R + 'Smooth Riser.wav', 0, 2.31, 0.1), 0.05, -10, 0, 'start', 'riser bajo la línea de luz')
-add(WEPIC, I['streak'][0] + 0.05, -9, 0, 'onset', 'la línea de luz cruza')
+add(WEPIC, I['build'][0], -11, 0, 'onset', 'entran las piezas del logo')
 for j, d0 in enumerate([0, 3, 1, 4, 2, 5]):   # the six bars fly in and lock (logo build in lib.js)
     lock = I['build'][0] + 1.6 * (d0 * 0.055 + 0.32)
     add(WFAST, lock - 0.05, -18, (-1) ** j * 0.5, 'peak'); add(SGEAR if j % 2 else SGEAR2, lock, -9, (-1) ** j * 0.45, 'onset', 'las barras del hexágono encajan' if j == 0 else '')

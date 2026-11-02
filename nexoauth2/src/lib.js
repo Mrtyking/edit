@@ -218,7 +218,8 @@ export function setLogo(img) {
   PIECES.push({ cv: mk(c => hex(c, LC.core)), ang: null });
   for (let k = 0; k < 6; k++) {
     const mid = k * 60, a0 = (mid - 30) * Math.PI / 180, a1 = (mid + 30) * Math.PI / 180, R = 520;
-    PIECES.push({ ang: mid, cv: mk(c => { c.beginPath(); c.moveTo(LC.x, LC.y); c.lineTo(LC.x + R * Math.cos(a0), LC.y - R * Math.sin(a0)); c.lineTo(LC.x + R * Math.cos(a1), LC.y - R * Math.sin(a1)); c.closePath(); hex(c, LC.core, false); }) });
+    PIECES.push({ ang: mid, cv: mk(c => { c.beginPath(); c.moveTo(LC.x, LC.y); c.lineTo(LC.x + R * Math.cos(a0), LC.y - R * Math.sin(a0)); c.lineTo(LC.x + R * Math.cos(a1), LC.y - R * Math.sin(a1)); c.closePath(); c.clip();
+      c.beginPath(); c.rect(-10, -10, W + 20, H + 20); hex(c, LC.core, false); }) });   // sector ∩ outside the core (evenodd of rect + hex)
   }
 }
 // the mark centred at (cx,cy), h = its height in px. build: 0..1 (bars fly in from around, core rises), shine: 0..1 light sweep, glow: red halo
