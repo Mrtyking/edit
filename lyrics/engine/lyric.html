@@ -29,6 +29,7 @@ window.setup = async (cfg) => {
   const fonts = new Set(cfg.cuts.map(c => c.font));
   for (const f of fonts) { if (cfg.fontFiles[f]) { const ff = new FontFace(f, `url(${cfg.fontFiles[f]})`); await ff.load(); document.fonts.add(ff); } }
   await document.fonts.load('80px "Noto Color Emoji"', '😈');
+  for (const [g, file] of Object.entries(cfg.emoji || {})) { const im = new Image(); im.src = cfg.emojiDir + '/' + file; await im.decode(); EMO.set(g, im); }
   const cs = cfg.cuts;
   SEGS = cs.map((c, i) => {
     const t1 = i + 1 < cs.length ? cs[i + 1].t : Math.min(cfg.dur, c.t + cfg.lastHold);
@@ -50,9 +51,23 @@ function vframe(t) {
 }
 
 /* ---------- texto ---------- */
+/* emojis estilo iPhone como imágenes */
+const EMO = new Map();
+const EM = 1.12;
+const isEmo = g => EMO.has(g);
+function runs(text) { const out = []; for (const g of graphemes(text)) { if (isEmo(g)) out.push({ e: g }); else if (out.length && out[out.length - 1].t !== undefined) out[out.length - 1].t += g; else out.push({ t: g }); } return out; }
+function gW(ctx, g, size) { return isEmo(g) ? size * EM : ctx.measureText(g).width; }
+function richW(ctx, text, size) { return runs(text).reduce((a, r) => a + (r.e ? size * EM : ctx.measureText(r.t).width), 0); }
+function drawEmo(ctx, g, x, y, size) { const im = EMO.get(g), d = size * EM * 0.92; ctx.drawImage(im, x - d / 2, y - d / 2 - size * 0.04, d, d); }
+function drawRich(ctx, text, y, size) {
+  const rs = runs(text), w = richW(ctx, text, size); let x = -w / 2;
+  ctx.textAlign = 'left';
+  for (const r of rs) { if (r.e) { drawEmo(ctx, r.e, x + size * EM / 2, y, size); x += size * EM; } else { ctx.fillText(r.t, x, y); x += ctx.measureText(r.t).width; } }
+  ctx.textAlign = 'center';
+}
 function fitSize(ctx, font, lines, maxW, maxPx) {
   let s = maxPx;
-  for (; s > 40; s -= 4) { ctx.font = `${s}px "${font}", "Noto Color Emoji"`; if (Math.max(...lines.map(l => ctx.measureText(l).width)) <= maxW) break; }
+  for (; s > 40; s -= 4) { ctx.font = `${s}px "${font}", "Noto Color Emoji"`; if (Math.max(...lines.map(l => richW(ctx, l, s))) <= maxW) break; }
   return s;
 }
 function splitLines(text) {
@@ -69,17 +84,17 @@ function fillFor(ctx, s, size, w) {
 /* dibuja texto plano centrado, con líneas */
 function drawLines(ctx, s, lines, size) {
   ctx.font = `${size}px "${s.font}", "Noto Color Emoji"`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  const lh = size * 1.08, w = Math.max(...lines.map(l => ctx.measureText(l).width));
+  const lh = size * 1.08, w = Math.max(...lines.map(l => richW(ctx, l, size)));
   ctx.fillStyle = fillFor(ctx, s, size, w);
-  lines.forEach((l, k) => ctx.fillText(l, 0, (k - (lines.length - 1) / 2) * lh));
+  lines.forEach((l, k) => drawRich(ctx, l, (k - (lines.length - 1) / 2) * lh, size));
 }
 /* texto letra por letra con una función de posición por letra */
 function drawGlyphs(ctx, s, text, size, place) {
   ctx.font = `${size}px "${s.font}", "Noto Color Emoji"`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  const gs = graphemes(text), ws = gs.map(g => ctx.measureText(g).width), tot = ws.reduce((a, b) => a + b, 0);
+  const gs = graphemes(text), ws = gs.map(g => gW(ctx, g, size)), tot = ws.reduce((a, b) => a + b, 0);
   ctx.fillStyle = fillFor(ctx, s, size, tot);
   let x = -tot / 2;
-  gs.forEach((g, k) => { const cx = x + ws[k] / 2; x += ws[k]; if (g === ' ') return; ctx.save(); place(ctx, k, gs.length, cx, tot); ctx.fillText(g, 0, 0); ctx.restore(); });
+  gs.forEach((g, k) => { const cx = x + ws[k] / 2; x += ws[k]; if (g === ' ') return; ctx.save(); place(ctx, k, gs.length, cx, tot); if (isEmo(g)) drawEmo(ctx, g, 0, 0, size); else ctx.fillText(g, 0, 0); ctx.restore(); });
   return tot;
 }
 
@@ -134,7 +149,7 @@ function drawSeg(ctx, s, t) {
       const k = eExpo(ki), up = s.fx === 'arc' ? 1 : -1;
       const sz = Math.min(size, lines.length > 1 ? 104 : 140);
       ctx.font = `${sz}px "${s.font}", "Noto Color Emoji"`;
-      const tot = ctx.measureText(s.text).width;
+      const tot = richW(ctx, s.text, sz);
       const R = Math.max(S * 0.42, tot / 2.1);
       ctx.rotate(side * 0.9 * (1 - k)); ctx.globalAlpha = A * clamp(ki * 2.5);
       const sc = lerp(1.6, 1, k); ctx.scale(sc, sc);

@@ -11,7 +11,10 @@ const fontsDir = path.join(__dirname, 'fonts');
 const fontFiles = {};
 for (const f of fs.readdirSync(fontsDir)) fontFiles[f.replace(/\.(woff2?|ttf|otf)$/, '')] = 'file://' + path.join(fontsDir, f);
 const dur = song.videoDur || song.dur;
-const cfg = { ...song.render, cuts: song.cuts, dur, fps: FPS, nFrames, framesDir: 'file://' + path.join(work, 'frames'), fontFiles };
+const emojiMap = path.join(work, 'emoji', 'map.json');
+if (!fs.existsSync(emojiMap)) execFileSync('node', [path.join(__dirname, 'emoji_fetch.js'), songPath, work], { stdio: 'inherit' });
+const emoji = JSON.parse(fs.readFileSync(emojiMap, 'utf8'));
+const cfg = { ...song.render, emoji, emojiDir: 'file://' + path.join(work, 'emoji'), cuts: song.cuts, dur, fps: FPS, nFrames, framesDir: 'file://' + path.join(work, 'frames'), fontFiles };
 
 (async () => {
   const b = await chromium.launch({ args: ['--allow-file-access-from-files'] });
