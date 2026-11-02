@@ -459,7 +459,7 @@ async function openSong(id) {
     try { const r = await fetch(cur.media.url); await analyze(await r.arrayBuffer()); status('Guardado', 'ok'); }
     catch (e) { status('Audio listo, sin onda', 'ok'); }
   } else if (localUrl) media.src = localUrl;
-  else status('Falta el audio: súbelo otra vez', 'bad');
+  else status('Elige otra vez "' + ((cur.media && cur.media.name) || 'el archivo') + '" con Nuevo corte', 'bad');
   renderList();
 }
 $('songSel').onchange = e => { if (e.target.value) openSong(e.target.value); };
@@ -469,6 +469,10 @@ $('fileIn').onchange = async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
   if (localUrl) URL.revokeObjectURL(localUrl);
   localUrl = URL.createObjectURL(f); media.src = localUrl;
+  if (cur && !(cur.media && cur.media.url) && cur.media && cur.media.name === f.name) {
+    status('Leyendo audio', 'busy'); await analyze(await f.arrayBuffer()); renderList();
+    status('Audio listo (está en tu equipo)', 'ok'); return;
+  }
   const id = 's' + Date.now().toString(36);
   cur = { id, title: f.name.replace(/\.[^.]+$/, '').slice(0, 60), media: null, dur: 0, cuts: [], createdAt: Date.now() };
   past = []; future = []; selCut = null; viewStart = 0; updUndo(); setTitle();
