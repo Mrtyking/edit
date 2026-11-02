@@ -1,161 +1,75 @@
 segundo,que_suena
-0.000,aire de fondo de la intro
-0.050,riser bajo la línea de luz
-0.450,entran las piezas del logo
-0.962,las barras del hexágono encajan
-1.730,el núcleo N2 encaja
-1.762,golpe metálico del logo
-2.100,brillo metálico del logo
-2.350,destello del logo
-2.400,aparece NexOAuth2
-3.030,"""Verification, Reimagined."""
-4.100,"se va la intro, se enciende el estudio blanco"
-4.600,aparece la barra de búsqueda
-5.050,la barra se abre
-5.386,"se escribe ""nexoauth2"""
-6.120,sugerencias
-6.850,clic en nexoauth2.com
-7.070,la barra se pliega
-7.280,aparece la tarjeta del resultado
-7.480,"cuenta 27,190 verificados"
-7.800,clic en Open nexoauth2.com
-8.270,entra la ventana con la web
-8.730,"""Verification, Reimagined."" en la web"
-9.750,sube el mockup del dashboard
-10.250,el mockup flota en 3D
-11.550,clic en Get Started
-12.368,escribe el nombre
-13.265,escribe el correo
-13.860,contraseña
-14.750,acepta los términos
-14.800,Cloudflare verifica
-15.250,Success!
-15.650,Create account
-16.350,dashboard vacío
-17.550,clic en Bots
-17.900,tarjeta: Bring your own bot.
-19.150,Connect bot
-19.220,se abre el modal
-19.570,nombre del bot
-20.066,Application ID
-21.000,Continue
-21.207,token (oculto)
-22.450,Continue
-22.660,7 permisos se marcan
-23.700,Verify & connect
-23.750,comprobando con Discord
-24.300,bot conectado
-25.150,Done
-25.300,aparece la tarjeta del bot
-26.000,tarjeta: Design every pixel.
-26.950,New page
-27.020,plantillas
-27.650,elige Crimson Glass
-28.250,Create and open editor
-28.600,entra el editor
-28.950,agarra el componente Badge
-29.870,lo suelta en la tarjeta
-30.250,fondo Aurora
-31.000,slider de redondeo
-32.000,vista de teléfono
-32.850,vuelve a escritorio
-33.450,Publish
-33.950,página publicada
-34.400,tarjeta: Publish to Discord.
-35.361,título del embed
-35.960,descripción
-36.870,pega la URL del GIF
-37.050,aparece el GIF en la vista previa
-37.650,menú Verification
-38.100,Link to the verification page
-38.180,aparece el botón Verify
-38.600,Date and time
-39.200,Save template
-39.320,Template saved
-39.700,elige canal
-40.100,#unverified
-40.600,Publish
-40.750,Published to #unverified
-40.950,el embed flota en 3D
-42.000,pestaña Verification log
-42.750,Spoiler en la IP
-43.400,Inline: país y ciudad
-44.000,activa Email
-44.600,Save
-44.700,Log settings saved
-45.250,Send test
-45.350,Test log sent
-46.800,"tarjeta: Then, one click."
-48.350,el miembro pulsa Verify
-48.450,Leaving Discord
-49.300,Visit Site
-49.550,abre la página de verificación
-50.550,Continue with Discord
-50.800,pantalla de Discord
-51.950,Authorize
-52.500,escaneo de seguridad
-52.650,checks en verde
-53.300,riesgo 0 / 100
-53.620,sube hacia el verificado
-53.780,You're verified
-53.800,campana de verificado
-54.850,Open Discord
-55.370,notificación de Discord: llega el log
-56.050,el miembro pasa a Verified
-56.450,el log flota en 3D
-57.800,tarjeta: Know every member.
-57.950,tabla de miembros
-59.600,abre a lunarfox221
-60.320,comprobaciones del perfil
-61.200,la tarjeta del perfil flota
-62.520,rótulo: SECURITY CENTER
-62.550,anillo de seguridad 88
-63.050,tarjetas de detección
-63.400,umbrales 35 / 75
-63.400,detectores se calibran
-65.520,rótulo: MEMBER MAP
-65.700,globo de miembros
-65.900,aparecen los países
-66.700,el globo flota
-68.920,rótulo: IP TRACKER
-68.971,escribe la IP
-69.650,Track IP
-69.750,rastreando la IP
-70.500,zoom del globo a la ciudad
-70.950,cae el pin en Austin
-71.000,resultados de la IP
-72.120,rótulo: ANALYTICS
-72.150,KPIs contando
-72.250,contador de KPIs
-72.500,se dibuja la curva
-73.000,embudo de verificación
-74.600,scroll
-75.400,donas
-75.920,rótulo: TEMP MAIL
-75.950,nueva dirección temporal
-76.500,Create address
-76.700,alex@nexoauth2.com lista
-77.120,rótulo: CUSTOM DOMAIN
-77.161,escribe el dominio
-77.750,Add domain
-78.100,SSL emitido
-78.320,rótulo: BOT TRANSFER
-78.500,Transfer
-78.570,modal de traspaso
-78.765,correo del nuevo dueño
-80.300,Transfer
-80.470,bot traspasado
-80.700,"la ventana se va, entra Pricing"
-81.100,PRICING
-81.620,entran los 4 planes
-81.700,moneda en los precios
-81.850,precios $0 · $10 · $20 · $200
-84.200,final: estudio grafito
-84.734,el logo se arma otra vez
-85.020,NexOAuth2
-85.400,aire final
-85.700,brillo
-85.800,botones Get Started y Discord
-85.850,notificación de Discord: aparece discord.gg/nexoauth2
-86.120,nexoauth2.com
-86.900,clic en Get Started — free
+0.00,aire oscuro de la intro
+0.68,la chispa cruza la pantalla (riser)
+0.68,GOLPE: aparece el logo
+1.55,NexOAuth2 se escribe en luz
+2.46,el logo se comprime
+2.50,estalla en chispas
+2.92,se escribe la pregunta
+5.40,"BAM: flash blanco, entra la búsqueda"
+5.42,"""Hmm…"" (tensión que sube)"
+6.39,"escribe ""nexoauth2"""
+7.85,clic (search)
+8.80,clic (search)
+9.22,entra la ventana con la web
+12.55,clic (landing)
+13.37,nombre
+14.27,correo
+14.86,contraseña
+16.65,clic (signup)
+18.55,clic (dash0)
+18.97,tarjeta: Bring your own bot.
+20.15,clic (bots)
+20.57,nombre del bot
+21.07,Application ID
+22.00,clic (bots)
+22.21,token
+23.45,clic (bots)
+24.70,clic (bots)
+25.30,bot conectado
+26.15,clic (bots)
+27.07,tarjeta: Design every pixel.
+27.95,clic (pages)
+29.25,clic (pages)
+30.87,suelta el componente
+34.45,clic (editor)
+35.47,tarjeta: Publish to Discord.
+36.36,título del embed
+36.96,descripción
+40.20,clic (embed)
+41.60,clic (embed)
+45.60,clic (logcfg)
+46.25,clic (logcfg)
+47.87,"tarjeta: Then, one click."
+49.35,clic (discord)
+50.30,clic (discord)
+51.55,clic (vpage)
+52.95,clic (oauth)
+54.80,You're verified
+55.85,clic (verified)
+56.37,notificación de Discord: llega el log
+58.87,tarjeta: Know every member.
+60.60,clic (members)
+63.45,montaje: SECURITY CENTER
+66.45,montaje: MEMBER MAP
+69.85,montaje: IP TRACKER
+69.97,escribe la IP
+70.65,clic (ip)
+71.92,cae el pin en Austin
+73.05,montaje: ANALYTICS
+76.85,montaje: TEMP MAIL
+77.08,correo temporal
+77.50,clic (tempmail)
+78.05,montaje: CUSTOM DOMAIN
+78.16,dominio
+78.75,clic (domain)
+79.25,montaje: BOT TRANSFER
+79.50,clic (transfer)
+79.77,nuevo dueño
+81.30,clic (transfer)
+81.60,"la ventana se va, entra Pricing"
+86.00,aire final
+86.31,final: el logo encaja (mismo golpe de la intro)
+86.72,brillo del logo
+86.85,notificación de Discord: aparece discord.gg/nexoauth2
+87.90,clic en Get Started — free

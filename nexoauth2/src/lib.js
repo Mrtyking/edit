@@ -207,7 +207,7 @@ export function ICON(ctx, name, x, y, size, color, lw = 2) {
 
 // ---------- the NexOAuth2 mark (official art, assets/logo.png 552×640) ----------
 // The hexagon ring is six red bars with gaps at the corners; the black core carries the N2 monogram.
-// For the intro the art is cut into 7 pieces (6 bars + core) so it can be built piece by piece.
+// For the end card the art is cut into 7 pieces (6 bars + core) so it can be built piece by piece.
 let LOGO = null; const LC = { x: 275, y: 313, core: 224 };
 const PIECES = [];
 export function setLogo(img) {

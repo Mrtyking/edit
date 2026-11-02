@@ -1,1 +1,1 @@
-2 nov 2026 - v9: sonido mas variado (pack + biblioteca), notificacion de Discord, boton de Discord centrado
+2 nov 2026 - v10: intro nueva (destello, logo, pregunta, Hmm, flash) y sonido solo en lo importante

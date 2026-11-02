@@ -79,7 +79,7 @@ function vpageBg(ctx, t) { auroraBg(ctx, t, 0, 0, PW, PH, 1); const g = ctx.crea
 const CARD_TOP = PH / 2 - cardH(1) / 2;
 const CONT = [960 - 395 / 2 + 29, CARD_TOP + 40 + 32 + 85 + 48 + 100 + 8 + 104 + 52, 337, 43];
 function vpage(ctx, t) {
-  vpageBg(ctx, t); const a = E.outQuint(prog(t, 49.6, 50.05));
+  vpageBg(ctx, t); const a = E.outQuint(prog(t, 50.6, 51.05));
   ctx.save(); ctx.globalAlpha *= a; ctx.translate(0, (1 - a) * 30);
   verifyCard(ctx, t, 960, CARD_TOP, { R: 22, badge: 1, prs: press(t, VP.cont), hover: t > VP.cont - 0.3 ? 1 : 0 }); ctx.restore();
 }
@@ -115,11 +115,11 @@ function vpage2(ctx, t) {
   verifyCard(ctx, t, 960, CARD_TOP, { R: 22, badge: 1, checks: ck, risk: rk > 0 ? rk : null });
 }
 function verified(ctx, t) {
-  vpageBg(ctx, t); const g = ctx.createRadialGradient(960, 470, 0, 960, 470, 700); g.addColorStop(0, `rgba(255,40,60,${0.18 * E.out(prog(t, 53.7, 54.4))})`); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, PW, PH);
-  const a = E.outBack(prog(t, 53.75, 54.2), 1.3), x = 960 - 210, y = PH / 2 - 170, w = 420, h = 330;
+  vpageBg(ctx, t); const g = ctx.createRadialGradient(960, 470, 0, 960, 470, 700); g.addColorStop(0, `rgba(255,40,60,${0.18 * E.out(prog(t, 54.7, 55.4))})`); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, PW, PH);
+  const a = E.outBack(prog(t, 54.75, 55.2), 1.3), x = 960 - 210, y = PH / 2 - 170, w = 420, h = 330;
   ctx.save(); ctx.globalAlpha *= clamp(a * 1.4); ctx.translate(960, y + h / 2); ctx.scale(0.92 + 0.08 * a, 0.92 + 0.08 * a); ctx.translate(-960, -(y + h / 2));
   ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 60; ctx.shadowOffsetY = 20; rr(ctx, x, y, w, h, 26); ctx.fillStyle = 'rgba(16,16,18,0.95)'; ctx.fill(); ctx.restore(); rr(ctx, x + 0.5, y + 0.5, w - 1, h - 1, 26); ctx.strokeStyle = 'rgba(255,255,255,0.09)'; ctx.stroke();
-  const k = E.outBack(prog(t, 53.85, 54.3), 2); ctx.save(); ctx.translate(960, y + 76); ctx.scale(k, k); ctx.beginPath(); ctx.arc(0, 0, 34, 0, 7); ctx.fillStyle = 'rgba(34,197,94,0.14)'; ctx.fill(); ctx.strokeStyle = 'rgba(34,197,94,0.6)'; ctx.lineWidth = 2; ctx.stroke(); checkMark(ctx, 0, 0, 19, C.green, E.out(prog(t, 54.0, 54.35)), 3.6); ctx.restore();
+  const k = E.outBack(prog(t, 54.85, 55.3), 2); ctx.save(); ctx.translate(960, y + 76); ctx.scale(k, k); ctx.beginPath(); ctx.arc(0, 0, 34, 0, 7); ctx.fillStyle = 'rgba(34,197,94,0.14)'; ctx.fill(); ctx.strokeStyle = 'rgba(34,197,94,0.6)'; ctx.lineWidth = 2; ctx.stroke(); checkMark(ctx, 0, 0, 19, C.green, E.out(prog(t, 55, 55.35)), 3.6); ctx.restore();
   txt(ctx, "You're verified", 960, y + 148, 30, '#fff', 700, 'center', 'SORA');
   txt(ctx, `Welcome to ${DEMO.server}, ${DEMO.user}. Your role`, 960, y + 186, 15, '#A1A1AA', 500, 'center'); txt(ctx, 'has been assigned. You can return to Discord.', 960, y + 207, 15, '#A1A1AA', 500, 'center');
   const r = [x + 40, y + 244, w - 80, 48]; btn(ctx, ...r, 'Open Discord', { iconR: 'external', size: 16, prs: press(t, VF.open), r: 12, glow: 0.6 });
@@ -144,18 +144,18 @@ function dlog(ctx, t) {
 // ================================================================ registry
 const SC = {
   discord: { draw: discord, chrome: () => ({ discord: true, title: `#unverified · ${DEMO.server}` }),
-    cursor: [[47.4, 1100, 860], [D.verify, ...ctr(VBTN()), true, 0.6], [D.visit, ...ctr(VISIT), true, 0.55], [49.7, ...ctr(VISIT)]] },
-  vpage: { draw: vpage, chrome: t => ({ url: 'nexoauth2.com/verify/nova-arcade', load: prog(t, 49.6, 49.95) }),
-    cursor: [[49.95, 1260, 1000], [VP.cont, ...ctr(CONT), true, 0.5], [50.9, ...ctr(CONT)]] },
-  oauth: { draw: oauth, chrome: t => ({ url: 'discord.com/oauth2/authorize?client_id=1290447188352066214', load: prog(t, 50.8, 51.1) }),
-    cursor: [[51.25, 1300, 1060], [AU.authorize, ...ctr(AUTH), true, 0.55], [52.4, ...ctr(AUTH)]] },
+    cursor: [[48.4, 1100, 860], [D.verify, ...ctr(VBTN()), true, 0.6], [D.visit, ...ctr(VISIT), true, 0.55], [50.7, ...ctr(VISIT)]] },
+  vpage: { draw: vpage, chrome: t => ({ url: 'nexoauth2.com/verify/nova-arcade', load: prog(t, 50.6, 50.95) }),
+    cursor: [[50.95, 1260, 1000], [VP.cont, ...ctr(CONT), true, 0.5], [51.9, ...ctr(CONT)]] },
+  oauth: { draw: oauth, chrome: t => ({ url: 'discord.com/oauth2/authorize?client_id=1290447188352066214', load: prog(t, 51.8, 52.1) }),
+    cursor: [[52.25, 1300, 1060], [AU.authorize, ...ctr(AUTH), true, 0.55], [53.4, ...ctr(AUTH)]] },
   vpage2: { draw: vpage2, chrome: () => ({ url: 'nexoauth2.com/verify/nova-arcade?step=checks' }) },
   verified: { draw: verified, chrome: () => ({ url: 'nexoauth2.com/verify/nova-arcade/done' }),
-    cursor: [[54.2, 1250, 900], [VF.open, ...ctr(OPEN_D), true, 0.5], [55.2, ...ctr(OPEN_D)]] },
+    cursor: [[55.2, 1250, 900], [VF.open, ...ctr(OPEN_D), true, 0.5], [56.2, ...ctr(OPEN_D)]] },
   dlog: { draw: dlog, chrome: () => ({ discord: true, title: `#verify-logs · ${DEMO.server}` }) },
 };
 export const SCENES = SC;
 // the new verification log lifts out of Discord
 export const LAYERS = [
-  { def: { w: 556, h: 600, tex: 2, draw: (ctx, t) => logEmbed(ctx, 0, 0, 556, { spoil: 1, inline: 1, email: 1 }) }, at: [456 + 278, 596 - 420 + 300], t: [56.2, 57.35], z: 1.5 },
+  { def: { w: 556, h: 600, tex: 2, draw: (ctx, t) => logEmbed(ctx, 0, 0, 556, { spoil: 1, inline: 1, email: 1 }) }, at: [456 + 278, 596 - 420 + 300], t: [57.2, 58.35], z: 1.5 },
 ];

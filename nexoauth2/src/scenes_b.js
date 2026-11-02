@@ -420,22 +420,22 @@ function logcfg(ctx, t) {
 const BOT = 'nexoauth2.com/dashboard/bots/aegis-gate';
 const SC = {
   pages: { draw: pages, chrome: () => ({ url: BOT + '/verification' }),
-    cursor: [[26.45, 1300, 760], [P.newBtn, ...ctr(NEWBTN), true, 0.45], [P.pick, ...ctr(tplRect(2)), true, 0.45], [P.create, ...ctr(CREATE), true, 0.45], [28.7, ...ctr(CREATE)]] },
-  editor: { draw: editor, chrome: t => ({ url: 'nexoauth2.com/editor/nova-arcade', load: prog(t, 28.5, 28.9) }),
-    cursor: [[28.62, 700, 640], [ED.drag[0] - 0.02, ...ctr(BADGE), false, 0.32], [ED.drag[0], ...ctr(BADGE), true, 0.02, ED.drag[1]], [ED.drag[1], ...DROP, false, 0.82],
+    cursor: [[27.45, 1300, 760], [P.newBtn, ...ctr(NEWBTN), true, 0.45], [P.pick, ...ctr(tplRect(2)), true, 0.45], [P.create, ...ctr(CREATE), true, 0.45], [29.7, ...ctr(CREATE)]] },
+  editor: { draw: editor, chrome: t => ({ url: 'nexoauth2.com/editor/nova-arcade', load: prog(t, 29.5, 29.9) }),
+    cursor: [[29.62, 700, 640], [ED.drag[0] - 0.02, ...ctr(BADGE), false, 0.32], [ED.drag[0], ...ctr(BADGE), true, 0.02, ED.drag[1]], [ED.drag[1], ...DROP, false, 0.82],
       [ED.aurora, ...ctr(bgRect(9)), true, 0.36], [ED.radius[0], RAD.x + RAD.w * 10 / 38, RAD.y, true, 0.5, ED.radius[1]], [ED.radius[1], RAD.x + RAD.w * 22 / 38, RAD.y, false, 0.58],
-      [ED.phone, DEV[2], 27, true, 0.4], [ED.desk, DEV[0], 27, true, 0.3], [ED.publish, ...ctr(PUB), true, 0.45], [34.3, ...ctr(PUB)]] },
+      [ED.phone, DEV[2], 27, true, 0.4], [ED.desk, DEV[0], 27, true, 0.3], [ED.publish, ...ctr(PUB), true, 0.45], [35.3, ...ctr(PUB)]] },
   embed: { draw: embedEditor, chrome: () => ({ url: BOT + '/appearance' }),
-    cursor: [[35.0, 900, 720], [35.3, 640, 428, true, 0.3], [35.9, 700, 512, true, 0.3], [36.85, ...ctr(IMG_IN), true, 0.45], [EM.verifOpen, ...ctr(VERIF), true, 0.5],
+    cursor: [[36.0, 900, 720], [36.3, 640, 428, true, 0.3], [36.9, 700, 512, true, 0.3], [37.85, ...ctr(IMG_IN), true, 0.45], [EM.verifOpen, ...ctr(VERIF), true, 0.5],
       [EM.verifPick, 1250, vItemY(1), true, 0.3], [EM.date, ...ctr(DATE_T), true, 0.4], [EM.saveTpl, ...ctr(SAVE_TPL), true, 0.45], [EM.chanOpen, ...ctr(CHAN), true, 0.4],
-      [EM.chanPick, 1200, cItemY(1), true, 0.3], [EM.publish, ...ctr(PUBL), true, 0.4], [41.5, ...ctr(PUBL)]] },
+      [EM.chanPick, 1200, cItemY(1), true, 0.3], [EM.publish, ...ctr(PUBL), true, 0.4], [42.5, ...ctr(PUBL)]] },
   logcfg: { draw: logcfg, chrome: () => ({ url: BOT + '/appearance?tab=log' }),
-    cursor: [[41.82, 900, 330], [LG.tab, SUBT[1][1] + SUBT[1][2] / 2, 157, true, 0.18], [LG.spoiler, ...ctr(T_SPOIL), true, 0.45], [LG.inline, ...ctr(T_INLINE), true, 0.4],
-      [LG.email, ...ctr(T_EMAIL), true, 0.4], [LG.save, ...ctr(SAVE_L), true, 0.45], [LG.test, ...ctr(TEST_L), true, 0.35], [46.4, ...ctr(TEST_L)]] },
+    cursor: [[42.82, 900, 330], [LG.tab, SUBT[1][1] + SUBT[1][2] / 2, 157, true, 0.18], [LG.spoiler, ...ctr(T_SPOIL), true, 0.45], [LG.inline, ...ctr(T_INLINE), true, 0.4],
+      [LG.email, ...ctr(T_EMAIL), true, 0.4], [LG.save, ...ctr(SAVE_L), true, 0.45], [LG.test, ...ctr(TEST_L), true, 0.35], [47.4, ...ctr(TEST_L)]] },
 };
 export const SCENES = SC;
 // pieces that lift out of the page in 3D: the Discord preview of the embed and the log preview
 export const LAYERS = [
   { def: { w: 708, h: embedH() + 67, tex: 2, draw: (ctx, t) => { rr(ctx, 0, 0, 708, embedH() + 67, 16); ctx.fillStyle = DC.bg; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.stroke(); msgHead(ctx, 15, 9); welcomeEmbed(ctx, t, 69, 45); } },
-    at: [1426, 401 + (embedH() + 67) / 2], t: [40.75, 41.75], z: 1.5 },
+    at: [1426, 401 + (embedH() + 67) / 2], t: [41.75, 42.75], z: 1.5 },
 ];

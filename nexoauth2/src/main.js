@@ -110,25 +110,25 @@ const K = (t, [px, py], dist, yaw = 0, pitch = 2, ap = 6, fov = 30) => { const l
 const CTR = [960, 560];
 const KW = (t, [u, v], ...a) => K(t, [(u + 250) * 1.2, (98 + v) * 1.2], ...a);   // camera key aimed at a point of the search panel
 const KEYS = [
-  K(0, CTR, 60, 0, 0, 3), K(4.5, CTR, 40, -12, 6, 3), KW(5.25, [550, 290], 19, -10, 5, 4), KW(6.05, [565, 252], 13.4, -3, 2, 5),
-  KW(6.75, [550, 380], 16.5, 3, 3, 5), KW(7.6, [550, 345], 15.5, 6, 3, 5), K(8.55, CTR, 21, 9, 4),
-  K(9.9, [960, 640], 19.5, 3, -5), K(11.35, [752, 382], 13.5, -5, 2), K(12.2, [480, 560], 14.5, 9, 3), K(14.1, [480, 640], 13.2, 5, 2),
-  K(15.6, [480, 830], 12.5, 0, 4), K(16.5, [960, 420], 20.5, -8, 5), K(17.45, [140, 240], 14.5, -10, 2),
-  K(18.3, CTR, 24, 0, 0, 16), K(18.95, CTR, 22, -2, 1, 7), K(19.4, [960, 560], 14.5, -5, 3), K(21.0, [960, 560], 12.6, 4, 2), K(22.9, [960, 540], 15.5, -3, 2),
-  K(24.6, [960, 560], 12.6, 0, 1), K(25.7, [616, 450], 13.5, 8, 4),
-  K(26.4, CTR, 24, 0, 0, 16), K(27.0, CTR, 22, 2, 1, 7), K(27.4, [960, 560], 15.5, -4, 2), K(28.65, CTR, 19.5, 6, 4), K(29.4, [520, 600], 14, -6, 2),
-  K(30.55, [1500, 700], 13, 8, 2), K(31.35, [1500, 560], 12.6, 6, 2), K(32.4, CTR, 16.5, 0, 2), K(33.4, [1700, 40], 12.5, 6, 2),
-  K(34.8, CTR, 24, 0, 0, 16), K(35.35, CTR, 21, -3, 1, 7), K(35.9, [700, 600], 13.2, -6, 2), K(37.1, [1420, 640], 13.5, 6, 2), K(38.3, [1420, 560], 12.8, 4, 2),
-  K(39.5, [1650, 420], 12.5, 4, 2), K(40.7, [1600, 480], 13.5, 0, 2), K(41.9, CTR, 18.5, -4, 3), K(42.9, [720, 600], 12.8, -6, 2), K(44.0, [1430, 600], 13.2, 6, 2), K(45.3, [1620, 120], 13.5, 3, 2),
-  K(47.2, CTR, 24, 0, 0, 16), K(47.85, CTR, 21, 2, 1, 7), K(48.3, [660, 820], 13.2, -4, 2), K(49.1, CTR, 13.5, 0, 2), K(49.9, CTR, 14.5, 5, 2), K(50.55, [960, 760], 12.5, 2, 2),
-  K(51.2, [960, 560], 18, -5, 2), K(51.95, [1010, 950], 13, 2, 2), K(52.7, [960, 560], 12.8, 4, 2), K(53.9, CTR, 12.4, 0, 1), K(54.8, [960, 700], 12.8, 0, 2),
-  K(55.3, CTR, 18.5, -6, 3), K(56.3, [760, 500], 13.6, -4, 2), K(57.3, [1650, 400], 14.5, 6, 2),
-  K(58.2, CTR, 24, 0, 0, 16), K(58.8, CTR, 21, -2, 1, 7), K(59.4, [1000, 520], 15.5, -4, 2), K(60.3, [1000, 560], 15.5, 4, 2), K(61.7, [1500, 420], 13.5, 4, 2),
-  K(62.6, [1050, 520], 16.5, -8, 3), K(64.6, [1250, 820], 14.5, 6, 2), K(65.6, [900, 760], 15.5, 6, 2), K(68.0, [900, 720], 12.6, -4, 2),
-  K(69.0, [1000, 240], 14.5, -4, 2), K(70.4, [800, 580], 13.2, 5, 2), K(71.7, [1500, 560], 14.5, 8, 2),
-  K(72.2, [1050, 460], 17.5, -6, 3), K(73.6, [1550, 760], 14.5, 6, 2), K(75.0, [1000, 720], 15.5, 0, 2),
-  K(75.95, CTR, 13.5, -6, 2), K(77.15, [760, 620], 13.5, 6, 2), K(78.35, [1320, 900], 14.5, -6, 2), K(79.3, CTR, 13.2, 3, 2), K(80.6, CTR, 19, 0, 2),
-  K(81.4, CTR, 34, 0, 3, 8), K(DUR, CTR, 44, 0, 3, 4),
+  K(0, CTR, 60, 0, 0, 3), K(5.3, CTR, 55, -4, 2, 3), KW(5.55, [550, 290], 27, -8, 4, 3), KW(6.25, [550, 290], 19, -10, 5, 4), KW(7.05, [565, 252], 13.4, -3, 2, 5),
+  KW(7.75, [550, 380], 16.5, 3, 3, 5), KW(8.6, [550, 345], 15.5, 6, 3, 5), K(9.55, CTR, 21, 9, 4),
+  K(10.9, [960, 640], 19.5, 3, -5), K(12.35, [752, 382], 13.5, -5, 2), K(13.2, [480, 560], 14.5, 9, 3), K(15.1, [480, 640], 13.2, 5, 2),
+  K(16.6, [480, 830], 12.5, 0, 4), K(17.5, [960, 420], 20.5, -8, 5), K(18.45, [140, 240], 14.5, -10, 2),
+  K(19.3, CTR, 24, 0, 0, 16), K(19.95, CTR, 22, -2, 1, 7), K(20.4, [960, 560], 14.5, -5, 3), K(22, [960, 560], 12.6, 4, 2), K(23.9, [960, 540], 15.5, -3, 2),
+  K(25.6, [960, 560], 12.6, 0, 1), K(26.7, [616, 450], 13.5, 8, 4),
+  K(27.4, CTR, 24, 0, 0, 16), K(28, CTR, 22, 2, 1, 7), K(28.4, [960, 560], 15.5, -4, 2), K(29.65, CTR, 19.5, 6, 4), K(30.4, [520, 600], 14, -6, 2),
+  K(31.55, [1500, 700], 13, 8, 2), K(32.35, [1500, 560], 12.6, 6, 2), K(33.4, CTR, 16.5, 0, 2), K(34.4, [1700, 40], 12.5, 6, 2),
+  K(35.8, CTR, 24, 0, 0, 16), K(36.35, CTR, 21, -3, 1, 7), K(36.9, [700, 600], 13.2, -6, 2), K(38.1, [1420, 640], 13.5, 6, 2), K(39.3, [1420, 560], 12.8, 4, 2),
+  K(40.5, [1650, 420], 12.5, 4, 2), K(41.7, [1600, 480], 13.5, 0, 2), K(42.9, CTR, 18.5, -4, 3), K(43.9, [720, 600], 12.8, -6, 2), K(45, [1430, 600], 13.2, 6, 2), K(46.3, [1620, 120], 13.5, 3, 2),
+  K(48.2, CTR, 24, 0, 0, 16), K(48.85, CTR, 21, 2, 1, 7), K(49.3, [660, 820], 13.2, -4, 2), K(50.1, CTR, 13.5, 0, 2), K(50.9, CTR, 14.5, 5, 2), K(51.55, [960, 760], 12.5, 2, 2),
+  K(52.2, [960, 560], 18, -5, 2), K(52.95, [1010, 950], 13, 2, 2), K(53.7, [960, 560], 12.8, 4, 2), K(54.9, CTR, 12.4, 0, 1), K(55.8, [960, 700], 12.8, 0, 2),
+  K(56.3, CTR, 18.5, -6, 3), K(57.3, [760, 500], 13.6, -4, 2), K(58.3, [1650, 400], 14.5, 6, 2),
+  K(59.2, CTR, 24, 0, 0, 16), K(59.8, CTR, 21, -2, 1, 7), K(60.4, [1000, 520], 15.5, -4, 2), K(61.3, [1000, 560], 15.5, 4, 2), K(62.7, [1500, 420], 13.5, 4, 2),
+  K(63.6, [1050, 520], 16.5, -8, 3), K(65.6, [1250, 820], 14.5, 6, 2), K(66.6, [900, 760], 15.5, 6, 2), K(69, [900, 720], 12.6, -4, 2),
+  K(70, [1000, 240], 14.5, -4, 2), K(71.4, [800, 580], 13.2, 5, 2), K(72.7, [1500, 560], 14.5, 8, 2),
+  K(73.2, [1050, 460], 17.5, -6, 3), K(74.6, [1550, 760], 14.5, 6, 2), K(76, [1000, 720], 15.5, 0, 2),
+  K(76.95, CTR, 13.5, -6, 2), K(78.15, [760, 620], 13.5, 6, 2), K(79.35, [1320, 900], 14.5, -6, 2), K(80.3, CTR, 13.2, 3, 2), K(81.6, CTR, 19, 0, 2),
+  K(82.4, CTR, 34, 0, 3, 8), K(DUR, CTR, 44, 0, 3, 4),
 ];
 function herm(keys, t, f) {
   const n = keys.length; if (t <= keys[0].t) return f(keys[0]); if (t >= keys[n - 1].t) return f(keys[n - 1]);
@@ -143,7 +143,7 @@ const noise = (t, s) => Math.sin(t * 1.3 + s) * 0.6 + Math.sin(t * 2.7 + s * 2.1
 let FOCUS = 20, APER = 6;
 function setCamera(t) {
   const p = herm(KEYS, t, k => k.p), l = herm(KEYS, t, k => k.l), [fov, ap] = herm(KEYS, t, k => [k.fov, k.ap]);
-  const sh = 0.025; camera.position.set(p[0] + noise(t, 1) * sh, p[1] + noise(t, 2) * sh, p[2]);
+  const sh = 0.025 + 0.16 * kick(t); camera.position.set(p[0] + noise(t, 1) * sh, p[1] + noise(t, 2) * sh, p[2]);
   camera.lookAt(l[0] + noise(t, 3) * sh * 1.5, l[1] + noise(t, 4) * sh * 1.5, l[2]);
   camera.fov = fov; camera.updateProjectionMatrix();
   FOCUS = Math.hypot(l[0] - p[0], l[1] - p[1], l[2] - p[2]); APER = ap;
@@ -183,27 +183,121 @@ function headline(x, s, cx, y, size, t0, t, { red = null } = {}) {   // words ri
     if (red && red.includes(i)) { const g = x.createLinearGradient(0, y - size, 0, y); g.addColorStop(0, '#FF6464'); g.addColorStop(1, '#E0101C'); x.fillStyle = g; } else { const g = x.createLinearGradient(0, y - size, 0, y); g.addColorStop(0, mixHex('#1D1D1F', '#FFFFFF', DK)); g.addColorStop(1, mixHex('#4A4A4E', '#B4B4BA', DK)); x.fillStyle = g; }
     x.fillText(w, px, y + (1 - p) * size * 1.15); x.restore(); px += ws[i] + sp; });
 }
-function streak(x, t, a, cy, w) {   // anamorphic red light line
-  if (a <= 0) return; x.save();
-  const g = x.createLinearGradient(960 - w, 0, 960 + w, 0); g.addColorStop(0, 'rgba(255,30,40,0)'); g.addColorStop(0.5, `rgba(255,70,70,${0.9 * a})`); g.addColorStop(1, 'rgba(255,30,40,0)');
-  x.fillStyle = g; x.fillRect(960 - w, cy - 1.5, w * 2, 3); x.globalAlpha = 0.35 * a; x.fillRect(960 - w, cy - 10, w * 2, 20);
-  const r = x.createRadialGradient(960, cy, 0, 960, cy, 260); r.addColorStop(0, `rgba(255,60,60,${0.45 * a})`); r.addColorStop(1, 'rgba(255,0,0,0)'); x.globalAlpha = 1; x.fillStyle = r; x.fillRect(700, cy - 260, 520, 520); x.restore();
+// ---------------------------------------------------------------- the opening (graphite, like a product launch)
+// 2D light: what draw() paints goes through an offscreen layer and comes back with a soft bloom (strength glow, radius r)
+const LYR = document.createElement('canvas'); LYR.width = RW; LYR.height = RH; const lctx = LYR.getContext('2d');
+function lit(x, draw, glow = 0.6, r = 24, soft = 0) {   // soft: extra blur of the whole layer (px)
+  lctx.setTransform(1, 0, 0, 1, 0, 0); lctx.clearRect(0, 0, RW, RH); lctx.setTransform(PX, 0, 0, PX, 0, 0); lctx.save(); draw(lctx); lctx.restore();
+  const B = v => v > 0.05 ? `blur(${(v * PX).toFixed(1)}px)` : 'none';
+  x.save(); x.globalCompositeOperation = 'lighter';   // drawn through x's own transform, so the jolt and the bam zoom apply
+  if (glow > 0.01) { x.filter = B(r + soft); for (let g = glow; g > 0.01; g -= 1) { x.globalAlpha = Math.min(1, g); x.drawImage(LYR, 0, 0, 1920, 1080); }
+    x.filter = B(r * 0.3 + soft); x.globalAlpha = Math.min(1, glow * 0.5); x.drawImage(LYR, 0, 0, 1920, 1080); }
+  x.filter = B(soft); x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1; x.drawImage(LYR, 0, 0, 1920, 1080); x.restore();
+}
+const after = (t, a, k) => t < a ? 0 : Math.exp(-(t - a) * k);
+// impacts of the opening: they shake the camera and split the colours for an instant
+const kick = t => { const I = TL.intro; return after(t, I.hit, 9) + 0.55 * after(t, I.burst, 10) + 0.9 * after(t, I.bam, 11); };
+const ASK = 'I need secure verification for my Discord.', ASK_RED = [7, 13];   // "secure" in red
+function drawIntro(x, t) {
+  const I = TL.intro; if (t >= I.bam + 0.45) return;
+  const CX = 960, CY = 470, W1 = 'NexOAuth2';
+  x.save();
+  { const k = kick(t) * 7; x.translate(Math.sin(t * 91) * k, Math.cos(t * 77) * k * 0.7); }   // the frame jolts on each impact
+  // warm light behind everything, breathing with every event
+  const amb = (1 - prog(t, I.bam - 0.08, I.bam + 0.02)) * (0.3 * prog(t, I.spark[0], I.hit) + 0.9 * after(t, I.hit, 3) + 0.25 * (t > I.hit && t < I.burst ? 1 : 0) + 0.7 * Math.sin(Math.PI * prog(t, I.pulse[0], I.burst)) + 0.8 * after(t, I.burst, 4) + 0.22 * prog(t, I.ask[0], I.ask[0] + 0.6));
+  { const g = x.createRadialGradient(CX, CY + 60, 0, CX, CY + 60, 980); g.addColorStop(0, `rgba(255,46,56,${0.16 * amb})`); g.addColorStop(0.5, `rgba(255,40,50,${0.05 * amb})`); g.addColorStop(1, 'rgba(255,40,50,0)'); x.fillStyle = g; x.fillRect(0, 0, 1920, 1080); }
+
+  // ---- 1. a spark streaks in from the lower left and lands in the centre
+  if (t >= I.spark[0] && t < I.hit + 0.06) lit(x, c => {
+    const u = E.in(prog(t, I.spark[0], I.hit)), B = v => { const w = 1 - v; return [w * w * 250 + 2 * w * v * 520 + v * v * CX, w * w * 1010 + 2 * w * v * 380 + v * v * CY]; };
+    c.globalCompositeOperation = 'lighter';
+    for (let k = 26; k >= 0; k--) { const v = u - k * 0.011; if (v < 0) continue; const [px, py] = B(v), f = 1 - k / 27; c.beginPath(); c.arc(px, py, 1.2 + 5 * f * f, 0, 7); c.fillStyle = `rgba(255,${Math.round(90 + 150 * f * f)},${Math.round(80 + 150 * f * f)},${0.85 * f})`; c.fill(); }
+    const [hx, hy] = B(u); c.beginPath(); c.arc(hx, hy, 7, 0, 7); c.fillStyle = '#FFFFFF'; c.fill();
+    const ch = prog(t, I.hit - 0.28, I.hit); if (ch > 0) { c.beginPath(); c.arc(CX, CY, lerp(90, 6, E.in(ch)), 0, 7); c.strokeStyle = `rgba(255,130,130,${0.7 * ch})`; c.lineWidth = 2; c.stroke(); }   // the target charges
+  }, 1.6, 18);
+
+  // ---- 2. hit: flash, shock ring and sparks; the mark is there
+  const h = t - I.hit;
+  if (h >= 0 && h < 1.1) lit(x, c => {
+    c.globalCompositeOperation = 'lighter';
+    const f = Math.exp(-h * 6), R = 140 + 640 * E.outExpo(Math.min(1, h / 0.5)), g = c.createRadialGradient(CX, CY, 0, CX, CY, R);
+    g.addColorStop(0, `rgba(255,255,255,${0.95 * f})`); g.addColorStop(0.25, `rgba(255,110,110,${0.45 * f})`); g.addColorStop(1, 'rgba(255,40,40,0)'); c.fillStyle = g; c.fillRect(CX - R, CY - R, 2 * R, 2 * R);
+    const rp = E.outExpo(prog(h, 0, 0.9)); c.beginPath(); c.ellipse(CX, CY, 70 + 900 * rp, (70 + 900 * rp) * 0.9, 0, 0, 7); c.strokeStyle = `rgba(255,150,150,${0.75 * (1 - rp) ** 2})`; c.lineWidth = 2 + 7 * (1 - rp); c.stroke();
+    for (let i = 0; i < 18; i++) { const a = i / 18 * Math.PI * 2 + hash(i) * 0.4, v = 380 + 520 * hash(i + 9), d0 = v * (1 - Math.exp(-h * 4)) / 4 * 4, d1 = Math.max(0, d0 - 40 - 60 * Math.exp(-h * 5)), al = clamp(1 - h / 0.85);
+      if (al <= 0) continue; c.beginPath(); c.moveTo(CX + Math.cos(a) * (60 + d1), CY + Math.sin(a) * (60 + d1)); c.lineTo(CX + Math.cos(a) * (60 + d0), CY + Math.sin(a) * (60 + d0)); c.strokeStyle = `rgba(255,${120 + Math.round(90 * hash(i + 2))},${120 + Math.round(60 * hash(i + 4))},${al})`; c.lineWidth = 2.2; c.lineCap = 'round'; c.stroke(); }
+  }, 1.2, 22);
+
+  // ---- 3. the mark, then the lockup: mark + "NexOAuth2" written letter by letter in light, a pulse, then it collapses into a point
+  if (h >= 0 && t < I.burst + 0.02) {
+    sora(x, 104, 700); const ww = x.measureText(W1).width, LW = 150 * 552 / 640, gap = 32, left = CX - (LW + gap + ww) / 2;
+    const mv = E.inOut(prog(t, I.word[0], I.word[0] + 0.55)), LH = lerp(300, 150, mv), LX = lerp(CX, left + LW / 2, mv);
+    const pulse = Math.sin(Math.PI * prog(t, I.pulse[0], I.pulse[1] + 0.06)), col = E.in(prog(t, I.burst - 0.14, I.burst));
+    const punch = 1 + 0.24 * Math.exp(-h * 9) + 0.035 * pulse, exposure = Math.max(0.85 * Math.exp(-h * 6), 0.5 * pulse, col);
+    lit(x, c => {
+      c.translate(CX, CY); c.scale(punch * (1 - 0.96 * col), punch * (1 - 0.55 * col)); c.translate(-CX, -CY);
+      logo(c, LX, CY, LH, { glow: 0.6 + 0.8 * Math.exp(-h * 3) });
+      if (exposure > 0.01) { c.save(); c.filter = 'brightness(0) invert(1)'; c.globalAlpha = exposure; logo(c, LX, CY, LH, {}); c.restore(); }
+      sora(c, 104, 700); c.textBaseline = 'middle'; c.textAlign = 'left';
+      [...W1].forEach((ch, i) => {
+        const t0 = I.word[0] + 0.2 + i * 0.05, p = E.outQuint(prog(t, t0, t0 + 0.42)); if (p <= 0) return;
+        const px = left + LW + gap + c.measureText(W1.slice(0, i)).width, cw = c.measureText(ch).width, base = i < 4 ? '#F5F5F7' : '#FF2D2D';
+        c.save(); c.globalAlpha = p; if (p < 1) c.filter = `blur(${((1 - p) * 14).toFixed(1)}px)`; c.translate(px + cw / 2, CY); c.scale(1 + 0.4 * (1 - p), 1 + 0.4 * (1 - p)); c.translate(-(px + cw / 2), -CY);
+        c.fillStyle = mixHex(base, '#FFFFFF', Math.max(1 - p, exposure * 0.9)); c.fillText(ch, px, CY + 4); c.restore();
+      });
+    }, 0.5 + 1.1 * Math.exp(-h * 3) + 0.9 * pulse + 2 * col, 24);
+  }
+
+  // ---- 4. burst: the point explodes into curved trails of light
+  const bt = t - I.burst;
+  if (bt >= 0 && bt < 0.8) lit(x, c => {
+    c.globalCompositeOperation = 'lighter';
+    const f = Math.exp(-bt * 9), g = c.createRadialGradient(CX, CY, 0, CX, CY, 260); g.addColorStop(0, `rgba(255,255,255,${f})`); g.addColorStop(0.3, `rgba(255,120,120,${0.5 * f})`); g.addColorStop(1, 'rgba(255,60,60,0)'); c.fillStyle = g; c.fillRect(CX - 260, CY - 260, 520, 520);
+    for (let i = 0; i < 12; i++) {
+      const a0 = i / 12 * Math.PI * 2 + hash(i + 40) * 0.5, curl = (hash(i + 7) - 0.5) * 2.6, R = 420 + 520 * hash(i + 3), al = clamp(1 - bt / 0.8);
+      c.beginPath(); for (let k = 0; k <= 12; k++) { const pk = E.outExpo(Math.min(1, bt / 0.75)) - k * 0.028; if (pk <= 0) break; const an = a0 + curl * pk, r = R * pk, px = CX + Math.cos(an) * r * 1.2, py = CY + Math.sin(an) * r * 0.75; k ? c.lineTo(px, py) : c.moveTo(px, py); }
+      c.strokeStyle = `rgba(255,${100 + Math.round(90 * hash(i + 1))},${110 + Math.round(60 * hash(i + 5))},${al})`; c.lineWidth = 2.6 * al + 0.6; c.lineCap = 'round'; c.lineJoin = 'round'; c.stroke();
+    }
+  }, 1.4, 20);
+
+  // ---- 5. the question is typed, then "Hmm…" (thinking shimmer), then bam: it all punches past the camera
+  if (t >= I.ask[0]) {
+    const bam = E.in(prog(t, I.bam - 0.16, I.bam + 0.02)), fade = 1 - bam;   // it rushes at the camera and is gone on the flash
+    if (fade > 0) {
+      x.save(); x.translate(960, 530); x.scale(1 + 0.9 * bam, 1 + 0.9 * bam); x.translate(-960, -530);
+      const n = ASK.length, [a, b] = I.ask, ty = 500, up = E.inOut(prog(t, I.hmm[0] - 0.1, I.hmm[0] + 0.35));
+      lit(x, c => {
+        c.globalAlpha = fade; sora(c, 66, 600); c.textBaseline = 'middle'; c.textAlign = 'left'; const full = c.measureText(ASK).width, x0 = 960 - full / 2, y = ty - 26 * up;
+        let lastX = x0;
+        for (let i = 0; i < n; i++) {
+          const ti = a + (i + 0.5) * (b - a) / n, p = E.out(prog(t, ti, ti + 0.16)); if (p <= 0) break;
+          const px = x0 + c.measureText(ASK.slice(0, i)).width, red = i >= ASK_RED[0] && i < ASK_RED[1];
+          c.save(); c.globalAlpha = fade * p; if (p < 1) c.filter = `blur(${((1 - p) * 9).toFixed(1)}px)`;
+          if (red) { const g = c.createLinearGradient(0, y - 34, 0, y + 30); g.addColorStop(0, '#FF6A6A'); g.addColorStop(1, '#E8121E'); c.fillStyle = g; } else c.fillStyle = '#F5F5F7';
+          c.fillText(ASK[i], px, y + (1 - p) * 8); c.restore(); lastX = px + c.measureText(ASK[i]).width;
+        }
+        const typing = t < b + 0.05, on = typing || Math.floor((t - b) / 0.45) % 2 === 0;   // red caret: solid while typing, then it blinks
+        if (on && t < I.bam - 0.1) { c.fillStyle = '#FF2D2D'; c.fillRect(lastX + 6, y - 35, 4, 68); }
+        // "Hmm…" with a light sweeping through it
+        if (t >= I.hmm[0]) {
+          const H = 'Hmm…'; sora(c, 48, 600); const hw = c.measureText(H).width, hx = 960 - hw / 2, hy = 594 - 8 * up + 10 * (1 - up);
+          const sw = hx - 120 + ((t - I.hmm[0]) * 1.15 % 1) * (hw + 240), g = c.createLinearGradient(sw - 120, 0, sw + 120, 0);
+          g.addColorStop(0, '#8E8E93'); g.addColorStop(0.5, '#FFFFFF'); g.addColorStop(1, '#8E8E93');
+          [...H].forEach((ch, i) => { const t0 = I.hmm[0] + (i < 3 ? i * 0.1 : 0.38), p = E.out(prog(t, t0, t0 + 0.2)); if (p <= 0) return;
+            c.save(); c.globalAlpha = fade * p; if (p < 1) c.filter = `blur(${((1 - p) * 8).toFixed(1)}px)`; c.fillStyle = g; c.fillText(ch, hx + c.measureText(H.slice(0, i)).width, hy + (1 - p) * 8); c.restore(); });
+        }
+      }, 0.32 + 0.25 * after(t, I.ask[0], 2), 18, bam * 14);
+      x.restore();
+    }
+    // the white light of the studio switches on with a flash
+    const fl = t < I.bam - 0.03 ? 0 : Math.min(1, (t - I.bam + 0.03) / 0.03) * Math.exp(-Math.max(0, t - I.bam - 0.06) * 7);
+    if (fl > 0.002) { x.fillStyle = `rgba(255,255,255,${fl})`; x.fillRect(-20, -20, 1960, 1120); }
+  }
+  x.restore();
 }
 function drawOverlay(t) {
   const x = octx; x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, RW, RH); x.setTransform(PX, 0, 0, PX, 0, 0);
   DK = darkAt(t); const INK = mixHex('#1D1D1F', '#F5F5F7', DK), INK2 = mixHex('#6E6E73', '#A1A1A6', DK), VEIL = a => mixRGBA('#F5F5F7', '#121214', DK, a);
-  // ---- intro: the hexagon builds itself → wordmark → "Verification, Reimagined."
-  const I = TL.intro;
-  if (t < I.out[1]) {
-    const out = E.inOut(prog(t, I.out[0], I.out[1])); x.save(); x.globalAlpha = (1 - out) * (1 - out); x.translate(960, 470); x.scale(1 + out * 0.35, 1 + out * 0.35); x.translate(-960, -470);
-    const b = prog(t, I.build[0], I.build[1]); if (b > 0) {
-      const lock = t > I.build[0] + 0.62 ? Math.exp(-(t - I.build[0] - 0.62) * 5) : 0;
-      logo(x, 960, 410, 330, { build: b, shine: prog(t, I.shine[0], I.shine[1]), glow: clamp(b * 1.3) * (0.8 + 0.6 * lock) });
-    }
-    const wp = E.outExpo(prog(t, I.word[0], I.word[1])); if (wp > 0) { x.save(); x.globalAlpha = wp; x.translate(0, (1 - wp) * 24); wordmark(x, 960, 640, 64, 'center', 1, INK); x.restore(); }
-    if (t > I.tag[0]) headline(x, 'Verification, Reimagined.', 960, 742, 40, I.tag[0], t, { red: [1] });
-    x.restore();
-  }
+  drawIntro(x, t);
   // ---- title cards between chapters
   for (const c of CARDS) {
     const [a, b] = c.t; if (t < a - 0.05 || t > b + 0.4) continue; const inn = E.inOut(prog(t, a, a + 0.35)), out = E.inOut(prog(t, b - 0.05, b + 0.35)), k = inn * (1 - out);
@@ -353,7 +447,7 @@ function renderSub(t, jx, jy, seed) {
   for (let i = 1; i < BL.length; i++) { downP.u.tSrc.value = BL[i - 1].d.texture; downP.u.uTx.value.set(1 / BL[i - 1].d.width, 1 / BL[i - 1].d.height); run(downP, BL[i].d); }
   for (let i = BL.length - 2; i >= 0; i--) { upP.u.tSrc.value = (i === BL.length - 2 ? BL[i + 1].d : BL[i + 1].u).texture; upP.u.tAdd.value = BL[i].d.texture; upP.u.uTx.value.set(1 / BL[i + 1].d.width, 1 / BL[i + 1].d.height); run(upP, BL[i].u); }
   finalP.u.uFocus.value = FOCUS; finalP.u.uAp.value = apQ; finalP.u.uMax.value = maxQ; finalP.u.uSeed.value = seed;
-  finalP.u.uWorld.value = 1; finalP.u.uBloom.value = lerp(0.12, 0.34, D); finalP.u.uVig.value = lerp(0.1, 0.34, D);
+  finalP.u.uCA.value = 0.004 + 0.022 * kick(t); finalP.u.uWorld.value = 1; finalP.u.uBloom.value = lerp(0.12, 0.34, D); finalP.u.uVig.value = lerp(0.1, 0.34, D);
   { const f = lerp(0.961, 0.012, D); finalP.u.uFadeC.value.set(f, f, f + 0.008 * (1 - D)); }
   finalP.u.uFade.value = E.inOut(prog(t, 0, 0.5)) * (1 - E.inOut(prog(t, DUR - 0.9, DUR - 0.05)));
   run(finalP, rtFinal);

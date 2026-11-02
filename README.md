@@ -17,8 +17,8 @@ On Windows: download **[HACER_VIDEO_MEME.bat](https://github.com/Mrtyking/edit/r
 
 ## NexOAuth2 promo
 
-On Windows: download **[HACER_VIDEO_NEXOAUTH2.bat](https://github.com/Mrtyking/edit/raw/claude/bold-noether-63jrhe/HACER_VIDEO_NEXOAUTH2.bat)** and double-click it. Same flow as the others; if it sits next to `HACER_VIDEO_VOZNEST.bat` or `HACER_VIDEO_MEME.bat` it reuses that environment. The video (1080p60, 90 s) lands in `NexOAuth2_Video\videos`.
+On Windows: download **[HACER_VIDEO_NEXOAUTH2.bat](https://github.com/Mrtyking/edit/raw/claude/bold-noether-63jrhe/HACER_VIDEO_NEXOAUTH2.bat)** and double-click it. Same flow as the others; if it sits next to `HACER_VIDEO_VOZNEST.bat` or `HACER_VIDEO_MEME.bat` it reuses that environment. The video (1080p60, 91 s) lands in `NexOAuth2_Video\videos`.
 
-- `nexoauth2/` – the project: `src/timeline.js` (every timing), `src/search.js` (opening search), `src/scenes_*.js` (the site, Discord and dashboard scenes), `src/main.js` (3D studio, camera, title cards, pricing, CTA), `stems/mix.wav` (final sound design: SFX pack + our SFX library + the Discord notification, no music)
+- `nexoauth2/` – the project: `src/timeline.js` (every timing), `src/search.js` (opening search), `src/scenes_*.js` (the site, Discord and dashboard scenes), `src/main.js` (3D studio, camera, the opening, title cards, pricing, CTA), `stems/mix.wav` (final sound design, no music: only the moments that matter, from the SFX pack + our SFX library + the Discord notification)
 - `nexoauth2/audio.py` – rebuilds `stems/mix.wav` from the timeline (needs the SFX pack and the SFX library, which are not in this repo)
 - The Discord embed plays the server's own GIF: `hacer_video.cmd` downloads it on the PC that renders (its link is at the top of the GIF step) into `assets/embed.gif`, and the renderer decodes it frame by frame. Without it, the embed shows the built-in banner.

@@ -149,20 +149,20 @@ export function globe(ctx, t, cx, cy, R, lon0, lat0, { labels = 0, alpha = 1, do
 const MP = TL.map;
 const GLOBE_C = [841, 800], GLOBE_R = 268;
 const mapLon = t => lerp(-98, -30, E.inOut(prog(t, MP.spin[0], MP.spin[1])));
-const GLIFT = [66.5, 68.6];
+const GLIFT = [67.5, 69.6];
 const liftU = (t, [a, b]) => E.outBack(prog(t, a, a + 0.5), 1.35) * (1 - E.inOut(prog(t, b - 0.4, b)));
 function map(ctx, t) {
   botPage(ctx, t, 'Member map', 'Map');
   pageTitle(ctx, 381, 318, 'Member map', `Where members of ${DEMO.server} verify from, at the approximate city of their IP.`, { size: 30 });
   [['Members on the map', '2,418', 'of 2,418 (100% with location)', 'globe'], ['Countries', '17', '6 with 50+ members', 'flag'], ['Top country', 'United States', '1,204 members · 49.8%', 'trophy'], ['Verified in 24 h', '312', '+18% vs yesterday', 'activity']]
-    .forEach(([l, v, s, ic], i) => statCard(ctx, 381 + i * 353, 380, 341, 120, l, v, s, ic, { a: appear(t, 65.45 + i * 0.06, 0.4) }));
+    .forEach(([l, v, s, ic], i) => statCard(ctx, 381 + i * 353, 380, 341, 120, l, v, s, ic, { a: appear(t, 66.45 + i * 0.06, 0.4) }));
   panel(ctx, 381, 516, 920, 600, 18, { fill: '#08080A' });
   ctx.save(); rr(ctx, 381, 516, 920, 600, 18); ctx.clip(); for (let i = 0; i < 90; i++) { ctx.fillStyle = `rgba(255,255,255,${0.15 + 0.4 * hash(i * 3.3)})`; ctx.fillRect(381 + 920 * hash(i * 1.7), 516 + 600 * hash(i * 5.1), 1.4, 1.4); }
   globe(ctx, t, ...GLOBE_C, GLOBE_R, mapLon(t), 18, { labels: prog(t, MP.labels[0], MP.labels[1]), alpha: 1 - clamp(liftU(t, GLIFT) * 3) }); ctx.restore();
   [['Countries', 401], ['Members', 487], ['Live 24 h', 579]].forEach(([s, x], i) => chip(ctx, x, 532, s, i ? '#A1A1AA' : C.red2, { size: 12, h: 24 }));
   txt(ctx, 'Approximate locations · IP city level', 1281, 1096, 11.5, '#71717A', 500, 'right');
   panel(ctx, 1317, 516, 463, 600, 18); cardHead(ctx, 1317, 516, 463, 'Countries', 'Ranked by verified members');
-  Object.entries(COUNTRY).slice(0, 10).forEach(([code, [n, , , cnt]], i) => { const y = 618 + i * 48, p = appear(t, 65.7 + i * 0.05, 0.4); ctx.save(); ctx.globalAlpha *= p;
+  Object.entries(COUNTRY).slice(0, 10).forEach(([code, [n, , , cnt]], i) => { const y = 618 + i * 48, p = appear(t, 66.7 + i * 0.05, 0.4); ctx.save(); ctx.globalAlpha *= p;
     rr(ctx, 1337, y - 11, 30, 22, 5); ctx.fillStyle = '#1C1C20'; ctx.fill(); txt(ctx, code, 1352, y + 0.5, 11, '#E4E4E7', 800, 'center'); txt(ctx, n, 1380, y, 14, '#E4E4E7', 600);
     txt(ctx, fmt(cnt), 1700, y, 13.5, '#fff', 800, 'right'); txt(ctx, `${(cnt / 24.18).toFixed(1)}%`, 1760, y, 12, '#8A8A93', 600, 'right');
     rr(ctx, 1380, y + 14, 380, 3, 1.5); ctx.fillStyle = '#1C1C20'; ctx.fill(); rr(ctx, 1380, y + 14, Math.max(3, 380 * cnt / 1204 * E.out(p)), 3, 1.5); ctx.fillStyle = C.red; ctx.fill(); ctx.restore(); });
@@ -192,7 +192,7 @@ function iptracker(ctx, t) {
   const MX = 381, MY = 264, MW = 860, MH = 560, fk = E.inOutExpo(prog(t, IP.fly[0], IP.fly[1]));
   panel(ctx, MX, MY, MW, MH, 18, { fill: '#08080A' }); ctx.save(); rr(ctx, MX, MY, MW, MH, 18); ctx.clip();
   for (let i = 0; i < 70; i++) { ctx.fillStyle = `rgba(255,255,255,${0.12 + 0.4 * hash(i * 2.7)})`; ctx.fillRect(MX + MW * hash(i * 1.3), MY + MH * hash(i * 4.9), 1.4, 1.4); }
-  const lon0 = lerp(-72, AUS[1], E.inOut(prog(t, IP.fly[0] - 0.6, IP.fly[0] + 0.5))) + (t < IP.fly[0] ? (t - 68.8) * 6 : 0), lat0 = lerp(12, AUS[0], E.inOut(prog(t, IP.fly[0] - 0.4, IP.fly[0] + 0.5)));
+  const lon0 = lerp(-72, AUS[1], E.inOut(prog(t, IP.fly[0] - 0.6, IP.fly[0] + 0.5))) + (t < IP.fly[0] ? (t - 69.8) * 6 : 0), lat0 = lerp(12, AUS[0], E.inOut(prog(t, IP.fly[0] - 0.4, IP.fly[0] + 0.5)));
   const R = 230 * Math.pow(14, fk), cm = clamp((fk - 0.55) / 0.35);
   if (cm < 1) globe(ctx, t, MX + MW / 2, MY + MH / 2, R, lon0, lat0, { alpha: 1 - cm, dot: 1 + fk * 2 });
   if (cm > 0) { ctx.save(); ctx.globalAlpha *= cm; cityMap(ctx, t, MX, MY, MW, MH, lerp(0.55, 1, E.out(prog(t, IP.fly[1] - 0.4, IP.fly[1] + 1.2)))); ctx.restore(); }
@@ -346,18 +346,18 @@ function transfer(ctx, t) {
 // ================================================================ registry
 const BOTURL = 'nexoauth2.com/dashboard/bots/aegis-gate';
 const SC = {
-  members: { draw: members, chrome: () => ({ url: BOTURL + '/members' }), cursor: [[58.9, 1300, 900], [MB.open, 600, rowY(0), true, 0.6], [60.0, 600, rowY(0)]] },
+  members: { draw: members, chrome: () => ({ url: BOTURL + '/members' }), cursor: [[59.9, 1300, 900], [MB.open, 600, rowY(0), true, 0.6], [61.0, 600, rowY(0)]] },
   profile: { draw: profile, chrome: () => ({ url: BOTURL + `/members/${DEMO.user}` }) },
   security: { draw: security, chrome: () => ({ url: BOTURL + '/security' }) },
   map: { draw: map, chrome: () => ({ url: BOTURL + '/map' }) },
-  ip: { draw: iptracker, chrome: () => ({ url: 'nexoauth2.com/dashboard/ip-tracker' }), cursor: [[69.0, 1500, 330], [IP.track, ...ctr(TRACK), true, 0.5], [70.2, ...ctr(TRACK)]] },
+  ip: { draw: iptracker, chrome: () => ({ url: 'nexoauth2.com/dashboard/ip-tracker' }), cursor: [[70.0, 1500, 330], [IP.track, ...ctr(TRACK), true, 0.5], [71.2, ...ctr(TRACK)]] },
   analytics: { draw: analytics, chrome: () => ({ url: BOTURL + '/analytics' }) },
-  tempmail: { draw: tempmail, chrome: () => ({ url: 'nexoauth2.com/dashboard/temp-mail' }), cursor: [[75.85, 900, 500], [TM.create, ...ctr(CREATE_T), true, 0.4], [76.9, ...ctr(CREATE_T)]] },
-  domain: { draw: domain, chrome: () => ({ url: BOTURL + '/domain' }), cursor: [[77.05, 700, 700], [DM.add, ...ctr(ADD_D), true, 0.35], [78.1, ...ctr(ADD_D)]] },
-  transfer: { draw: transfer, chrome: () => ({ url: BOTURL + '/settings' }), cursor: [[78.25, 1300, 700], [TR.btn, ...ctr(XB), true, 0.3], [TR.go, ...ctr(GO), true, 0.55], [81.0, ...ctr(GO)]] },
+  tempmail: { draw: tempmail, chrome: () => ({ url: 'nexoauth2.com/dashboard/temp-mail' }), cursor: [[76.85, 900, 500], [TM.create, ...ctr(CREATE_T), true, 0.4], [77.9, ...ctr(CREATE_T)]] },
+  domain: { draw: domain, chrome: () => ({ url: BOTURL + '/domain' }), cursor: [[78.05, 700, 700], [DM.add, ...ctr(ADD_D), true, 0.35], [79.1, ...ctr(ADD_D)]] },
+  transfer: { draw: transfer, chrome: () => ({ url: BOTURL + '/settings' }), cursor: [[79.25, 1300, 700], [TR.btn, ...ctr(XB), true, 0.3], [TR.go, ...ctr(GO), true, 0.55], [82.0, ...ctr(GO)]] },
 };
 export const SCENES = SC;
 export const LAYERS = [
-  { def: { w: 1399, h: 124, tex: 2, draw: (ctx, t) => heroCard(ctx, t, 0, 0, 1399, 124) }, at: [HERO[0] + HERO[2] / 2, HERO[1] + HERO[3] / 2], t: [60.95, 62.3], z: 1.3 },
+  { def: { w: 1399, h: 124, tex: 2, draw: (ctx, t) => heroCard(ctx, t, 0, 0, 1399, 124) }, at: [HERO[0] + HERO[2] / 2, HERO[1] + HERO[3] / 2], t: [61.95, 63.3], z: 1.3 },
   { def: { w: 760, h: 760, tex: 2, draw: (ctx, t) => globe(ctx, t, 380, 380, GLOBE_R, mapLon(t), 18, { labels: prog(t, MP.labels[0], MP.labels[1]) }) }, at: GLOBE_C, t: GLIFT, z: 2.2 },
 ];

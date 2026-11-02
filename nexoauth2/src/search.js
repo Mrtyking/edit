@@ -14,7 +14,7 @@ const SUG = [['logo', 'nexoauth2.com', 'Discord verification and member recovery
 const SUG_Y = R_FIELD.y + R_FIELD.h + 14, rowY = i => SUG_Y + 10 + i * 66 + 33;
 const OPEN = [CARD.x + 44, CARD.y + CARD.h - 90, 286, 54];
 const ctr = r => [r[0] + r[2] / 2, r[1] + r[3] / 2];
-export const SEARCH_CURSOR = [[6.32, 930, 640], [S.click, 360, rowY(0), true, 0.42], [S.open, ...ctr(OPEN), true, 0.5], [8.3, ...ctr(OPEN)]];
+export const SEARCH_CURSOR = [[7.32, 930, 640], [S.click, 360, rowY(0), true, 0.42], [S.open, ...ctr(OPEN), true, 0.5], [9.3, ...ctr(OPEN)]];
 const mixC = (a, b, k) => { const A = parseInt(a.slice(1), 16), B = parseInt(b.slice(1), 16), ch = s => Math.round(lerp(A >> s & 255, B >> s & 255, k)); return `rgb(${ch(16)},${ch(8)},${ch(0)})`; };
 const lr = (a, b, k) => ({ x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k), w: lerp(a.w, b.w, k), h: lerp(a.h, b.h, k), r: lerp(a.r, b.r, k) });
 

@@ -121,7 +121,7 @@ function dash0(ctx, t) {
   txt(ctx, 'Connect your first bot', 452, 218, 15.5, '#fff', 700); txt(ctx, 'Bring your own Discord application. It gets an isolated workspace with its own servers, pages and members.', 452, 240, 13, '#A1A1AA', 500);
   btn(ctx, 1600, 210, 160, 36, 'Go to Bots', { kind: 'dark', iconR: 'arrow', size: 14 });
   [['Verified members', '0', 'All time', 'users'], ['Verification rate', '—', 'Last 30 days', 'circlecheck'], ['Security events', '0', 'Last 30 days', 'shield'], ['Active bots', '0 / 5', 'Connect one to start', 'bot'], ['Servers', '0', 'No servers yet', 'server']]
-    .forEach(([l, v, s, ic], i) => statCard(ctx, 381 + i * 282.4, 290, 270, 126, l, v, s, ic, { a: appear(t, 16.35 + i * 0.05, 0.4) }));
+    .forEach(([l, v, s, ic], i) => statCard(ctx, 381 + i * 282.4, 290, 270, 126, l, v, s, ic, { a: appear(t, 17.35 + i * 0.05, 0.4) }));
   panel(ctx, 381, 442, 927, 418, 18); cardHead(ctx, 381, 442, 927, 'Verification volume', 'Successful verifications per day · last 30 days');
   panel(ctx, 1326, 442, 454, 418, 18); cardHead(ctx, 1326, 442, 454, 'Results', 'Failed vs blocked · last 14 days');
   [[844, 680], [1553, 680]].forEach(([cx, cy]) => { rr(ctx, cx - 26, cy - 46, 52, 52, 14); ctx.fillStyle = '#141416'; ctx.fill(); ICON(ctx, 'chart', cx - 12, cy - 32, 24, '#5B5B63'); txt(ctx, 'No data yet', cx, cy + 28, 14.5, '#71717A', 600, 'center'); });
@@ -210,14 +210,14 @@ export function botCard(ctx, t, x, y) {
 const DASH = 'nexoauth2.com/dashboard';
 const SC = {
   landing: { draw: landing, chrome: t => ({ url: 'nexoauth2.com', load: prog(t, L.click, L.click + 0.5) }),
-    cursor: [[10.55, 1380, 940], [11.35, 752, 383, false, 0.7], [L.click, 752, 383, true], [11.95, 752, 383]] },
+    cursor: [[11.55, 1380, 940], [12.35, 752, 383, false, 0.7], [L.click, 752, 383, true], [12.95, 752, 383]] },
   signup: { draw: signup, chrome: t => ({ url: 'nexoauth2.com/register', load: prog(t, SU.create + 0.05, SU.busy[1] + 0.1) }),
-    cursor: [[14.3, 860, 820], [SU.agree - 0.02, 296, 700, false, 0.4], [SU.agree, 296, 700, true], [15.45, 600, 846, false, 0.5], [SU.create, 600, 846, true], [16.2, 600, 846]] },
-  dash0: { draw: dash0, chrome: () => ({ url: DASH }), cursor: [[16.65, 900, 640], [17.35, 80, 203, false, 0.65], [TL.dash0.bots, 80, 203, true], [17.95, 80, 203]] },
+    cursor: [[15.3, 860, 820], [SU.agree - 0.02, 296, 700, false, 0.4], [SU.agree, 296, 700, true], [16.45, 600, 846, false, 0.5], [SU.create, 600, 846, true], [17.2, 600, 846]] },
+  dash0: { draw: dash0, chrome: () => ({ url: DASH }), cursor: [[17.65, 900, 640], [18.35, 80, 203, false, 0.65], [TL.dash0.bots, 80, 203, true], [18.95, 80, 203]] },
   bots: { draw: bots, chrome: () => ({ url: DASH + '/bots' }),
-    cursor: [[18.65, 1300, 760], [19.0, 1719, 169, false, 0.4], [B.connect, 1719, 169, true],
-      [20.8, ...aimR(NEXT(0)), false, 0.5], [B.next1, ...aimR(NEXT(0)), true], [22.25, ...aimR(NEXT(1)), false, 0.45], [B.next2, ...aimR(NEXT(1)), true],
-      [23.5, ...aimR(NEXT(2)), false, 0.55], [B.connectBtn, ...aimR(NEXT(2)), true], [24.95, ...aimR(NEXT(3)), false, 0.55], [B.close, ...aimR(NEXT(3)), true], [25.7, ...aimR(NEXT(3))]] },
+    cursor: [[19.65, 1300, 760], [20.0, 1719, 169, false, 0.4], [B.connect, 1719, 169, true],
+      [21.8, ...aimR(NEXT(0)), false, 0.5], [B.next1, ...aimR(NEXT(0)), true], [23.25, ...aimR(NEXT(1)), false, 0.45], [B.next2, ...aimR(NEXT(1)), true],
+      [24.5, ...aimR(NEXT(2)), false, 0.55], [B.connectBtn, ...aimR(NEXT(2)), true], [25.95, ...aimR(NEXT(3)), false, 0.55], [B.close, ...aimR(NEXT(3)), true], [26.7, ...aimR(NEXT(3))]] },
 };
 export const SCENES = SC;
 export const LAYERS = [
