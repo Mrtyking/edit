@@ -1,0 +1,6 @@
+{
+  "name": "mfc-promo",
+  "private": true,
+  "description": "Render del promo de Mafia China CTR",
+  "dependencies": { "playwright": "1.63.0" }
+}

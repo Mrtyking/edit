@@ -1,0 +1,1 @@
+2 nov 2026 - v1: primera version del promo de MFC (intro con el templo de la web, postulacion, login, resumen, ruleta, pase, misiones, insignias, tienda, inventario, personalizar, ranking, perfil y mascota, escuadrones, lideres, reinicio, juramento)
