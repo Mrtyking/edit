@@ -1,1 +1,1 @@
-2 nov 2026 - v10.7: sonido en cada permiso que se marca al conectar el bot
+2 nov 2026 - v10.8: sonido al salir las sugerencias y el resultado de la busqueda
