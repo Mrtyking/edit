@@ -66,10 +66,8 @@ def add(x, t, db=0.0, pan=0.0, at='onset', what=''):
 
 # ---------------------------------------------------------------- the palette (only the cleanest, most premium takes)
 TYPING = '/aaun_ceo_RealEstate_verde/Typing.wav'   # a clean recording of single keystrokes: each one cut out
-KEYS = Pool(*[lib(TYPING[1:], o - 0.006, o + 0.085, 0.03) for o in (0.178, 0.444, 0.276, 0.71, 0.61, 0.944, 0.81, 1.11)],
-            load('Ui Sound Effects/v4) type & delete (2).wav'), lib('Premium_verde_UI/Typing.wav'))
-MOUSE = Pool(load('Clicks/Click 2.wav'),
-             load('Clicks/mouse-click-198485.wav', 0.56, 0.84, 0.05), load('Clicks/mouse-click-198485.wav', 5.10, 5.40, 0.05))   # a real mouse: press + release
+KEYS = lib(TYPING[1:], 0.178 - 0.006, 0.178 + 0.085, 0.03)   # one keystroke, the cleanest: the same sound for every letter in the video
+MOUSE = load('Clicks/Click 2.wav')                            # one mouse click (press + release): the same sound for every click
 SNAP = load('Clicks/Cinematic Click.wav')          # a crisp transient laid under the big clicks
 WH = Pool(lib('Premium_verde_UI/Deep_Whoosh.wav'), load('Whooshes/Smooth And Fast Whoosh.wav'), lib('aaun_ceo_RealEstate_verde/Woosh.wav'))
 SWIPE = load('Whooshes/Cinematic Mediam Whoosh.wav')
@@ -84,15 +82,14 @@ def typing(text, a, b, db=-13, what=''):
     for k in range(1, n + 1):
         t = a + (k - 0.5) / n * (b - a)
         if t - last < 0.048: continue
-        last = t; add(KEYS, t, db + ((k * 7) % 5 - 2) * 0.7, ((k * 37) % 9 - 4) * 0.035, 'onset', what if k == 1 else '')
+        last = t; add(KEYS, t, -12, ((k * 37) % 9 - 4) * 0.035, 'onset', what if k == 1 else '')
 T = TL
 BIG = {T['search']['click'], T['search']['open'], T['landing']['click'], T['signup']['create'], T['bots']['connect'], T['bots']['next1'], T['bots']['next2'], T['bots']['connectBtn'],
        T['bots']['close'], T['pages']['newBtn'], T['pages']['create'], T['editor']['publish'], T['embed']['saveTpl'], T['embed']['publish'], T['logcfg']['save'], T['logcfg']['test'],
        T['discord']['verify'], T['discord']['visit'], T['vpage']['cont'], T['oauth']['authorize'], T['verified']['open'], T['members']['open'], T['ip']['track'],
        T['tempmail']['create'], T['domain']['add'], T['transfer']['btn'], T['transfer']['go'], T['dash0']['bots']}
 def click(t, big, what=''):
-    add(MOUSE, t, -9 if big else -14, 0.12, 'onset', what)
-    if big: add(SNAP, t + 0.002, -22, 0.12)
+    add(MOUSE, t, -10, 0.12, 'onset', what)   # every click sounds the same
 
 # ================================================================ the opening (graphite)
 I = T['intro']

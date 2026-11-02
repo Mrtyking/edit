@@ -1,1 +1,1 @@
-2 nov 2026 - v10.4: la chispa llena la pantalla de luz y el logo sale enfocandose (sin circulo ni rayas)
+2 nov 2026 - v10.5: mismo sonido de tecla y de clic en todo el video
