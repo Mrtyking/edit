@@ -222,7 +222,10 @@ function drawIntro(x, t) {
     c.globalCompositeOperation = 'lighter';
     const f = Math.exp(-h * 6), R = 140 + 640 * E.outExpo(Math.min(1, h / 0.5)), g = c.createRadialGradient(CX, CY, 0, CX, CY, R);
     g.addColorStop(0, `rgba(255,255,255,${0.95 * f})`); g.addColorStop(0.25, `rgba(255,110,110,${0.45 * f})`); g.addColorStop(1, 'rgba(255,40,40,0)'); c.fillStyle = g; c.fillRect(CX - R, CY - R, 2 * R, 2 * R);
-    const rp = E.outExpo(prog(h, 0, 0.9)); c.beginPath(); c.ellipse(CX, CY, 70 + 900 * rp, (70 + 900 * rp) * 0.9, 0, 0, 7); c.strokeStyle = `rgba(255,150,150,${0.75 * (1 - rp) ** 2})`; c.lineWidth = 2 + 7 * (1 - rp); c.stroke();
+    // a round wave of soft light (no hard edge) rolls out, and a warm round light stays behind the mark for a moment
+    const rp = E.outExpo(prog(h, 0, 1.05)), RR = 140 + 780 * rp, wa = 0.3 * (1 - rp) ** 1.4, wg = c.createRadialGradient(CX, CY, 0, CX, CY, RR);
+    wg.addColorStop(0, `rgba(255,90,90,${0.1 * wa})`); wg.addColorStop(0.4, `rgba(255,110,110,${0.45 * wa})`); wg.addColorStop(0.62, `rgba(255,135,135,${wa})`); wg.addColorStop(0.82, `rgba(255,120,120,${0.35 * wa})`); wg.addColorStop(1, 'rgba(255,110,110,0)'); c.fillStyle = wg; c.fillRect(CX - RR, CY - RR, 2 * RR, 2 * RR);
+    const L = Math.exp(-h * 1.8), lg = c.createRadialGradient(CX, CY, 0, CX, CY, 360); lg.addColorStop(0, `rgba(255,120,120,${0.4 * L})`); lg.addColorStop(0.45, `rgba(255,70,80,${0.16 * L})`); lg.addColorStop(1, 'rgba(255,60,60,0)'); c.fillStyle = lg; c.fillRect(CX - 360, CY - 360, 720, 720);
     for (let i = 0; i < 18; i++) { const a = i / 18 * Math.PI * 2 + hash(i) * 0.4, v = 380 + 520 * hash(i + 9), d0 = v * (1 - Math.exp(-h * 4)) / 4 * 4, d1 = Math.max(0, d0 - 40 - 60 * Math.exp(-h * 5)), al = clamp(1 - h / 0.85);
       if (al <= 0) continue; c.beginPath(); c.moveTo(CX + Math.cos(a) * (60 + d1), CY + Math.sin(a) * (60 + d1)); c.lineTo(CX + Math.cos(a) * (60 + d0), CY + Math.sin(a) * (60 + d0)); c.strokeStyle = `rgba(255,${120 + Math.round(90 * hash(i + 2))},${120 + Math.round(60 * hash(i + 4))},${al})`; c.lineWidth = 2.2; c.lineCap = 'round'; c.stroke(); }
   }, 1.2, 22);

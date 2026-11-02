@@ -1,1 +1,1 @@
-2 nov 2026 - v10: intro nueva (destello, logo, pregunta, Hmm, flash) y sonido solo en lo importante
+2 nov 2026 - v10.1: intro sin la linea del circulo, ahora una luz redonda suave
