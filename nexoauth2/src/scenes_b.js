@@ -146,6 +146,8 @@ export function verifyCard(ctx, t, cx, top, { w = 395, R = 10, badge = 0, checks
   ICON(ctx, 'shieldcheck', cx - 142, y - 6, 12, '#71717A', 1.8); txt(ctx, 'Protected by NexOAuth2 · Privacy policy · Terms of service', cx - 125, y, 10.5, '#71717A', 500);
   ctx.restore(); return H;
 }
+const AUR = document.createElement('canvas');
+function auroraLayer(w, h) { if (AUR.width < w || AUR.height < h) { AUR.width = Math.max(AUR.width, w); AUR.height = Math.max(AUR.height, h); } return AUR; }
 // page backgrounds: "Crimson Glass" (k = 0) → "Aurora" (k = 1)
 export function auroraBg(ctx, t, x, y, w, h, k = 1) {
   ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip(); ctx.fillStyle = '#0B0B0B'; ctx.fillRect(x, y, w, h);
@@ -155,12 +157,17 @@ export function auroraBg(ctx, t, x, y, w, h, k = 1) {
     const B = [['255,31,31', 0.22, 0.32, 0.55, 0.42], ['176,18,74', 0.7, 0.28, 0.5, 0.36], ['255,90,60', 0.5, 0.55, 0.45, 0.22], ['110,6,6', 0.35, 0.75, 0.6, 0.5]];
     B.forEach(([c, bx, by, r, a], i) => { const px = x + w * (bx + 0.08 * Math.sin(t * 0.35 + i * 2.1)), py = y + h * (by + 0.05 * Math.cos(t * 0.3 + i)), rad = Math.max(w, h) * r;
       ctx.save(); ctx.translate(px, py); ctx.scale(1, 0.55); const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, rad); gg.addColorStop(0, `rgba(${c},${a * k})`); gg.addColorStop(1, `rgba(${c},0)`); ctx.fillStyle = gg; ctx.fillRect(-rad, -rad, rad * 2, rad * 2); ctx.restore(); });
-    for (let i = 0; i < 9; i++) {   // aurora curtains: soft slanted rays that sway
-      const rx = x + w * (0.08 + 0.105 * i) + Math.sin(t * 0.6 + i * 1.3) * w * 0.03, rw = w * (0.03 + 0.05 * hash(i * 2.7)), sl = (hash(i * 4.4) - 0.5) * 0.5;
-      ctx.save(); ctx.translate(rx, y + h * 0.42); ctx.transform(1, 0, sl, 1, 0, 0); const rg = ctx.createLinearGradient(-rw, 0, rw, 0);
+    // aurora curtains: soft slanted rays drawn on their own layer, then faded at both ends so no ray ever ends in a hard edge
+    const L = auroraLayer(Math.ceil(w), Math.ceil(h)), c = L.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, L.width, L.height); c.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 9; i++) {
+      const rx = w * (0.08 + 0.105 * i) + Math.sin(t * 0.6 + i * 1.3) * w * 0.03, rw = w * (0.03 + 0.05 * hash(i * 2.7)), sl = (hash(i * 4.4) - 0.5) * 0.5;
+      c.save(); c.translate(rx, h * 0.5); c.transform(1, 0, sl, 1, 0, 0); const rg = c.createLinearGradient(-rw, 0, rw, 0);
       const a = (0.05 + 0.08 * hash(i * 3.3)) * k * (0.7 + 0.3 * Math.sin(t * 1.1 + i)); rg.addColorStop(0, 'rgba(255,40,50,0)'); rg.addColorStop(0.5, `rgba(255,${50 + 40 * hash(i)},${70 + 60 * hash(i * 2)},${a})`); rg.addColorStop(1, 'rgba(255,40,50,0)');
-      ctx.fillStyle = rg; ctx.fillRect(-rw, -h * 0.5, rw * 2, h * 0.75); ctx.restore();
+      c.fillStyle = rg; c.fillRect(-rw, -h * 0.6, rw * 2, h * 1.2); c.restore();
     }
+    c.globalCompositeOperation = 'destination-in'; const fade = c.createLinearGradient(0, 0, 0, h); fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(0.18, 'rgba(0,0,0,0.85)'); fade.addColorStop(0.5, 'rgba(0,0,0,1)'); fade.addColorStop(0.85, 'rgba(0,0,0,0.5)'); fade.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = fade; c.fillRect(0, 0, L.width, L.height); c.globalCompositeOperation = 'source-over';
+    ctx.drawImage(L, 0, 0, Math.ceil(w), Math.ceil(h), x, y, Math.ceil(w), Math.ceil(h));
     ctx.globalCompositeOperation = 'source-over';
     const v = ctx.createLinearGradient(0, y, 0, y + h); v.addColorStop(0, 'rgba(0,0,0,0.55)'); v.addColorStop(0.35, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.25)'); ctx.fillStyle = v; ctx.fillRect(x, y, w, h);
   }
@@ -237,7 +244,7 @@ const CONTENT = [['Title', 'heading'], ['Paragraph', 'type'], ['Rich text', 'fil
 const STATS = [['Verified', 'usercheck'], ['Members', 'users'], ['Status', 'circlecheck']];
 const BADGE = TILE(SEC.content, 3);
 const BGOPT = ['Solid', 'Gradient', 'Radial', 'Mesh', 'Image', 'Particles', 'Grid', 'Noise', 'Glow', 'Aurora', 'Animated', 'Pearl'];
-const bgRect = i => [1621 + (i % 3) * 92.5, 669 + Math.floor(i / 3) * 34, 88, 28];
+const bgRect = i => [1621 + (i % 3) * 92.5, 620 + Math.floor(i / 3) * 36, 88, 28];
 const RAD = { x: 1621, w: 272, y: 486 }, rad = t => lerp(10, 22, E.inOut(prog(t, ED.radius[0], ED.radius[1])));
 const DEV = [1025, 1053, 1081], PUB = [1792, 12, 90, 32];
 const devK = t => E.inOut(prog(t, ED.phone, ED.phone + 0.45)) * (1 - E.inOut(prog(t, ED.desk, ED.desk + 0.45)));
@@ -261,7 +268,8 @@ function editor(ctx, t) {
   const s = lerp(1, 0.92, dk); ctx.translate(938, top + H / 2); ctx.scale(s, s); ctx.translate(-938, -(top + H / 2));
   verifyCard(ctx, t, 938, top, { R: rad(t), badge: bk, slot });
   ctx.restore();
-  rr(ctx, fx + 0.5, fy + 0.5, fw - 1, fh - 1, fr); ctx.strokeStyle = dk > 0.05 ? `rgba(255,255,255,${0.08 + 0.1 * dk})` : 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1 + 3 * dk; ctx.stroke();
+  rr(ctx, fx + 0.5, fy + 0.5, fw - 1, fh - 1, fr); ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1; ctx.stroke();
+  if (dk > 0.02) { ctx.save(); ctx.globalAlpha = dk; rr(ctx, fx - 5, fy - 5, fw + 10, fh + 10, fr + 5); ctx.strokeStyle = '#1C1C20'; ctx.lineWidth = 8; ctx.stroke(); ctx.restore(); }   // phone body: dark, like real hardware
   if (dk > 0.05) { ctx.save(); ctx.globalAlpha = dk; rr(ctx, 938 - 50, fy + 14, 100, 24, 12); ctx.fillStyle = '#000'; ctx.fill(); ctx.restore(); }
   // left panel
   ctx.fillStyle = '#0A0A0B'; ctx.fillRect(0, 56, 271, PH - 56); ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(271, 56, 1, PH - 56);
@@ -285,8 +293,8 @@ function editor(ctx, t) {
   txt(ctx, 'Disable all animations', 1621, 520, 13, '#E4E4E7', 600); txt(ctx, 'Visitors with reduced motion never see', 1621, 538, 11, '#71717A', 500); txt(ctx, 'animations.', 1621, 553, 11, '#71717A', 500); toggle(ctx, 1858, 520, 0);
   divider(ctx, RX, PW, 578); head('BACKGROUND EDITOR', 600);
   const bsel = t >= ED.aurora ? 9 : 2; BGOPT.forEach((n, i) => { const [x, y, w, h] = bgRect(i); rr(ctx, x, y, w, h, 7); ctx.fillStyle = i === bsel ? 'rgba(255,45,45,0.14)' : '#101012'; ctx.fill(); ctx.strokeStyle = i === bsel ? 'rgba(255,70,70,0.7)' : C.line; ctx.lineWidth = 1; ctx.stroke(); txt(ctx, n, x + w / 2, y + h / 2 + 0.5, 12, i === bsel ? '#fff' : '#A1A1AA', i === bsel ? 700 : 600, 'center'); });
-  swatch('Base color', 818, '#0b0b0b', '#0B0B0B'); swatch('Secondary', 885, '#6e0606', '#6E0606'); swatch('Highlight', 952, '#ff1f1f', '#FF1F1F');
-  txt(ctx, 'Intensity', 1621, 1022, 13, '#E4E4E7', 600); input(ctx, 1818, 1008, 50, 28, String(Math.round(lerp(60, 80, ak))), { monoF: true, size: 13 }); txt(ctx, '%', 1874, 1022, 11.5, '#71717A', 600); slider(ctx, 1621, 1058, 272, lerp(0.6, 0.8, ak), { knob: 9 });
+  swatch('Base color', 780, '#0b0b0b', '#0B0B0B'); swatch('Secondary', 847, '#6e0606', '#6E0606'); swatch('Highlight', 914, '#ff1f1f', '#FF1F1F');
+  txt(ctx, 'Intensity', 1621, 984, 13, '#E4E4E7', 600); input(ctx, 1818, 970, 50, 28, String(Math.round(lerp(60, 80, ak))), { monoF: true, size: 13 }); txt(ctx, '%', 1874, 984, 11.5, '#71717A', 600); slider(ctx, 1621, 1020, 272, lerp(0.6, 0.8, ak), { knob: 9 });
   // top bar
   ctx.fillStyle = '#0A0A0B'; ctx.fillRect(0, 0, PW, 56); ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(0, 55, PW, 1);
   ICON(ctx, 'chevL', 18, 18, 20, '#A1A1AA'); logo(ctx, 63, 27, 26);

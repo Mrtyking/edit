@@ -1,1 +1,1 @@
-2 nov 2026 - v7: cursor nuevo (flecha moderna sin cola)
+2 nov 2026 - v8: fondo Aurora sin cortes, marco de telefono oscuro, panel de fondo mas compacto
