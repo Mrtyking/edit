@@ -1,1 +1,1 @@
-2 nov 2026 - v10.10: tic por cada paso al subir el slider
+2 nov 2026 - v10.11: otro sonido para los checks Passed

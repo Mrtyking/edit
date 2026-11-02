@@ -142,7 +142,8 @@ add(POP, B['done'] + 0.05, -5, 0, 'onset', 'bot conectado')
 # the security checks pass one by one: a clean tick each, a little higher every time (like a progress chime)
 def pitch(x, st): r = 2 ** (st / 12); i = np.arange(0, len(x) - 1, r); return np.stack([np.interp(i, np.arange(len(x)), x[:, c]) for c in (0, 1)], 1)
 TICK = load('Pop/Smooth Pop.wav', 0, 0.3, 0.08); V2 = T['vpage2']
-for k, st in enumerate((0, 3, 7)): add(pitch(TICK, st), V2['checks'][0] + k * 0.22 + 0.08, -9, -0.15 + 0.15 * k, 'onset', 'check: Passed' if k == 0 else '')
+PASS = load('Ui Sound Effects/Ui Granular, Button, Select   (9).wav')   # a short clean granular select for each "Passed"
+for k in range(3): add(PASS, V2['checks'][0] + k * 0.22 + 0.08, -9, -0.15 + 0.15 * k, 'onset', 'check: Passed' if k == 0 else '')
 for k, st in enumerate((0, 2, 4, 5, 7, 9, 11)): add(pitch(TICK, st), B['scopes'][0] + k * 0.1 + 0.06, -12, -0.3 + 0.1 * k, 'onset', 'se marcan los 7 permisos' if k == 0 else '')   # the bot's 7 scopes
 add(pitch(TICK, 4), SU['cf'][0] + 0.05, -14, -0.1); add(pitch(TICK, 11), SU['cf'][1], -8, -0.1, 'onset', 'Cloudflare: Success!')   # the security check passes
 # sliders: a fine detent tick on every step of the value (Base radius 10 → 22 px, same easing as the picture)
