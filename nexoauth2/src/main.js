@@ -196,7 +196,7 @@ function lit(x, draw, glow = 0.6, r = 24, soft = 0) {   // soft: extra blur of t
 }
 const after = (t, a, k) => t < a ? 0 : Math.exp(-(t - a) * k);
 // impacts of the opening: they shake the camera and split the colours for an instant
-const kick = t => { const I = TL.intro; return after(t, I.hit, 9) + 0.55 * after(t, I.burst, 10) + 0.9 * after(t, I.bam, 11); };
+const kick = t => { const I = TL.intro; return 0.4 * after(t, I.hit, 9) + 0.55 * after(t, I.burst, 10) + 0.9 * after(t, I.bam, 11); };
 const ASK = 'I need secure verification for my Discord.', ASK_RED = [7, 13];   // "secure" in red
 function drawIntro(x, t) {
   const I = TL.intro; if (t >= I.bam + 0.45) return;
@@ -213,33 +213,31 @@ function drawIntro(x, t) {
     c.globalCompositeOperation = 'lighter';
     for (let k = 26; k >= 0; k--) { const v = u - k * 0.011; if (v < 0) continue; const [px, py] = B(v), f = 1 - k / 27; c.beginPath(); c.arc(px, py, 1.2 + 5 * f * f, 0, 7); c.fillStyle = `rgba(255,${Math.round(90 + 150 * f * f)},${Math.round(80 + 150 * f * f)},${0.85 * f})`; c.fill(); }
     const [hx, hy] = B(u); c.beginPath(); c.arc(hx, hy, 7, 0, 7); c.fillStyle = '#FFFFFF'; c.fill();
-    const ch = prog(t, I.hit - 0.28, I.hit); if (ch > 0) { c.beginPath(); c.arc(CX, CY, lerp(90, 6, E.in(ch)), 0, 7); c.strokeStyle = `rgba(255,130,130,${0.7 * ch})`; c.lineWidth = 2; c.stroke(); }   // the target charges
   }, 1.6, 18);
 
-  // ---- 2. hit: flash, shock ring and sparks; the mark is there
+  // ---- 2. the spark floods the whole screen with light: it opens from the centre to both edges and drains away, and the mark is left behind
   const h = t - I.hit;
-  if (h >= 0 && h < 1.1) lit(x, c => {
+  if (h >= 0 && h < 1.2) lit(x, c => {
     c.globalCompositeOperation = 'lighter';
-    const f = Math.exp(-h * 6), R = 140 + 640 * E.outExpo(Math.min(1, h / 0.5)), g = c.createRadialGradient(CX, CY, 0, CX, CY, R);
-    g.addColorStop(0, `rgba(255,255,255,${0.95 * f})`); g.addColorStop(0.25, `rgba(255,110,110,${0.45 * f})`); g.addColorStop(1, 'rgba(255,40,40,0)'); c.fillStyle = g; c.fillRect(CX - R, CY - R, 2 * R, 2 * R);
-    // a round wave of soft light (no hard edge) rolls out, and a warm round light stays behind the mark for a moment
-    const rp = E.outExpo(prog(h, 0, 1.05)), RR = 140 + 780 * rp, wa = 0.3 * (1 - rp) ** 1.4, wg = c.createRadialGradient(CX, CY, 0, CX, CY, RR);
-    wg.addColorStop(0, `rgba(255,90,90,${0.1 * wa})`); wg.addColorStop(0.4, `rgba(255,110,110,${0.45 * wa})`); wg.addColorStop(0.62, `rgba(255,135,135,${wa})`); wg.addColorStop(0.82, `rgba(255,120,120,${0.35 * wa})`); wg.addColorStop(1, 'rgba(255,110,110,0)'); c.fillStyle = wg; c.fillRect(CX - RR, CY - RR, 2 * RR, 2 * RR);
-    const L = Math.exp(-h * 1.8), lg = c.createRadialGradient(CX, CY, 0, CX, CY, 360); lg.addColorStop(0, `rgba(255,120,120,${0.4 * L})`); lg.addColorStop(0.45, `rgba(255,70,80,${0.16 * L})`); lg.addColorStop(1, 'rgba(255,60,60,0)'); c.fillStyle = lg; c.fillRect(CX - 360, CY - 360, 720, 720);
-    for (let i = 0; i < 18; i++) { const a = i / 18 * Math.PI * 2 + hash(i) * 0.4, v = 380 + 520 * hash(i + 9), d0 = v * (1 - Math.exp(-h * 4)) / 4 * 4, d1 = Math.max(0, d0 - 40 - 60 * Math.exp(-h * 5)), al = clamp(1 - h / 0.85);
-      if (al <= 0) continue; c.beginPath(); c.moveTo(CX + Math.cos(a) * (60 + d1), CY + Math.sin(a) * (60 + d1)); c.lineTo(CX + Math.cos(a) * (60 + d0), CY + Math.sin(a) * (60 + d0)); c.strokeStyle = `rgba(255,${120 + Math.round(90 * hash(i + 2))},${120 + Math.round(60 * hash(i + 4))},${al})`; c.lineWidth = 2.2; c.lineCap = 'round'; c.stroke(); }
-  }, 1.2, 22);
+    const f = Math.exp(-h * 2.6) * clamp(h / 0.05); c.fillStyle = `rgba(255,70,80,${0.16 * f})`; c.fillRect(0, 0, 1920, 1080);
+    const o = E.outExpo(prog(h, 0, 0.9)), a = 0.2 * (1 - prog(h, 0.1, 0.85)), bw = 420 + 600 * o;
+    for (const d of [-1, 1]) { const sx = CX + d * o * 1300, g = c.createLinearGradient(sx - bw, 0, sx + bw, 0);
+      g.addColorStop(0, 'rgba(255,140,140,0)'); g.addColorStop(0.5, `rgba(255,150,150,${a})`); g.addColorStop(1, 'rgba(255,140,140,0)'); c.fillStyle = g; c.fillRect(sx - bw, 0, 2 * bw, 1080); }
+    const L = Math.exp(-h * 1.6), lg = c.createRadialGradient(CX, CY, 0, CX, CY, 420); lg.addColorStop(0, `rgba(255,150,150,${0.5 * L})`); lg.addColorStop(0.45, `rgba(255,70,80,${0.18 * L})`); lg.addColorStop(1, 'rgba(255,60,60,0)'); c.fillStyle = lg; c.fillRect(CX - 420, CY - 420, 840, 840);
+  }, 0.6, 30);
 
   // ---- 3. the mark, then the lockup: mark + "NexOAuth2" written letter by letter in light, a pulse, then it collapses into a point
   if (h >= 0 && t < I.burst + 0.02) {
     sora(x, 104, 700); const ww = x.measureText(W1).width, LW = 150 * 552 / 640, gap = 32, left = CX - (LW + gap + ww) / 2;
     const mv = E.inOut(prog(t, I.word[0], I.word[0] + 0.55)), LH = lerp(300, 150, mv), LX = lerp(CX, left + LW / 2, mv);
     const pulse = Math.sin(Math.PI * prog(t, I.pulse[0], I.pulse[1] + 0.06)), col = E.in(prog(t, I.burst - 0.14, I.burst));
-    const punch = 1 + 0.24 * Math.exp(-h * 9) + 0.035 * pulse, exposure = Math.max(0.85 * Math.exp(-h * 6), 0.5 * pulse, col);
+    const focus = E.out(prog(h, 0, 0.7)), punch = 1 + 0.12 * (1 - focus) + 0.035 * pulse, exposure = Math.max(0.6 * Math.exp(-h * 4), 0.5 * pulse, col);   // the mark comes into focus out of the light
     lit(x, c => {
       c.translate(CX, CY); c.scale(punch * (1 - 0.96 * col), punch * (1 - 0.55 * col)); c.translate(-CX, -CY);
+      c.save(); if (focus < 1) { c.filter = `blur(${((1 - focus) * 22).toFixed(1)}px)`; c.globalAlpha = clamp(focus * 1.6); }
       logo(c, LX, CY, LH, { glow: 0.6 + 0.8 * Math.exp(-h * 3) });
-      if (exposure > 0.01) { c.save(); c.filter = 'brightness(0) invert(1)'; c.globalAlpha = exposure; logo(c, LX, CY, LH, {}); c.restore(); }
+      if (exposure > 0.01) { c.filter = (focus < 1 ? `blur(${((1 - focus) * 22).toFixed(1)}px) ` : '') + 'brightness(0) invert(1)'; c.globalAlpha = exposure * clamp(focus * 1.6); logo(c, LX, CY, LH, {}); }
+      c.restore();
       sora(c, 104, 700); c.textBaseline = 'middle'; c.textAlign = 'left';
       [...W1].forEach((ch, i) => {
         const t0 = I.word[0] + 0.2 + i * 0.05, p = E.outQuint(prog(t, t0, t0 + 0.42)); if (p <= 0) return;

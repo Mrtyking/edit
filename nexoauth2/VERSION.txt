@@ -1,1 +1,1 @@
-2 nov 2026 - v10.3: sonido en cada check que pasa la verificacion
+2 nov 2026 - v10.4: la chispa llena la pantalla de luz y el logo sale enfocandose (sin circulo ni rayas)
