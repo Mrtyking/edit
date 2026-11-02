@@ -1,0 +1,231 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000}canvas{display:block}</style>
+</head><body>
+<canvas id="c" width="1080" height="1080"></canvas>
+<script>
+'use strict';
+/* Motor "flow": la salida de cada frase y la entrada de la siguiente son el MISMO movimiento.
+   Si una se va hacia arriba, la otra llega desde abajo subiendo. Todo es f(t). */
+const S = 1080, F = 900, Z0 = 900;
+const C = document.getElementById('c'), X = C.getContext('2d');
+const mk = () => { const c = document.createElement('canvas'); c.width = c.height = S; return [c, c.getContext('2d')]; };
+const [LA, LAX] = mk(), [TA, TAX] = mk(), [TC, TCX] = mk();
+let CFG = null, SEGS = [], CUTS = [], frameCache = new Map();
+
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const sm = k => k * k * (3 - 2 * k);
+const eIn = k => k * k * k;                       // acelera al salir
+const eOut = k => 1 - Math.pow(1 - k, 3);         // frena al llegar
+const eOutQ = k => 1 - Math.pow(1 - k, 4);
+const eBack = k => { const c1 = 1.6, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const segm = new Intl.Segmenter('es', { granularity: 'grapheme' });
+const graphemes = s => Array.from(segm.segment(s), g => g.segment);
+const V = (x, y, z) => [x, y, z];
+const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+function rz(v, a) { const c = Math.cos(a), s = Math.sin(a); return [v[0] * c - v[1] * s, v[0] * s + v[1] * c, v[2]]; }
+function rx(v, a) { const c = Math.cos(a), s = Math.sin(a); return [v[0], v[1] * c - v[2] * s, v[1] * s + v[2] * c]; }
+function ry(v, a) { const c = Math.cos(a), s = Math.sin(a); return [v[0] * c + v[2] * s, v[1], -v[0] * s + v[2] * c]; }
+const rot = (e, v) => ry(rx(rz(v, e[2]), e[1]), e[0]);
+const proj = p => p[2] < 20 ? null : [S / 2 + F * p[0] / p[2], S / 2 + F * p[1] / p[2], p[2]];
+
+/* emojis iPhone */
+const EMO = new Map(), EM = 1.12;
+const isEmo = g => EMO.has(g);
+const gW = (ctx, g, size) => isEmo(g) ? size * EM : ctx.measureText(g).width;
+function drawEmo(ctx, g, size) { const im = EMO.get(g), d = size * EM * 0.92; ctx.drawImage(im, -d / 2, -d / 2 - size * 0.04, d, d); }
+
+/* ---------- movimientos de transición ----------
+   place(T, p): p = 0 en reposo; p = +1 ya se fue (salida); p = -1 todavía no llega (entrada).
+   Como salida y entrada usan la misma función, el movimiento sigue de una frase a la otra. */
+const TRANS = ['up', 'cubeY', 'zin', 'left', 'roll', 'down', 'cubeX', 'right', 'zout', 'rollL', 'up', 'flip'];
+function place(T, p) {
+  const st = { x: 0, y: 0, z: Z0, e: V(0, 0, 0), sc: 1, al: 1, piv: null };
+  const a = Math.abs(p);
+  switch (T) {
+    case 'up': st.y = -p * S * 0.95; st.e[1] = -p * 0.9; break;
+    case 'down': st.y = p * S * 0.95; st.e[1] = p * 0.9; break;
+    case 'left': st.x = -p * S * 1.1; st.e[0] = p * 0.9; st.e[2] = -p * 0.12; break;
+    case 'right': st.x = p * S * 1.1; st.e[0] = -p * 0.9; st.e[2] = p * 0.12; break;
+    case 'zin': st.z = p > 0 ? Z0 * (1 - 0.95 * p) : Z0 * (1 + 7 * a * a); st.al = p > 0 ? 1 - clamp((p - 0.6) / 0.4) : 1; st.e[2] = p * 0.35; break;
+    case 'zout': st.z = p > 0 ? Z0 * (1 + 7 * p * p) : Z0 * (1 - 0.92 * a); st.al = p < 0 ? 1 - clamp((a - 0.6) / 0.4) : 1; st.e[2] = -p * 0.35; break;
+    case 'roll': st.e[2] = p * 1.9; st.sc = 1 - 0.55 * a; st.x = p * S * 0.35; st.al = 1 - clamp((a - 0.75) / 0.25); break;
+    case 'rollL': st.e[2] = -p * 1.9; st.sc = 1 - 0.55 * a; st.x = -p * S * 0.35; st.al = 1 - clamp((a - 0.75) / 0.25); break;
+    case 'cubeY': st.piv = { ax: 'y', ang: -p * Math.PI / 2 }; break;
+    case 'cubeX': st.piv = { ax: 'x', ang: p * Math.PI / 2 }; break;
+    case 'flip': st.e[0] = p * Math.PI / 2; st.al = 1 - clamp((a - 0.85) / 0.15); st.z = Z0 * (1 + 0.3 * a); break;
+  }
+  return st;
+}
+/* movimiento propio de cada frase mientras suena (los "QR") */
+const MOVES = ['tilt', 'wave', 'grow', 'bend', 'letters', 'sway', 'grow', 'tilt', 'bend', 'wave'];
+
+window.setup = async (cfg) => {
+  CFG = cfg;
+  for (const f of new Set(cfg.cuts.map(c => c.font))) if (cfg.fontFiles[f]) { const ff = new FontFace(f, `url(${cfg.fontFiles[f]})`); await ff.load(); document.fonts.add(ff); }
+  for (const [g, file] of Object.entries(cfg.emoji || {})) { const im = new Image(); im.src = cfg.emojiDir + '/' + file; await im.decode(); EMO.set(g, im); }
+  const cs = cfg.cuts, ctx = TAX;
+  // tipo de transición de cada corte (sin repetir seguido)
+  CUTS = cs.map((c, i) => (cfg.trans && cfg.trans[i]) || TRANS[i % TRANS.length]);
+  SEGS = cs.map((c, i) => {
+    const t1 = i + 1 < cs.length ? cs[i + 1].t : Math.min(cfg.dur, c.t + cfg.lastHold);
+    const r = k => hash(i * 19.7 + k * 3.3);
+    const s = { i, t0: c.t, t1, dur: t1 - c.t, text: c.text, font: c.font, color: (cfg.colors || {})[i], bg: (cfg.bg && cfg.bg[i]) || 'black' };
+    s.tin = i === 0 ? 'zin' : CUTS[i - 1];
+    s.tout = i + 1 < cs.length ? CUTS[i] : 'zout';
+    s.move = MOVES[i % MOVES.length];
+    s.oy = (r(1) - 0.5) * 140; s.ox = (r(2) - 0.5) * 80;
+    s.sway = (r(3) < 0.5 ? -1 : 1) * (0.12 + 0.1 * r(4)); s.ph = r(5) * 6.28;
+    s.bendDir = r(6) < 0.5 ? -1 : 1;
+    const lines = graphemes(c.text).length > 15 ? split2(c.text) : [c.text];
+    const size = lines.length > 1 ? 118 : 130;
+    ctx.font = `${size}px "${c.font}", "Noto Color Emoji"`;
+    s.size = size; s.gl = []; let maxw = 0; const lh = size * 1.06;
+    lines.forEach((ln, li) => {
+      const gs = graphemes(ln), ws = gs.map(g => gW(ctx, g, size)), w = ws.reduce((a, b) => a + b, 0); maxw = Math.max(maxw, w);
+      let x = -w / 2; const y = (li - (lines.length - 1) / 2) * lh;
+      gs.forEach((g, k) => { if (g !== ' ') s.gl.push({ g, x: x + ws[k] / 2, y, n: s.gl.length }); x += ws[k]; });
+    });
+    // que no se salga: escala para máximo 74% del ancho
+    s.fit = Math.min(1, S * 0.8 / maxw); s.w = maxw;
+    return s;
+  });
+  return SEGS.length;
+};
+function split2(text) {
+  const w = text.split(' '); let best = [text], bd = 1e9;
+  for (let i = 1; i < w.length; i++) { const a = w.slice(0, i).join(' '), b = w.slice(i).join(' '); const d = Math.abs(a.length - b.length); if (d < bd) { bd = d; best = [a, b]; } }
+  return best;
+}
+
+/* retraso de cada letra según la dirección (las letras entran/salen en cascada) */
+function stagger(T, q, s) {
+  const nx = (q.x / Math.max(1, s.w)) + 0.5, ny = q.y > 0 ? 1 : 0;
+  switch (T) {
+    case 'left': return 1 - nx; case 'right': return nx;
+    case 'up': return nx * 0.6 + ny * 0.4; case 'down': return (1 - ny) * 0.4 + nx * 0.6;
+    case 'roll': case 'rollL': return nx;
+    default: return 0;
+  }
+}
+function inDur(s) { return Math.min(0.26, s.dur * 0.5); }
+function outDur(s) { return Math.min(0.15, s.dur * 0.32); }
+
+function drawSeg(ctx, s, t) {
+  const lt = t - s.t0; if (lt < 0 || t > s.t1) return;
+  const b = inDur(s), a = outDur(s), holdLen = Math.max(0.01, s.dur - a - b);
+  const u = clamp((lt - b) / holdLen);
+  const spreadIn = ['left', 'right', 'up', 'down', 'roll', 'rollL'].includes(s.tin) ? Math.min(0.09, b * 0.45) : 0;
+  const spreadOut = ['left', 'right', 'up', 'down', 'roll', 'rollL'].includes(s.tout) ? Math.min(0.06, a * 0.45) : 0;
+  const items = [];
+  for (const q of s.gl) {
+    // fase de transición de esta letra
+    const din = stagger(s.tin, q, s) * spreadIn, dout = stagger(s.tout, q, s) * spreadOut;
+    const kin = clamp((lt - din) / Math.max(0.01, b - spreadIn));
+    const kout = clamp((t - (s.t1 - a) - dout) / Math.max(0.01, a - spreadOut));
+    let T, p;
+    if (kout > 0) { T = s.tout; p = eIn(kout); } else { T = s.tin; p = -(1 - eOutQ(kin)); }
+    const st = place(T, p);
+    // deriva suave siguiendo la dirección con la que llegó
+    const dr = place(s.tin, 0.035 * (u + (kout > 0 ? 0 : 0)));
+    // movimiento propio
+    let gx = q.x, gy = q.y, gang = 0, gsc = 1, yawM = s.sway * Math.sin(lt * 1.7 + s.ph), rollM = s.sway * 0.25 * Math.sin(lt * 1.3 + s.ph + 1), scM = 1;
+    switch (s.move) {
+      case 'wave': { const ph = q.x * 0.011 - lt * 6; gy += Math.sin(ph) * 16; gang = Math.cos(ph) * 0.16; break; }
+      case 'grow': scM = lerp(0.94, 1.14, sm(u)); break;
+      case 'tilt': yawM *= 2.4; break;
+      case 'sway': rollM *= 3; break;
+      case 'bend': { const k = s.bendDir * 0.0017 * sm(u); if (Math.abs(k) > 1e-6) { const th = gx * k, R = 1 / k; const nx = Math.sin(th) * (R - gy), ny = R - Math.cos(th) * (R - gy); gx = nx; gy = ny; gang = th; } break; }
+      case 'letters': { const kk = clamp((lt - 0.03 * q.n) / 0.18); gsc = Math.max(0.001, eBack(kk)); break; }
+    }
+    const sc = st.sc * scM * s.fit;
+    const e = add(add(st.e, dr.e), V(yawM, 0, rollM));
+    // posición del centro de la frase
+    let center = V(st.x + dr.x * 0.6 + s.ox, st.y + dr.y * 0.6 + s.oy, st.z + (dr.z - Z0) * 0.5);
+    let local = rot(e, V(gx * sc, gy * sc, 0));
+    let ex = rot(e, rz(V(10 * sc * gsc, 0, 0), gang)), ey = rot(e, rz(V(0, 10 * sc * gsc, 0), gang));
+    if (st.piv) {
+      // cubo: la frase es una cara de un cubo que gira alrededor de su centro
+      const R = S * 0.42, f = st.piv.ax === 'y' ? ry : rx;
+      const pivot = V(center[0], center[1], center[2] + R);
+      const fromPiv = f(V(0, 0, -R), st.piv.ang);
+      center = add(pivot, fromPiv);
+      local = f(local, st.piv.ang); ex = f(ex, st.piv.ang); ey = f(ey, st.piv.ang);
+    }
+    const c = add(center, local);
+    const P = proj(c), Px = proj(add(c, ex)), Py = proj(add(c, ey));
+    if (!P || !Px || !Py) continue;
+    items.push({ q, z: P[2], al: st.al, m: [(Px[0] - P[0]) / 10, (Px[1] - P[1]) / 10, (Py[0] - P[0]) / 10, (Py[1] - P[1]) / 10, P[0], P[1]] });
+  }
+  items.sort((a, b) => b.z - a.z);
+  ctx.font = `${s.size}px "${s.font}", "Noto Color Emoji"`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const it of items) {
+    ctx.setTransform(...it.m); ctx.globalAlpha = it.al;
+    if (s.color) { const g = ctx.createLinearGradient(-40, 0, 40, 0); g.addColorStop(0, s.color[0]); g.addColorStop(1, s.color[1]); ctx.fillStyle = g; } else ctx.fillStyle = '#fff';
+    if (isEmo(it.q.g)) drawEmo(ctx, it.q.g, s.size); else ctx.fillText(it.q.g, 0, 0);
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
+}
+
+/* ---------- fondo ---------- */
+function vframe(t) {
+  const n = clamp(Math.round(t * CFG.fps) + 1, 1, CFG.nFrames);
+  if (frameCache.has(n)) return frameCache.get(n);
+  const im = new Image(); im.src = CFG.framesDir + '/f' + String(n).padStart(4, '0') + '.jpg';
+  const p = im.decode().then(() => im);
+  frameCache.set(n, p); if (frameCache.size > 12) frameCache.delete(frameCache.keys().next().value);
+  return p;
+}
+async function drawBg(t) {
+  const segNow = SEGS.find(s => t >= s.t0 && t < s.t1);
+  const first = SEGS[0].t0, last = SEGS[SEGS.length - 1].t1;
+  const intro = t < first, outro = t >= last;
+  const mode = intro || outro ? 'full' : (segNow ? segNow.bg : 'black');
+  X.setTransform(1, 0, 0, 1, 0, 0); X.fillStyle = '#000'; X.fillRect(0, 0, S, S);
+  if (mode === 'black') return mode;
+  const im = await vframe(t);
+  X.save();
+  let z;
+  if (intro) z = lerp(1.0, 1.12, t / first) + Math.pow(clamp((t - (first - 0.3)) / 0.3), 3) * 1.8;
+  else if (outro) z = lerp(1.25, 1.04, eOut(clamp((t - last) / 1.2)));
+  else z = 1.1 + 0.06 * clamp((t - segNow.t0) / 2);
+  X.translate(S / 2, S / 2); X.scale(z, z); X.translate(-S / 2, -S / 2);
+  X.filter = mode === 'video' ? 'grayscale(0.9) brightness(0.36) contrast(1.2)' : 'saturate(1.12) contrast(1.05)';
+  X.drawImage(im, 0, 0, S, S);
+  if (intro && t > first - 0.3) { X.globalAlpha = 0.3; for (let k = 1; k <= 5; k++) { const zz = 1 + k * 0.07; X.save(); X.translate(S / 2, S / 2); X.scale(zz, zz); X.translate(-S / 2, -S / 2); X.drawImage(im, 0, 0, S, S); X.restore(); } }
+  X.restore(); X.filter = 'none'; X.globalAlpha = 1;
+  if (mode === 'video') { X.fillStyle = 'rgba(60,45,130,0.16)'; X.fillRect(0, 0, S, S); }
+  return mode;
+}
+function vignette(a) {
+  const g = X.createRadialGradient(S / 2, S / 2, S * 0.3, S / 2, S / 2, S * 0.76);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, `rgba(0,0,0,${a})`);
+  X.fillStyle = g; X.fillRect(0, 0, S, S);
+}
+function shadowOf(src) { TCX.globalCompositeOperation = 'source-over'; TCX.clearRect(0, 0, S, S); TCX.drawImage(src, 0, 0); TCX.globalCompositeOperation = 'source-in'; TCX.fillStyle = '#000'; TCX.fillRect(0, 0, S, S); TCX.globalCompositeOperation = 'source-over'; return TC; }
+function busy(t) { for (const s of SEGS) { if (t > s.t0 - 0.05 && t < s.t0 + inDur(s) + 0.05) return true; if (t > s.t1 - outDur(s) - 0.05 && t < s.t1 + 0.05) return true; } return false; }
+
+window.frame = async (t) => {
+  const mode = await drawBg(t);
+  const K = busy(t) ? 24 : 5, sh = 1.0 / CFG.fps;
+  LAX.clearRect(0, 0, S, S); LAX.globalCompositeOperation = 'lighter';
+  for (let k = 0; k < K; k++) {
+    const tt = t - sh / 2 + sh * (k + 0.5) / K;
+    TAX.clearRect(0, 0, S, S);
+    for (const s of SEGS) if (tt >= s.t0 && tt <= s.t1) drawSeg(TAX, s, tt);
+    LAX.globalAlpha = 1 / K; LAX.drawImage(TA, 0, 0);
+  }
+  LAX.globalCompositeOperation = 'source-over'; LAX.globalAlpha = 1;
+  // pequeño golpe de cámara en cada corte
+  let hit = 0; for (const s of SEGS) { const d = t - s.t0; if (d >= 0 && d < 0.12) hit = Math.max(hit, 1 - d / 0.12); }
+  const shx = (hash(Math.floor(t * 90)) - 0.5) * 8 * hit, shy = (hash(Math.floor(t * 90) + 5) - 0.5) * 8 * hit;
+  if (mode !== 'black') { X.save(); X.filter = 'blur(9px)'; X.globalAlpha = 0.7; X.drawImage(shadowOf(LA), shx, shy + 3); X.restore(); }
+  X.drawImage(LA, shx, shy);
+  vignette(mode === 'full' ? 0.45 : 0.6);
+  const fo = clamp((t - (CFG.dur - 0.9)) / 0.8); if (fo > 0) { X.fillStyle = `rgba(0,0,0,${fo})`; X.fillRect(0, 0, S, S); }
+  return true;
+};
+</script>
+</body></html>
