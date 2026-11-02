@@ -12,9 +12,9 @@ export const SCENES = [
 export const sceneAt = t => { for (let i = SCENES.length - 1; i >= 0; i--) if (t >= SCENES[i][1]) return SCENES[i]; return SCENES[0]; };
 
 export const TL = {
-  // opening, graphite: a spark streaks in → hit, the mark appears → the name writes itself in light → it bursts into sparks →
+  // opening, graphite: a spark lands → the mark rises out of the background → zooms through the screen → the lockup is there at once → it bursts into sparks →
   // a question is typed ("I need secure verification for my Discord.") → "Hmm…" → bam: white light and the search bar slams in
-  intro: { spark: [0.2, 0.68], hit: 0.68, word: [1.35, 2.05], pulse: [2.1, 2.42], burst: 2.5, ask: [2.9, 4.2], hmm: [4.45, 5.1], bam: 5.42 },
+  intro: { spark: [0.2, 0.68], hit: 0.68, zoom: [1.45, 1.78], pulse: [2.1, 2.42], burst: 2.5, ask: [2.9, 4.2], hmm: [4.45, 5.1], bam: 5.42 },
   // the opening search: a floating bar (no browser yet) → typed → suggestion clicked → folds into the result card → Open
   search: { pill: 5.48, field: 6.05, type: [6.35, 7.0], sugg: 7.12, click: 7.85, morph: [7.95, 8.2], card: 8.18, open: 8.8 },
   win: { in: [8.92, 9.62] },                       // the browser window arrives with the site

@@ -196,7 +196,7 @@ function lit(x, draw, glow = 0.6, r = 24, soft = 0) {   // soft: extra blur of t
 }
 const after = (t, a, k) => t < a ? 0 : Math.exp(-(t - a) * k);
 // impacts of the opening: they shake the camera and split the colours for an instant
-const kick = t => { const I = TL.intro; return 0.4 * after(t, I.hit, 9) + 0.55 * after(t, I.burst, 10) + 0.9 * after(t, I.bam, 11); };
+const kick = t => { const I = TL.intro; return 0.25 * after(t, I.hit, 9) + 0.6 * after(t, I.zoom[1], 10) + 0.55 * after(t, I.burst, 10) + 0.9 * after(t, I.bam, 11); };
 const ASK = 'I need secure verification for my Discord.', ASK_RED = [7, 13];   // "secure" in red
 function drawIntro(x, t) {
   const I = TL.intro; if (t >= I.bam + 0.45) return;
@@ -220,32 +220,35 @@ function drawIntro(x, t) {
   if (h >= 0 && h < 1.2) lit(x, c => {
     c.globalCompositeOperation = 'lighter';
     const f = Math.exp(-h * 2.6) * clamp(h / 0.05); c.fillStyle = `rgba(255,70,80,${0.16 * f})`; c.fillRect(0, 0, 1920, 1080);
-    const o = E.outExpo(prog(h, 0, 0.9)), a = 0.2 * (1 - prog(h, 0.1, 0.85)), bw = 420 + 600 * o;
+    const o = E.outExpo(prog(h, 0, 0.9)), a = 0.0, bw = 420 + 600 * o;
     for (const d of [-1, 1]) { const sx = CX + d * o * 1300, g = c.createLinearGradient(sx - bw, 0, sx + bw, 0);
       g.addColorStop(0, 'rgba(255,140,140,0)'); g.addColorStop(0.5, `rgba(255,150,150,${a})`); g.addColorStop(1, 'rgba(255,140,140,0)'); c.fillStyle = g; c.fillRect(sx - bw, 0, 2 * bw, 1080); }
     const L = Math.exp(-h * 1.6), lg = c.createRadialGradient(CX, CY, 0, CX, CY, 420); lg.addColorStop(0, `rgba(255,150,150,${0.5 * L})`); lg.addColorStop(0.45, `rgba(255,70,80,${0.18 * L})`); lg.addColorStop(1, 'rgba(255,60,60,0)'); c.fillStyle = lg; c.fillRect(CX - 420, CY - 420, 840, 840);
   }, 0.6, 30);
 
-  // ---- 3. the mark, then the lockup: mark + "NexOAuth2" written letter by letter in light, a pulse, then it collapses into a point
+  // ---- 3. the mark rises out of the background into focus, holds, then zooms through the screen → the lockup is there at once
+  //         (mark + "NexOAuth2"), a pulse of light, then it collapses into a point
   if (h >= 0 && t < I.burst + 0.02) {
-    sora(x, 104, 700); const ww = x.measureText(W1).width, LW = 150 * 552 / 640, gap = 32, left = CX - (LW + gap + ww) / 2;
-    const mv = E.inOut(prog(t, I.word[0], I.word[0] + 0.55)), LH = lerp(300, 150, mv), LX = lerp(CX, left + LW / 2, mv);
-    const pulse = Math.sin(Math.PI * prog(t, I.pulse[0], I.pulse[1] + 0.06)), col = E.in(prog(t, I.burst - 0.14, I.burst));
-    const focus = E.out(prog(h, 0, 0.7)), punch = 1 + 0.12 * (1 - focus) + 0.035 * pulse, exposure = Math.max(0.6 * Math.exp(-h * 4), 0.5 * pulse, col);   // the mark comes into focus out of the light
-    lit(x, c => {
-      c.translate(CX, CY); c.scale(punch * (1 - 0.96 * col), punch * (1 - 0.55 * col)); c.translate(-CX, -CY);
-      c.save(); if (focus < 1) { c.filter = `blur(${((1 - focus) * 22).toFixed(1)}px)`; c.globalAlpha = clamp(focus * 1.6); }
-      logo(c, LX, CY, LH, { glow: 0.6 + 0.8 * Math.exp(-h * 3) });
-      if (exposure > 0.01) { c.filter = (focus < 1 ? `blur(${((1 - focus) * 22).toFixed(1)}px) ` : '') + 'brightness(0) invert(1)'; c.globalAlpha = exposure * clamp(focus * 1.6); logo(c, LX, CY, LH, {}); }
-      c.restore();
-      sora(c, 104, 700); c.textBaseline = 'middle'; c.textAlign = 'left';
-      [...W1].forEach((ch, i) => {
-        const t0 = I.word[0] + 0.2 + i * 0.05, p = E.outQuint(prog(t, t0, t0 + 0.42)); if (p <= 0) return;
-        const px = left + LW + gap + c.measureText(W1.slice(0, i)).width, cw = c.measureText(ch).width, base = i < 4 ? '#F5F5F7' : '#FF2D2D';
-        c.save(); c.globalAlpha = p; if (p < 1) c.filter = `blur(${((1 - p) * 14).toFixed(1)}px)`; c.translate(px + cw / 2, CY); c.scale(1 + 0.4 * (1 - p), 1 + 0.4 * (1 - p)); c.translate(-(px + cw / 2), -CY);
-        c.fillStyle = mixHex(base, '#FFFFFF', Math.max(1 - p, exposure * 0.9)); c.fillText(ch, px, CY + 4); c.restore();
-      });
-    }, 0.5 + 1.1 * Math.exp(-h * 3) + 0.9 * pulse + 2 * col, 24);
+    const [Z0, Z1] = I.zoom, pulse = Math.sin(Math.PI * prog(t, I.pulse[0], I.pulse[1] + 0.06)), col = E.in(prog(t, I.burst - 0.14, I.burst));
+    if (t < Z1) {
+      const e = E.outQuint(prog(h, 0, 0.7)), z = E.inExpo(prog(t, Z0, Z1)), sc = lerp(0.3, 1, e) * (1 + 13 * z), bl = (1 - e) * 22 + z * 14, al = clamp(e * 1.4) * (1 - prog(z, 0.55, 1));
+      lit(x, c => {
+        c.globalAlpha = al; if (bl > 0.3) c.filter = `blur(${bl.toFixed(1)}px)`;
+        c.translate(CX, CY); c.scale(sc, sc); c.translate(-CX, -CY); logo(c, CX, CY, 300, { glow: 0.5 + 0.6 * e });
+      }, 0.45 + 0.6 * z, 24);
+    } else {
+      sora(x, 104, 700); const ww = x.measureText(W1).width, LW = 150 * 552 / 640, gap = 32, left = CX - (LW + gap + ww) / 2;
+      const p = E.outExpo(prog(t, Z1, Z1 + 0.35)), sc = lerp(1.35, 1, p) + 0.035 * pulse, exposure = Math.max(0.7 * (1 - p), 0.5 * pulse, col);
+      lit(x, c => {
+        c.globalAlpha = clamp(p * 1.5); if (p < 1) c.filter = `blur(${((1 - p) * 12).toFixed(1)}px)`;
+        c.translate(CX, CY); c.scale(sc * (1 - 0.96 * col), sc * (1 - 0.55 * col)); c.translate(-CX, -CY);
+        logo(c, left + LW / 2, CY, 150, { glow: 0.8 });
+        if (exposure > 0.01) { c.save(); c.filter = (p < 1 ? `blur(${((1 - p) * 12).toFixed(1)}px) ` : '') + 'brightness(0) invert(1)'; c.globalAlpha = exposure; logo(c, left + LW / 2, CY, 150, {}); c.restore(); }
+        sora(c, 104, 700); c.textBaseline = 'middle'; c.textAlign = 'left'; const w1 = c.measureText('NexO').width;
+        c.fillStyle = mixHex('#F5F5F7', '#FFFFFF', exposure); c.fillText('NexO', left + LW + gap, CY + 4);
+        c.fillStyle = mixHex('#FF2D2D', '#FFFFFF', exposure * 0.9); c.fillText('Auth2', left + LW + gap + w1, CY + 4);
+      }, 0.5 + 1.4 * (1 - p) + 0.9 * pulse + 2 * col, 24);
+    }
   }
 
   // ---- 4. burst: the point explodes into curved trails of light

@@ -1,1 +1,1 @@
-2 nov 2026 - v10.5: mismo sonido de tecla y de clic en todo el video
+2 nov 2026 - v10.6: el logo sale del fondo, hace zoom a traves de la pantalla y aparece NexOAuth2 de una vez

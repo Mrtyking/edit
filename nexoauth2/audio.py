@@ -95,8 +95,9 @@ def click(t, big, what=''):
 I = T['intro']
 add(AIR, 0.0, -22, 0, 'start', 'aire oscuro de la intro')
 add(lib('aaun_ceo_RealEstate_verde/Riser.wav', 1.0, 2.36, 0.05), I['hit'], -8, 0, 'peak', 'la chispa cruza la pantalla (riser)')
-add(HIT, I['hit'], -1, 0, 'onset', 'GOLPE: aparece el logo'); add(CRACK, I['hit'], -6, 0, 'onset')
-add(SPARKLE, I['word'][0] + 0.2, -14, 0.15, 'onset', 'NexOAuth2 se escribe en luz')
+add(HIT, I['hit'], -4, 0, 'onset', 'el logo sale del fondo'); add(CRACK, I['hit'], -6, 0, 'onset')
+add(load('Whooshes/Smooth And Fast Whoosh.wav'), I['zoom'][1] - 0.03, -4, 0, 'peak', 'el logo hace zoom a través de la pantalla')
+add(CRACK, I['zoom'][1], -7, 0, 'onset'); add(SPARKLE, I['zoom'][1] + 0.02, -15, 0.15, 'onset', 'aparece NexOAuth2 de una vez')
 add(lib('Premium_verde_UI/Deep_Whoosh.wav'), I['burst'] - 0.04, -9, 0, 'peak', 'el logo se comprime')
 add(SWIPE, I['burst'], -5, 0, 'onset', 'estalla en chispas')
 typing('I need secure verification for my Discord.', *I['ask'], -12, 'se escribe la pregunta')
