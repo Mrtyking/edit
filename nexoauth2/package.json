@@ -1,0 +1,6 @@
+{
+  "name": "nexoauth2-promo",
+  "private": true,
+  "description": "Render del promo de NexOAuth2",
+  "dependencies": { "playwright": "1.63.0" }
+}

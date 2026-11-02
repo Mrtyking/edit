@@ -14,3 +14,11 @@ It downloads the latest version of the project, installs what it needs (Node.js,
 On Windows: download **[HACER_VIDEO_MEME.bat](https://github.com/Mrtyking/edit/raw/claude/bold-noether-63jrhe/HACER_VIDEO_MEME.bat)** and double-click it. Same flow as the Voznest one; if it sits next to `HACER_VIDEO_VOZNEST.bat` it reuses that environment (no new downloads). The video lands in `Meme_Video\videos`.
 
 - `meme/` – the project (`src/scene.js` scenes, `render.js` renderer, `stems/mix.wav` final audio)
+
+## NexOAuth2 promo
+
+On Windows: download **[HACER_VIDEO_NEXOAUTH2.bat](https://github.com/Mrtyking/edit/raw/claude/bold-noether-63jrhe/HACER_VIDEO_NEXOAUTH2.bat)** and double-click it. Same flow as the others; if it sits next to `HACER_VIDEO_VOZNEST.bat` or `HACER_VIDEO_MEME.bat` it reuses that environment. The video (1080p60, 90 s) lands in `NexOAuth2_Video\videos`.
+
+- `nexoauth2/` – the project: `src/timeline.js` (every timing), `src/search.js` (opening search), `src/scenes_*.js` (the site, Discord and dashboard scenes), `src/main.js` (3D studio, camera, title cards, pricing, CTA), `stems/mix.wav` (final sound design, SFX only)
+- `nexoauth2/audio.py` – rebuilds `stems/mix.wav` from the timeline (needs the SFX pack, which is not in this repo)
+- `nexoauth2/herramientas/gif_frames.py` – turns the embed GIF into `assets/embed/sheet.jpg` + `sheet.json`; when those exist the Discord embed plays that GIF, otherwise it shows the built-in banner
