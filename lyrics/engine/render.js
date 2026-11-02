@@ -20,7 +20,7 @@ const cfg = { ...song.render, emoji, emojiDir: 'file://' + path.join(work, 'emoj
   const b = await chromium.launch({ args: ['--allow-file-access-from-files'] });
   const p = await b.newPage({ viewport: { width: 1080, height: 1080 } });
   p.on('pageerror', e => console.error('page error:', e.message));
-  await p.goto('file://' + path.join(__dirname, 'lyric.html'));
+  await p.goto('file://' + path.join(__dirname, process.env.LYRIC_ENGINE || 'lyric3d.html'));
   await p.evaluate(c => window.setup(c), cfg);
   const grab = async t => { await p.evaluate(t => window.frame(t), t); const d = await p.evaluate(() => document.getElementById('c').toDataURL('image/jpeg', 0.96)); return Buffer.from(d.split(',')[1], 'base64'); };
   if (stillsArg > 0) {

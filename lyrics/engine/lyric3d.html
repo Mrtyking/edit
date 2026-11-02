@@ -1,0 +1,349 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000}canvas{display:block}</style>
+</head><body>
+<canvas id="c" width="1080" height="1080"></canvas>
+<script>
+'use strict';
+/* Motor 3D de lyric edits. Cada frase vive en un mundo 3D; la cámara vuela de una a otra.
+   Todo es f(t). render.js llama a window.setup(cfg) y luego a window.frame(t). */
+const S = 1080, F = 900;
+const C = document.getElementById('c'), X = C.getContext('2d');
+const mk = () => { const c = document.createElement('canvas'); c.width = c.height = S; return [c, c.getContext('2d')]; };
+const [LA, LAX] = mk();   // texto activo acumulado
+const [LB, LBX] = mk();   // texto fuera de foco acumulado
+const [TA, TAX] = mk();   // sub-muestra activa
+const [TB, TBX] = mk();   // sub-muestra fuera de foco
+const [TC, TCX] = mk();   // tinte para aberración
+let CFG = null, SEGS = [], PUFFS = [], DUST = [], SMOKE = [], frameCache = new Map();
+
+/* ---------- utilidades ---------- */
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const sm = k => k * k * (3 - 2 * k);
+const eOut = k => 1 - Math.pow(1 - k, 3);
+const eExpo = k => k >= 1 ? 1 : 1 - Math.pow(2, -10 * k);
+const eInOut = k => k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+const eBack = k => { const c1 = 1.7, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const segm = new Intl.Segmenter('es', { granularity: 'grapheme' });
+const graphemes = s => Array.from(segm.segment(s), g => g.segment);
+
+/* vectores y rotaciones (y hacia abajo, z hacia adelante) */
+const V = (x, y, z) => [x, y, z];
+const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const mul = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
+const vl = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k), lerp(a[2], b[2], k)];
+function rz(v, a) { const c = Math.cos(a), s = Math.sin(a); return [v[0] * c - v[1] * s, v[0] * s + v[1] * c, v[2]]; }
+function rx(v, a) { const c = Math.cos(a), s = Math.sin(a); return [v[0], v[1] * c - v[2] * s, v[1] * s + v[2] * c]; }
+function ry(v, a) { const c = Math.cos(a), s = Math.sin(a); return [v[0] * c + v[2] * s, v[1], -v[0] * s + v[2] * c]; }
+const rot = (e, v) => ry(rx(rz(v, e[2]), e[1]), e[0]);          // e = [yaw, pitch, roll]
+const irot = (e, v) => rz(rx(ry(v, -e[0]), -e[1]), -e[2]);
+
+/* ---------- emojis estilo iPhone ---------- */
+const EMO = new Map(), EM = 1.12;
+const isEmo = g => EMO.has(g);
+function gW(ctx, g, size) { return isEmo(g) ? size * EM : ctx.measureText(g).width; }
+function drawEmo(ctx, g, size) { const im = EMO.get(g), d = size * EM * 0.92; ctx.drawImage(im, -d / 2, -d / 2 - size * 0.04, d, d); }
+
+/* ---------- humo procedural ---------- */
+function makeSmoke(seed) {
+  const c = document.createElement('canvas'); c.width = c.height = 160; const x = c.getContext('2d');
+  for (let i = 0; i < 26; i++) {
+    const r = 18 + 40 * hash(seed * 31 + i), a = hash(seed * 17 + i) * 6.28, d = 45 * Math.sqrt(hash(seed * 7 + i));
+    const cx = 80 + Math.cos(a) * d, cy = 80 + Math.sin(a) * d;
+    const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, `rgba(255,255,255,${0.10 + 0.12 * hash(seed + i * 3)})`); g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(0, 0, 160, 160);
+  }
+  return c;
+}
+
+/* ---------- configuración del mundo ---------- */
+const ENTRIES = ['scatter', 'fly', 'flip', 'rise', 'slam', 'type', 'spiral', 'drop'];
+const EXITS = ['dust', 'explode', 'stay', 'dust', 'fall', 'stay'];
+window.setup = async (cfg) => {
+  CFG = cfg;
+  for (const f of new Set(cfg.cuts.map(c => c.font))) if (cfg.fontFiles[f]) { const ff = new FontFace(f, `url(${cfg.fontFiles[f]})`); await ff.load(); document.fonts.add(ff); }
+  for (const [g, file] of Object.entries(cfg.emoji || {})) { const im = new Image(); im.src = cfg.emojiDir + '/' + file; await im.decode(); EMO.set(g, im); }
+  for (let i = 0; i < 5; i++) SMOKE.push(makeSmoke(i + 1));
+  const cs = cfg.cuts, ctx = TAX;
+  let W = V(0, 0, 0), E = V(0, 0, 0);
+  SEGS = cs.map((c, i) => {
+    const t1 = i + 1 < cs.length ? cs[i + 1].t : Math.min(cfg.dur, c.t + cfg.lastHold);
+    const r = k => hash(i * 19.7 + k * 3.3), sg = k => r(k) < 0.5 ? -1 : 1;
+    const s = { i, t0: c.t, t1, dur: t1 - c.t, text: c.text, font: c.font, color: (cfg.colors || {})[i], bg: (cfg.bg && cfg.bg[i]) || 'black' };
+    // texto en el plano de la frase
+    const words = c.text.split(' '), lines = graphemes(c.text).length > 15 ? split2(c.text) : [c.text];
+    const size = 92;
+    ctx.font = `${size}px "${c.font}", "Noto Color Emoji"`;
+    s.size = size; s.gl = []; let maxw = 0; const lh = size * 1.06;
+    lines.forEach((ln, li) => {
+      const gs = graphemes(ln), ws = gs.map(g => gW(ctx, g, size)), w = ws.reduce((a, b) => a + b, 0); maxw = Math.max(maxw, w);
+      let x = -w / 2; const y = (li - (lines.length - 1) / 2) * lh;
+      gs.forEach((g, k) => { if (g !== ' ') s.gl.push({ g, x: x + ws[k] / 2, y, n: s.gl.length }); x += ws[k]; });
+    });
+    s.w = maxw; s.h = lines.length * lh;
+    s.bend = r(1) < 0.4 ? sg(2) * (0.0009 + 0.0011 * r(3)) : 0;
+    s.entry = ENTRIES[(i * 3 + Math.floor(r(4) * 2)) % ENTRIES.length];
+    s.exit = EXITS[(i * 5 + 1) % EXITS.length];
+    // posición en el mundo
+    s.W = W; s.E = E;
+    // cámara: distancia para que la frase ocupe ~55% del ancho
+    s.dist = clamp(F * Math.max(s.w, s.h * 2.2) / (S * 0.56), 520, 1500);
+    s.cam = { o0: sg(5) * (0.18 + 0.3 * r(6)), q0: (r(7) - 0.5) * 0.35, rr0: (r(8) - 0.5) * 0.25 };
+    s.cam.o1 = s.cam.o0 * -(0.5 + 0.7 * r(9)); s.cam.q1 = s.cam.q0 * -0.8; s.cam.rr1 = s.cam.rr0 + sg(10) * (0.16 + 0.22 * r(11));
+    s.cam.tx = sg(21) * (90 + 120 * r(22)); s.cam.ty = sg(23) * (40 + 70 * r(24));
+    s.whip = r(12) < 0.55 ? sg(13) * (0.5 + 0.9 * r(14)) : 0;
+    // siguiente frase: se mueve por el mundo y gira
+    const steps = [V(1300, 0, 0), V(0, 950, 300), V(-1100, -500, 600), V(600, 700, 1300), V(0, 0, 1700), V(-1200, 300, 0), V(900, -800, 400)];
+    const st = steps[(i * 3 + Math.floor(r(15) * 3)) % steps.length];
+    W = add(W, rot(E, st));
+    E = add(E, V(sg(16) * (0.2 + 0.4 * r(17)), (r(18) - 0.5) * 0.4, sg(19) * (0.25 + 0.6 * r(20))));
+    return s;
+  });
+  // humo de entrada y salida, polvo de ambiente
+  SEGS.forEach(s => {
+    const r = k => hash(s.i * 41.3 + k * 1.7);
+    if (['scatter', 'slam', 'fly', 'spiral'].includes(s.entry)) for (let k = 0; k < 6; k++)
+      PUFFS.push({ t: s.t0 + 0.02 * k, life: 1.1, p: add(s.W, rot(s.E, V((r(k) - 0.5) * s.w * 1.1, (r(k + 9) - 0.5) * s.h * 1.2, 40))), s0: 200, s1: 700 + 300 * r(k + 3), tex: k % 5, a: 0.3, spin: (r(k + 5) - 0.5) * 2 });
+    if (s.exit === 'dust' || s.exit === 'explode') s.gl.forEach((q, k) => { if (k % 2) return;
+      PUFFS.push({ t: s.t1 + 0.04, life: 1.0, p: add(s.W, rot(s.E, V(q.x, q.y, 0))), s0: 80, s1: 420, tex: k % 5, a: 0.35, spin: (r(k) - 0.5) * 3, drift: rot(s.E, V((r(k + 2) - 0.5) * 400, -250, (r(k + 4) - 0.5) * 300)) }); });
+    for (let k = 0; k < 14; k++) DUST.push({ p: add(s.W, rot(s.E, V((r(k + 20) - 0.5) * 2600, (r(k + 40) - 0.5) * 2200, 200 + 2200 * r(k + 60)))), ph: r(k + 80) * 6.28, sz: 1 + 2.5 * r(k + 90) });
+  });
+  return SEGS.length;
+};
+function split2(text) {
+  const w = text.split(' '); let best = [text], bd = 1e9;
+  for (let i = 1; i < w.length; i++) { const a = w.slice(0, i).join(' '), b = w.slice(i).join(' '); const d = Math.abs(a.length - b.length); if (d < bd) { bd = d; best = [a, b]; } }
+  return best;
+}
+
+/* ---------- cámara ---------- */
+function hold(s, t) {
+  const u = sm(clamp((t - s.t0) / Math.max(s.dur, 0.3)));
+  const c = s.cam;
+  const e = add(s.E, V(lerp(c.o0, c.o1, u), lerp(c.q0, c.q1, u), lerp(c.rr0, c.rr1, u)));
+  const d = s.dist * lerp(1.22, 0.84, u);
+  const tgt = add(s.W, rot(s.E, V(lerp(c.tx, -c.tx, u), lerp(c.ty, -c.ty, u), 0)));
+  return { e, p: sub(tgt, rot(e, V(0, 0, d))) };
+}
+function camAt(t) {
+  const n = SEGS.length, first = SEGS[0], last = SEGS[n - 1];
+  if (t < first.t0) { const h = hold(first, first.t0 + 0.12); const k = clamp((first.t0 - t) / 0.4); return { e: h.e, p: sub(h.p, rot(h.e, V(0, 0, 1800 * eOut(k)))) }; }
+  if (t >= last.t1) { const h = hold(last, last.t1); const k = clamp((t - last.t1) / 2.5); return { e: add(h.e, V(0, 0, 0.3 * k)), p: sub(h.p, rot(h.e, V(0, 0, 2600 * eOut(k)))) }; }
+  // transición alrededor de cada corte
+  for (let i = 0; i < n - 1; i++) {
+    const A = SEGS[i], B = SEGS[i + 1], tc = B.t0;
+    const a = Math.min(0.17, A.dur * 0.42), b = Math.min(0.14, B.dur * 0.38);
+    if (t >= tc - a && t < tc + b) {
+      const u = eInOut((t - (tc - a)) / (a + b));
+      const pa = hold(A, tc - a), pb = hold(B, tc + b);
+      const e = vl(pa.e, pb.e, u); e[2] += B.whip * Math.sin(Math.PI * u);
+      // arco: la cámara se aleja un poco a mitad del viaje
+      const p = vl(pa.p, pb.p, u);
+      const back = rot(e, V(0, 0, -260 * Math.sin(Math.PI * u)));
+      return { e, p: add(p, back) };
+    }
+  }
+  const s = SEGS.find(s => t >= s.t0 && t < s.t1) || last;
+  return hold(s, t);
+}
+function proj(cam, p) { const q = irot(cam.e, sub(p, cam.p)); return q[2] < 30 ? null : [S / 2 + F * q[0] / q[2], S / 2 + F * q[1] / q[2], q[2]]; }
+
+/* ---------- letras ---------- */
+/* desplazamiento y giro propio de cada letra al entrar / salir (en el plano de la frase) */
+function glyphState(s, q, t) {
+  const lt = t - s.t0, N = s.gl.length, r = k => hash(s.i * 7.7 + q.n * 3.1 + k);
+  let off = V(0, 0, 0), e = V(0, 0, 0), sc = 1, al = 1;
+  // entrada
+  const span = Math.min(0.34, s.dur * 0.6), stag = s.entry === 'slam' ? 0 : span * 0.55 * (q.n / Math.max(1, N - 1));
+  const dl = Math.min(0.3, s.dur * 0.5);
+  const k = clamp((lt - stag) / dl), a = 1 - eExpo(k), ab = 1 - eBack(k);
+  if (lt - stag < 0) al = 0;
+  switch (s.entry) {
+    case 'scatter': off = V((r(1) - 0.5) * 1300 * a, (r(2) - 0.5) * 1000 * a, (r(3) - 0.6) * 1400 * a); e = V(r(4) * 3 * a, r(5) * 2 * a, (r(6) - 0.5) * 6 * a); al *= clamp(k * 3); break;
+    case 'fly': off = V(0, 0, -s.dist * 0.95 * a); e = V((r(1) - 0.5) * 3 * a, 0, (r(2) - 0.5) * 1.5 * a); al *= clamp(k * 4); break;
+    case 'flip': e = V(Math.PI * ab, 0, 0); al *= clamp(k * 4); break;
+    case 'rise': off = V(0, 160 * a, 0); e = V(0, 1.5 * a, 0); al *= clamp(k * 3); break;
+    case 'slam': off = V(0, 0, -s.dist * 0.8 * a); al *= clamp(k * 6); break;
+    case 'type': sc = Math.max(0.001, 1 - ab); break;
+    case 'spiral': { const ang = 4 * a; off = V(Math.cos(ang + q.n) * 500 * a, Math.sin(ang + q.n) * 500 * a, 300 * a); e = V(0, 0, ang); al *= clamp(k * 3); break; }
+    case 'drop': off = V(0, -900 * a, -200 * a); e = V(0, 0, (r(1) - 0.5) * 2 * a); al *= clamp(k * 4); break;
+  }
+  // salida (después de su tiempo, mientras la cámara se va)
+  const xo = t - s.t1;
+  if (xo > 0) {
+    const kx = clamp(xo / 0.55);
+    switch (s.exit) {
+      case 'dust': { const v = V((r(11) - 0.5) * 500, -200 - 300 * r(12), (r(13) - 0.5) * 600); off = add(off, mul(v, eOut(kx))); e = add(e, V(r(14) * 3 * kx, r(15) * 2 * kx, (r(16) - 0.5) * 4 * kx)); sc *= 1 - 0.6 * kx; al *= 1 - kx; break; }
+      case 'explode': { const v = V((r(11) - 0.5) * 1600, (r(12) - 0.5) * 1400, (r(13) - 0.2) * 1500); off = add(off, mul(v, eOut(kx))); e = add(e, V(r(14) * 6 * kx, r(15) * 5 * kx, 0)); al *= 1 - kx; break; }
+      case 'fall': off = add(off, V(0, 900 * kx * kx, 0)); e = add(e, V(0, 0, (r(16) - 0.5) * 3 * kx)); al *= 1 - kx; break;
+      default: al *= 1 - kx;
+    }
+  }
+  return { off, e, sc, al };
+}
+function segVisible(s, t) { return t >= s.t0 && t <= s.t1 + 0.6; }
+
+/* dibuja todas las frases visibles para una cámara (una sub-muestra) */
+function drawText(cam, t, active) {
+  const items = [];
+  for (const s of SEGS) {
+    if (!segVisible(s, t)) continue;
+    const isA = s === active, bend = s.bend;
+    for (const q of s.gl) {
+      const g = glyphState(s, q, t); if (g.al <= 0.003 || g.sc <= 0.003) continue;
+      // posición en el plano con curva
+      let x = q.x, y = q.y, ang = 0;
+      if (bend) { const th = x * bend, R = 1 / bend; x = Math.sin(th) * (R - y); y = R - Math.cos(th) * (R - y); ang = th; }
+      const le = add(V(0, 0, ang), g.e);
+      const c = add(s.W, rot(s.E, add(V(x, y, 0), g.off)));
+      const ex = rot(s.E, rot(le, V(10 * g.sc, 0, 0))), ey = rot(s.E, rot(le, V(0, 10 * g.sc, 0)));
+      const P = proj(cam, c); if (!P) continue;
+      const Px = proj(cam, add(c, ex)), Py = proj(cam, add(c, ey)); if (!Px || !Py) continue;
+      const fog = clamp((5200 - P[2]) / 2600);
+      items.push({ s, q, isA, z: P[2], al: g.al * fog, m: [(Px[0] - P[0]) / 10, (Px[1] - P[1]) / 10, (Py[0] - P[0]) / 10, (Py[1] - P[1]) / 10, P[0], P[1]] });
+    }
+  }
+  items.sort((a, b) => b.z - a.z);
+  for (const it of items) {
+    const ctx = it.isA ? TAX : TBX, s = it.s;
+    ctx.setTransform(...it.m);
+    ctx.globalAlpha = it.al;
+    ctx.font = `${s.size}px "${s.font}", "Noto Color Emoji"`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (s.color) { const g = ctx.createLinearGradient(-40, 0, 40, 0); g.addColorStop(0, s.color[0]); g.addColorStop(1, s.color[1]); ctx.fillStyle = g; }
+    else ctx.fillStyle = '#ffffff';
+    if (isEmo(it.q.g)) drawEmo(ctx, it.q.g, s.size); else ctx.fillText(it.q.g, 0, 0);
+  }
+  TAX.setTransform(1, 0, 0, 1, 0, 0); TBX.setTransform(1, 0, 0, 1, 0, 0); TAX.globalAlpha = TBX.globalAlpha = 1;
+}
+
+/* ---------- fondo ---------- */
+function vframe(t) {
+  const n = clamp(Math.round(t * CFG.fps) + 1, 1, CFG.nFrames);
+  if (frameCache.has(n)) return frameCache.get(n);
+  const im = new Image(); im.src = CFG.framesDir + '/f' + String(n).padStart(4, '0') + '.jpg';
+  const p = im.decode().then(() => im);
+  frameCache.set(n, p); if (frameCache.size > 12) frameCache.delete(frameCache.keys().next().value);
+  return p;
+}
+async function drawBg(t, cam) {
+  const segNow = SEGS.find(s => t >= s.t0 && t < s.t1);
+  const first = SEGS[0].t0, last = SEGS[SEGS.length - 1].t1;
+  const intro = t < first, outro = t >= last;
+  const mode = intro || outro ? 'full' : (segNow ? segNow.bg : 'black');
+  X.setTransform(1, 0, 0, 1, 0, 0); X.fillStyle = '#000'; X.fillRect(0, 0, S, S);
+  if (mode === 'black') return mode;
+  const im = await vframe(t);
+  X.save();
+  let z = 1.1;
+  if (intro) z = lerp(1.0, 1.12, t / first) + Math.pow(clamp((t - (first - 0.3)) / 0.3), 3) * 1.8;
+  else if (outro) z = lerp(1.25, 1.04, eOut(clamp((t - last) / 1.2)));
+  else z = 1.14 + 0.05 * clamp((t - segNow.t0) / 2);
+  X.translate(S / 2, S / 2); if (!intro && !outro) X.rotate(cam.e[2] * 0.15 - (segNow ? segNow.E[2] * 0.15 : 0)); X.scale(z, z); X.translate(-S / 2, -S / 2);
+  X.filter = mode === 'video' ? 'grayscale(0.9) brightness(0.36) contrast(1.2)' : (intro ? 'saturate(1.15) contrast(1.06) brightness(0.9)' : 'saturate(1.1) contrast(1.05)');
+  X.drawImage(im, 0, 0, S, S);
+  if (intro && t > first - 0.3) { X.globalAlpha = 0.3; for (let k = 1; k <= 5; k++) { const zz = 1 + k * 0.07; X.save(); X.translate(S / 2, S / 2); X.scale(zz, zz); X.translate(-S / 2, -S / 2); X.drawImage(im, 0, 0, S, S); X.restore(); } }
+  X.restore(); X.filter = 'none'; X.globalAlpha = 1;
+  if (mode === 'video') { X.fillStyle = 'rgba(60,45,130,0.18)'; X.fillRect(0, 0, S, S); }
+  return mode;
+}
+function drawDust(cam, t) {
+  X.save(); X.globalCompositeOperation = 'lighter';
+  for (const d of DUST) {
+    const P = proj(cam, d.p); if (!P || P[2] > 6000) continue;
+    const r = d.sz * F / P[2] * 2.2; if (P[0] < -50 || P[0] > S + 50 || P[1] < -50 || P[1] > S + 50) continue;
+    const a = 0.32 * clamp((6000 - P[2]) / 3000) * (0.6 + 0.4 * Math.sin(t * 2 + d.ph));
+    const g = X.createRadialGradient(P[0], P[1], 0, P[0], P[1], Math.max(1.5, r * 3));
+    g.addColorStop(0, `rgba(235,230,255,${a})`); g.addColorStop(1, 'rgba(235,230,255,0)');
+    X.fillStyle = g; X.beginPath(); X.arc(P[0], P[1], Math.max(1.5, r * 3), 0, 7); X.fill();
+  }
+  X.restore();
+}
+function drawPuffs(cam, t, mode) {
+  X.save(); X.globalCompositeOperation = mode === 'black' ? 'lighter' : 'screen';
+  for (const p of PUFFS) {
+    const k = (t - p.t) / p.life; if (k < 0 || k > 1) continue;
+    const pos = p.drift ? add(p.p, mul(p.drift, eOut(k))) : p.p;
+    const P = proj(cam, pos); if (!P) continue;
+    const sz = lerp(p.s0, p.s1, eOut(k)) * F / P[2];
+    if (sz < 2 || sz > 3000) continue;
+    X.globalAlpha = p.a * Math.sin(Math.PI * Math.min(1, k * 1.4 + 0.05)) * (1 - k);
+    X.translate(P[0], P[1]); X.rotate(p.spin * k); X.drawImage(SMOKE[p.tex], -sz / 2, -sz / 2, sz, sz); X.setTransform(1, 0, 0, 1, 0, 0);
+  }
+  X.restore();
+}
+function vignette(a) {
+  const g = X.createRadialGradient(S / 2, S / 2, S * 0.3, S / 2, S / 2, S * 0.76);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, `rgba(0,0,0,${a})`);
+  X.fillStyle = g; X.fillRect(0, 0, S, S);
+}
+function flare(t, t0) {
+  const k = (t - t0) / 0.75; if (k < 0 || k > 1) return;
+  const a = Math.sin(Math.PI * Math.min(1, k * 1.6)) * (1 - k * 0.5);
+  X.save(); X.translate(S / 2, S / 2); X.globalCompositeOperation = 'lighter';
+  const r = S * 0.6 * (0.6 + 0.6 * k);
+  for (let i = 0; i < 16; i++) {
+    const ang = i / 16 * Math.PI * 2 + k * 0.5, len = r * (0.5 + 0.5 * hash(i + 3));
+    const g = X.createLinearGradient(0, 0, Math.cos(ang) * len, Math.sin(ang) * len);
+    g.addColorStop(0, `rgba(255,255,255,${0.8 * a})`); g.addColorStop(1, 'rgba(255,255,255,0)');
+    X.strokeStyle = g; X.lineWidth = 2 + 5 * hash(i); X.beginPath(); X.moveTo(0, 0); X.lineTo(Math.cos(ang) * len, Math.sin(ang) * len); X.stroke();
+  }
+  const rg = X.createRadialGradient(0, 0, 0, 0, 0, r * 0.35); rg.addColorStop(0, `rgba(255,255,255,${0.95 * a})`); rg.addColorStop(1, 'rgba(255,255,255,0)');
+  X.fillStyle = rg; X.beginPath(); X.arc(0, 0, r * 0.35, 0, 7); X.fill();
+  X.restore();
+}
+function tinted(src, color) { TCX.globalCompositeOperation = 'source-over'; TCX.clearRect(0, 0, S, S); TCX.drawImage(src, 0, 0); TCX.globalCompositeOperation = 'source-in'; TCX.fillStyle = color; TCX.fillRect(0, 0, S, S); TCX.globalCompositeOperation = 'source-over'; return TC; }
+
+/* ---------- cuadro ---------- */
+function busy(t) {
+  for (const s of SEGS) { const lt = t - s.t0; if (lt > -0.2 && lt < 0.45) return true; if (t > s.t1 - 0.2 && t < s.t1 + 0.2) return true; }
+  return false;
+}
+window.frame = async (t) => {
+  const cam = camAt(t);
+  const mode = await drawBg(t, cam);
+  drawDust(cam, t);
+  // texto con desenfoque de movimiento real: varias sub-muestras de cámara y letras
+  const K = busy(t) ? 22 : 7, sh = 1.0 / CFG.fps;
+  LAX.clearRect(0, 0, S, S); LBX.clearRect(0, 0, S, S);
+  LAX.globalCompositeOperation = LBX.globalCompositeOperation = 'lighter';
+  for (let k = 0; k < K; k++) {
+    const tt = t - sh / 2 + sh * (k + 0.5) / K;
+    const c = camAt(tt), active = SEGS.find(s => tt >= s.t0 && tt < s.t1);
+    TAX.clearRect(0, 0, S, S); TBX.clearRect(0, 0, S, S);
+    drawText(c, tt, active);
+    LAX.globalAlpha = LBX.globalAlpha = 1 / K; LAX.drawImage(TA, 0, 0); LBX.drawImage(TB, 0, 0);
+  }
+  LAX.globalCompositeOperation = LBX.globalCompositeOperation = 'source-over'; LAX.globalAlpha = LBX.globalAlpha = 1;
+  // golpe en cada corte: temblor y aberración de color
+  let hit = 0; for (const s of SEGS) { const d = t - s.t0; if (d >= 0 && d < 0.16) hit = Math.max(hit, 1 - d / 0.16); }
+  const shx = (hash(Math.floor(t * 90)) - 0.5) * 14 * hit, shy = (hash(Math.floor(t * 90) + 5) - 0.5) * 14 * hit;
+  // fuera de foco
+  X.save(); X.filter = 'blur(7px)'; X.globalAlpha = 0.75; X.drawImage(LB, shx, shy); X.restore();
+  // brillo (bloom)
+  X.save(); X.globalCompositeOperation = 'lighter'; X.filter = 'blur(16px)'; X.globalAlpha = mode === 'black' ? 0.55 : 0.4; X.drawImage(LA, shx, shy); X.filter = 'blur(4px)'; X.globalAlpha = 0.35; X.drawImage(LA, shx, shy); X.restore();
+  if (mode !== 'black') { X.save(); X.filter = 'blur(10px)'; X.globalAlpha = 0.6; X.drawImage(tinted(LA, '#000'), shx, shy + 4); X.restore(); }
+  if (hit > 0.05) {
+    const o = 10 * hit;
+    X.save(); X.globalCompositeOperation = 'lighter'; X.globalAlpha = 0.8 * hit;
+    X.drawImage(tinted(LA, '#ff1e3c'), shx + o, shy); X.drawImage(tinted(LA, '#1ec8ff'), shx - o, shy); X.restore();
+  }
+  X.drawImage(LA, shx, shy);
+  drawPuffs(cam, t, mode);
+  vignette(mode === 'full' ? 0.45 : 0.62);
+  // flashes
+  const first = SEGS[0].t0, last = SEGS[SEGS.length - 1].t1;
+  let fl = 0;
+  if (t >= first && t < first + 0.2) fl = 0.85 * (1 - (t - first) / 0.2);
+  for (const s of SEGS) if (s.i > 0 && s.bg !== SEGS[s.i - 1].bg && t >= s.t0 && t < s.t0 + 0.12) fl = Math.max(fl, 0.45 * (1 - (t - s.t0) / 0.12));
+  if (t >= last && t < last + 0.22) fl = Math.max(fl, 0.75 * (1 - (t - last) / 0.22));
+  if (fl > 0) { X.fillStyle = `rgba(255,255,255,${fl})`; X.fillRect(0, 0, S, S); }
+  flare(t, last - 0.35);
+  const fo = clamp((t - (CFG.dur - 0.9)) / 0.8); if (fo > 0) { X.fillStyle = `rgba(0,0,0,${fo})`; X.fillRect(0, 0, S, S); }
+  return true;
+};
+</script>
+</body></html>
