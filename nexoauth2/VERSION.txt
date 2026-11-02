@@ -1,1 +1,1 @@
-2 nov 2026 - v10.6: el logo sale del fondo, hace zoom a traves de la pantalla y aparece NexOAuth2 de una vez
+2 nov 2026 - v10.7: sonido en cada permiso que se marca al conectar el bot

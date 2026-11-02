@@ -139,6 +139,7 @@ add(POP, B['done'] + 0.05, -5, 0, 'onset', 'bot conectado')
 def pitch(x, st): r = 2 ** (st / 12); i = np.arange(0, len(x) - 1, r); return np.stack([np.interp(i, np.arange(len(x)), x[:, c]) for c in (0, 1)], 1)
 TICK = load('Pop/Smooth Pop.wav', 0, 0.3, 0.08); V2 = T['vpage2']
 for k, st in enumerate((0, 3, 7)): add(pitch(TICK, st), V2['checks'][0] + k * 0.22 + 0.08, -9, -0.15 + 0.15 * k, 'onset', 'check: Passed' if k == 0 else '')
+for k, st in enumerate((0, 2, 4, 5, 7, 9, 11)): add(pitch(TICK, st), B['scopes'][0] + k * 0.1 + 0.06, -12, -0.3 + 0.1 * k, 'onset', 'se marcan los 7 permisos' if k == 0 else '')   # the bot's 7 scopes
 add(pitch(TICK, 12), V2['risk'] + 0.05, -13, 0, 'onset', 'riesgo 0 / 100')
 add(SUCCESS, T['verified']['open'] - 1.05, -3, 0, 'onset', "You're verified")
 add(DISCORD, T['dlog']['arrive'] + 0.02, -3, 0.2, 'onset', 'notificación de Discord: llega el log')
