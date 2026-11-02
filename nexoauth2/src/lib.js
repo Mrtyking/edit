@@ -237,9 +237,9 @@ export function logo(ctx, cx, cy, h, { build = 1, shine = -1, glow = 0, alpha = 
     const a = p.ang * Math.PI / 180, dist = (1 - u) * 520, rot = (1 - u) * (i % 2 ? 0.9 : -0.9);
     e.save(); e.globalAlpha = clamp(u * 2.5); e.translate(LC.x + Math.cos(a) * dist, LC.y - Math.sin(a) * dist); e.rotate(rot); e.translate(-LC.x, -LC.y); e.drawImage(p.cv, 0, 0); e.restore();
   });
-  if (shine >= 0 && shine <= 1) {
-    e.setTransform(1, 0, 0, 1, 0, 0); e.globalCompositeOperation = 'source-atop'; const sx = -0.4 * pw + shine * 1.8 * pw, g = e.createLinearGradient(sx - pw * 0.12, 0, sx + pw * 0.12, ph * 0.45);
-    g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,240,240,0.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); e.fillStyle = g; e.fillRect(0, 0, pw, ph); e.globalCompositeOperation = 'source-over';
+  if (shine > 0 && shine < 1) {   // one sweep of light across the mark, then it is gone (fades in and out, never stays)
+    e.setTransform(1, 0, 0, 1, 0, 0); e.globalCompositeOperation = 'source-atop'; const sx = -0.6 * pw + shine * 2.2 * pw, a = Math.sin(Math.PI * shine), g = e.createLinearGradient(sx - pw * 0.16, -ph * 0.08, sx + pw * 0.16, ph * 0.08);
+    g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, `rgba(255,240,240,${0.55 * a})`); g.addColorStop(1, 'rgba(255,255,255,0)'); e.fillStyle = g; e.fillRect(0, 0, pw, ph); e.globalCompositeOperation = 'source-over';
   }
   ctx.save(); ctx.globalAlpha *= alpha;
   if (glow > 0) { const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, h * 1.1); g.addColorStop(0, `rgba(255,40,50,${0.2 * glow})`); g.addColorStop(0.5, `rgba(255,60,70,${0.07 * glow})`); g.addColorStop(1, 'rgba(120,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(cx - h * 1.2, cy - h * 1.2, h * 2.4, h * 2.4); }

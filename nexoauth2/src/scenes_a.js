@@ -126,12 +126,13 @@ function dash0(ctx, t) {
 }
 // ================================================================ Bots + "Connect your Discord bot"
 const B = TL.bots, MX = 700, MW = 520;
-const STEP_H = [372, 410, 800, 452];
+const STEP_H = [372, 410, 800, 478];
 const stepAt = t => t < B.next1 + 0.05 ? 0 : t < B.next2 + 0.05 ? 1 : t < B.done ? 2 : 3;
 const modalY = h => 562 - h / 2;
 // button rects (page coords) for each step — the cursor aims at these
 const NEXT = s => { const h = STEP_H[s], y = modalY(h); return s === 3 ? [MX + MW - 132, y + h - 58, 116, 38] : s === 2 ? [MX + MW - 172, y + h - 58, 156, 38] : [MX + MW - 128, y + h - 58, 112, 38]; };
 const ctr = r => [r[0] + r[2] / 2, r[1] + r[3] / 2];
+const aimR = r => [r[0] + r[2] * 0.8, r[1] + r[3] * 0.6];   // lower right of a button, so the cursor never hides its label
 const SCOPES = [['identify', 'Username and avatar'], ['email', 'Email (stored encrypted) and whether it is verified'], ['guilds', 'Servers the member belongs to'], ['guilds.join', 'Add members to servers (migration)'],
   ['guilds.members.read', 'Nickname, roles and join date in your servers'], ['connections', 'Linked accounts (only irreversible hashes, to spot shared accounts)'], ['role_connections.write', 'Linked Roles: publish the verification status in Discord']];
 function stepper(ctx, x, y, s, t) {
@@ -149,7 +150,7 @@ function connectModal(ctx, t) {
   panel(ctx, MX, y, MW, h, 18, { fill: '#0E0E10', stroke: C.line2, shadow: 50 });
   sora(ctx, 21, 700); ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(s === 3 ? 'Bot connected' : 'Connect your Discord bot', MX + 20, y + 34); ICON(ctx, 'x', MX + MW - 38, y + 24, 18, '#8A8A93');
   if (s < 3) { txt(ctx, 'Your own application gives the roles in your servers. Every bot gets', MX + 20, y + 66, 14.5, '#A1A1AA', 500); txt(ctx, 'an isolated workspace.', MX + 20, y + 86, 14.5, '#A1A1AA', 500); stepper(ctx, MX + 20, y + 124, s, t); }
-  ctx.save(); ctx.beginPath(); ctx.rect(MX, y + 140, MW, h - 140); ctx.clip(); const cf = s === 0 ? 1 : E.out(prog(t, ts + 0.05, ts + 0.35)); ctx.globalAlpha *= cf; ctx.translate((1 - cf) * 24, 0);
+  ctx.save(); ctx.beginPath(); const ct = s === 3 ? 60 : 140; ctx.rect(MX, y + ct, MW, h - ct); ctx.clip(); const cf = s === 0 ? 1 : E.out(prog(t, ts + 0.05, ts + 0.35)); ctx.globalAlpha *= cf; ctx.translate((1 - cf) * 24, 0);
   const by = y + 160;
   if (s === 0) {
     txt(ctx, 'Display name', MX + 20, by, 14.5, '#fff', 700); input(ctx, MX + 20, by + 14, MW - 40, 38, typed(DEMO.bot, t, B.name[0], B.name[1]), { ph: 'e.g. Aegis Gate', focus: t > B.name[0] - 0.05 && t < B.appid[0] ? 1 : 0, caret: t > B.name[0] - 0.05 && t < B.appid[0], t });
@@ -166,9 +167,9 @@ function connectModal(ctx, t) {
       checkbox(ctx, MX + 36, ry + 23, cp, { s: 16 }); mono(ctx, 14, 700); ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(sc2, MX + 66, ry + 22); const sw = ctx.measureText(sc2).width;
       txt(ctx, 'required', MX + 74 + sw, ry + 23, 11.5, '#8A8A93', 600); fit(ctx, d, MX + 66, ry + 43, MW - 110, 13, '#B4B4BB', 500); });
   } else {
-    const k = E.outBack(prog(t, B.done + 0.05, B.done + 0.5), 1.8); ctx.save(); ctx.translate(960, y + 196); ctx.scale(k, k); ctx.beginPath(); ctx.arc(0, 0, 44, 0, 7); ctx.fillStyle = 'rgba(34,197,94,0.12)'; ctx.fill(); ctx.strokeStyle = 'rgba(34,197,94,0.5)'; ctx.lineWidth = 2; ctx.stroke(); checkMark(ctx, 0, 0, 24, C.green, E.out(prog(t, B.done + 0.2, B.done + 0.55)), 4.5); ctx.restore();
-    txt(ctx, `${DEMO.bot} is connected`, 960, y + 276, 21, '#fff', 800, 'center', 'SORA'); txt(ctx, 'Credentials verified with Discord and stored encrypted.', 960, y + 304, 14.5, '#A1A1AA', 500, 'center');
-    [['Token verified with Discord', 0], ['Encrypted with AES-256-GCM', 1], ['7 OAuth2 scopes ready', 2]].forEach(([s2, i]) => { const p = prog(t, B.done + 0.4 + i * 0.12, B.done + 0.7 + i * 0.12); okCircle(ctx, MX + 120, y + 336 + i * 28, 9, p); ctx.save(); ctx.globalAlpha *= clamp(p * 2); txt(ctx, s2, MX + 140, y + 336 + i * 28, 14, '#E4E4E7', 600); ctx.restore(); });
+    const k = E.outBack(prog(t, B.done + 0.05, B.done + 0.5), 1.8); ctx.save(); ctx.translate(960, y + 150); ctx.scale(k, k); ctx.beginPath(); ctx.arc(0, 0, 44, 0, 7); ctx.fillStyle = 'rgba(34,197,94,0.12)'; ctx.fill(); ctx.strokeStyle = 'rgba(34,197,94,0.5)'; ctx.lineWidth = 2; ctx.stroke(); checkMark(ctx, 0, 0, 24, C.green, E.out(prog(t, B.done + 0.2, B.done + 0.55)), 4.5); ctx.restore();
+    txt(ctx, `${DEMO.bot} is connected`, 960, y + 230, 21, '#fff', 800, 'center', 'SORA'); txt(ctx, 'Credentials verified with Discord and stored encrypted.', 960, y + 258, 14.5, '#A1A1AA', 500, 'center');
+    [['Token verified with Discord', 0], ['Encrypted with AES-256-GCM', 1], ['7 OAuth2 scopes ready', 2]].forEach(([s2, i]) => { const p = prog(t, B.done + 0.4 + i * 0.12, B.done + 0.7 + i * 0.12); okCircle(ctx, MX + 120, y + 296 + i * 30, 9, p); ctx.save(); ctx.globalAlpha *= clamp(p * 2); txt(ctx, s2, MX + 140, y + 296 + i * 30, 14, '#E4E4E7', 600); ctx.restore(); });
   }
   ctx.restore();
   // footer
@@ -214,7 +215,7 @@ const SC = {
   bots: { draw: bots, chrome: () => ({ url: DASH + '/bots' }),
     cursor: [[18.65, 1300, 760], [19.0, 1719, 169, false, 0.4], [B.connect, 1719, 169, true],
       [20.8, ...ctr(NEXT(0)), false, 0.5], [B.next1, ...ctr(NEXT(0)), true], [22.25, ...ctr(NEXT(1)), false, 0.45], [B.next2, ...ctr(NEXT(1)), true],
-      [23.5, ...ctr(NEXT(2)), false, 0.55], [B.connectBtn, ...ctr(NEXT(2)), true], [24.95, ...ctr(NEXT(3)), false, 0.55], [B.close, ...ctr(NEXT(3)), true], [25.7, ...ctr(NEXT(3))]] },
+      [23.5, ...ctr(NEXT(2)), false, 0.55], [B.connectBtn, ...ctr(NEXT(2)), true], [24.95, ...aimR(NEXT(3)), false, 0.55], [B.close, ...aimR(NEXT(3)), true], [25.7, ...aimR(NEXT(3))]] },
 };
 export const SCENES = SC;
 export const LAYERS = [

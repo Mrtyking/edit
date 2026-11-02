@@ -1,1 +1,1 @@
-2 nov 2026 - v3: sin linea roja en la intro, logo se arma limpio, menu completo, sin linea verde en los checks
+2 nov 2026 - v4: modal del bot sin texto encima de la linea, brillo del logo ya no se queda pegado
