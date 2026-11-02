@@ -161,6 +161,10 @@ for i in range(4): add(CARDPOP, IPT['cards'][0] + i * 0.12 + 0.05, -14, 0.4, 'on
 for i in range(5): add(CARDPOP, ANL['kpis'][0] + i * 0.06 + 0.05, -16, -0.4 + 0.2 * i, 'onset', 'KPIs de analytics' if i == 0 else '')
 for i in range(4): add(CARDPOP, T['pricing'][0] + 0.4 + i * 0.1, -13, -0.45 + 0.3 * i, 'onset', 'entran los 4 planes' if i == 0 else '')
 for i in range(3): add(PASS, T['bots']['done'] + 0.45 + i * 0.12, -15, 0, 'onset', 'lista: bot verificado' if i == 0 else '')
+# IP tracker: scanning after Track, then the globe zooms down to the city and the pin lands
+add(lib('shavkat_visuals_azul/Scan.wav', 0, 1.2, 0.3), IPT['track'] + 0.08, -16, 0.3, 'onset', 'rastreando la IP')
+add(lib('aaun_ceo_RealEstate_verde/Riser.wav', 0.8, 2.36, 0.05), IPT['pin'], -13, 0, 'peak', 'el mapa hace zoom hasta la ciudad')
+add(load('Whooshes/Cinematic Fast Normal Whoosh.wav'), IPT['fly'][1] - 0.2, -7, 0, 'peak')
 add(pitch(TICK, 12), V2['risk'] + 0.05, -13, 0, 'onset', 'riesgo 0 / 100')
 add(SUCCESS, T['verified']['open'] - 1.05, -3, 0, 'onset', "You're verified")
 add(DISCORD, T['dlog']['arrive'] + 0.02, -3, 0.2, 'onset', 'notificación de Discord: llega el log')
