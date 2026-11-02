@@ -1,1 +1,1 @@
-2 nov 2026 - v10.1: intro sin la linea del circulo, ahora una luz redonda suave
+2 nov 2026 - v10.2: sonido cuando las piezas salen de la pagina en 3D

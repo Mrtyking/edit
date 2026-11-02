@@ -19,13 +19,14 @@ LIB = os.environ.get('SFX_LIB', os.path.join(HERE, '..', '..', 'Biblioteca_SFX')
 NODE = r"""
 const ctx = new Proxy(function () {}, { get: (o, k) => k === 'measureText' ? () => ({ width: 10 }) : (k === Symbol.toPrimitive ? () => 0 : ctx), set: () => true, apply: () => ctx });
 globalThis.document = { createElement: () => ({ getContext: () => ctx, width: 0, height: 0 }) }; globalThis.Path2D = class {}; globalThis.Image = class {};
-const R = process.cwd() + '/src/', T = await import(R + 'timeline.js'), clicks = [];
+const R = process.cwd() + '/src/', T = await import(R + 'timeline.js'), clicks = [], lifts = [];
+for (const f of ['scenes_a.js', 'scenes_b.js', 'scenes_c.js', 'scenes_d.js']) for (const L of (await import(R + f)).LAYERS || []) lifts.push(L.t);
 for (const f of ['scenes_a.js', 'scenes_b.js', 'scenes_c.js', 'scenes_d.js']) for (const [k, sc] of Object.entries((await import(R + f)).SCENES)) for (const c of sc.cursor || []) if (c[3]) clicks.push([c[0], k, c[5] || 0]);
 for (const c of (await import(R + 'search.js')).SEARCH_CURSOR) if (c[3]) clicks.push([c[0], 'search', c[5] || 0]);
-console.log(JSON.stringify({ TL: T.TL, CARDS: T.CARDS, CAPS: T.CAPS, DUR: T.DUR, CLICKS: clicks.sort((a, b) => a[0] - b[0]) }));
+console.log(JSON.stringify({ TL: T.TL, CARDS: T.CARDS, CAPS: T.CAPS, DUR: T.DUR, CLICKS: clicks.sort((a, b) => a[0] - b[0]), LIFTS: lifts.sort((a, b) => a[0] - b[0]) }));
 """
 J = json.loads(subprocess.run(['node', '--input-type=module', '-e', NODE], cwd=HERE, capture_output=True, text=True, check=True).stdout)
-TL, CARDS, CAPS, DUR, CLICKS = J['TL'], J['CARDS'], J['CAPS'], J['DUR'], J['CLICKS']
+TL, CARDS, CAPS, DUR, CLICKS, LIFTS = J['TL'], J['CARDS'], J['CAPS'], J['DUR'], J['CLICKS'], J['LIFTS']
 N = int(SR * DUR)
 
 def hp(x, f, o=2): return sosfilt(butter(o, f, 'high', fs=SR, output='sos'), x, axis=0)
@@ -127,6 +128,11 @@ click(T['cta'] + 2.6, True, 'clic en Get Started — free')
 add(WH, T['win']['in'][0] + 0.3, -7, 0, 'peak', 'entra la ventana con la web')
 for c in CARDS: add(WH, c['t'][0] + 0.12, -8, 0, 'peak', f'tarjeta: {c["a"]}')
 for i, c in enumerate(CAPS): add(WH, c['t'][0] - 0.05, -15, (-1) ** i * 0.25, 'peak', f'montaje: {c["k"]}')
+# pieces that lift out of the page in 3D (dashboard mockup, embed, log, profile card, globe): it rises with air and a soft open, and settles back
+LIFT_IN = Pool(load('Whooshes/Smooth And Fast Whoosh.wav'), lib('Premium_verde_UI/Deep_Whoosh.wav')); LIFT_OPEN = load('Pop/Sweet UI Open.wav', 0, 0.6, 0.15)
+for i, (a, b) in enumerate(LIFTS):
+    add(LIFT_IN, a + 0.22, -8, (-1) ** i * 0.2, 'peak', 'una pieza sale de la página en 3D'); add(LIFT_OPEN, a + 0.05, -11, (-1) ** i * 0.2)
+    add(WH, b - 0.2, -17, 0, 'peak')
 add(AIR, T['pricing'][0] - 0.4, -14, 0, 'start', 'la ventana se va, entra Pricing')
 
 # ================================================================ the big moments

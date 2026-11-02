@@ -12,6 +12,7 @@ segundo,que_suena
 7.85,clic (search)
 8.80,clic (search)
 9.22,entra la ventana con la web
+11.22,una pieza sale de la página en 3D
 12.55,clic (landing)
 13.37,nombre
 14.27,correo
@@ -38,6 +39,7 @@ segundo,que_suena
 36.96,descripción
 40.20,clic (embed)
 41.60,clic (embed)
+41.97,una pieza sale de la página en 3D
 45.60,clic (logcfg)
 46.25,clic (logcfg)
 47.87,"tarjeta: Then, one click."
@@ -48,10 +50,13 @@ segundo,que_suena
 54.80,You're verified
 55.85,clic (verified)
 56.37,notificación de Discord: llega el log
+57.42,una pieza sale de la página en 3D
 58.87,tarjeta: Know every member.
 60.60,clic (members)
+62.17,una pieza sale de la página en 3D
 63.45,montaje: SECURITY CENTER
 66.45,montaje: MEMBER MAP
+67.72,una pieza sale de la página en 3D
 69.85,montaje: IP TRACKER
 69.97,escribe la IP
 70.65,clic (ip)
