@@ -354,7 +354,9 @@ function drawOverlay(t) {
   const c0 = TL.cta;
   if (t >= c0 - 0.2) {
     const sc = E.inOut(prog(t, c0 - 0.2, c0 + 0.9)); const g = x.createRadialGradient(960, 330, 0, 960, 420, 980); g.addColorStop(0, `rgba(255,59,59,${lerp(0.09, 0.2, DK) * sc})`); g.addColorStop(0.45, `rgba(255,70,70,${lerp(0.04, 0.07, DK) * sc})`); g.addColorStop(1, 'rgba(255,120,120,0)'); x.fillStyle = g; x.fillRect(0, 0, 1920, 1080);
-    const lb = prog(t, c0 + 0.05, c0 + 1.25); logo(x, 960, 300, 250, { build: lb, shine: prog(t, c0 + 1.4, c0 + 2.1), glow: clamp(lb * 1.4) });
+    { const e = E.outQuint(prog(t, c0 + 0.05, c0 + 0.95)), sc = lerp(0.45, 1, e);   // the mark rises out of the background into focus (as in the opening)
+      if (e > 0) lit(x, c => { c.globalAlpha = clamp(e * 1.4); if (e < 1) c.filter = `blur(${((1 - e) * 22).toFixed(1)}px)`; c.translate(960, 300); c.scale(sc, sc); c.translate(-960, -300);
+        logo(c, 960, 300, 250, { shine: prog(t, c0 + 1.4, c0 + 2.1), glow: clamp(e * 1.4) }); }, 0.35 + 0.9 * (1 - e), 26); }
     const wp = E.outExpo(prog(t, c0 + 0.7, c0 + 1.35)); x.save(); x.globalAlpha = wp; x.translate(0, (1 - wp) * 30); wordmark(x, 960, 510, 92, 'center', 1, INK); x.restore();
     if (t > c0 + 1.0) headline(x, 'Verification, Reimagined.', 960, 610, 40, c0 + 1.0, t, { red: [1] });
     const bp = E.outBack(prog(t, c0 + 1.45, c0 + 1.9), 1.8); if (bp > 0) { x.save(); x.globalAlpha = clamp(bp); x.translate(960, 700); x.scale(bp, bp); x.translate(-960, -700);

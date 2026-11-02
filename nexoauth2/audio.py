@@ -165,12 +165,29 @@ for i in range(3): add(PASS, T['bots']['done'] + 0.45 + i * 0.12, -15, 0, 'onset
 add(lib('shavkat_visuals_azul/Scan.wav', 0, 1.2, 0.3), IPT['track'] + 0.08, -16, 0.3, 'onset', 'rastreando la IP')
 add(lib('aaun_ceo_RealEstate_verde/Riser.wav', 0.8, 2.36, 0.05), IPT['pin'], -13, 0, 'peak', 'el mapa hace zoom hasta la ciudad')
 add(load('Whooshes/Cinematic Fast Normal Whoosh.wav'), IPT['fly'][1] - 0.2, -7, 0, 'peak')
+# the site loads: badge, the two headline words, the subtitle, then the dashboard mockup rises
+LD = T['landing']
+add(CARDPOP, LD['hero'] + 0.02, -15, 0, 'onset', 'carga la web')
+add(lib('Premium_verde_UI/Deep_Whoosh.wav'), LD['hero'] + 0.2, -11, -0.2, 'peak', '"Verification, Reimagined."'); add(pitch(PASS, -2), LD['hero'] + 0.3, -14, 0.2)
+add(pitch(ROWTICK, 2), LD['hero'] + 0.5, -17, 0)
+add(load('Whooshes/Smooth And Fast Whoosh.wav'), LD['mock'] + 0.35, -10, 0, 'peak', 'sube el mockup del dashboard')
+for i in range(6): add(pitch(ROWTICK, i * 0.5), LD['mock'] + 0.55 + i * 0.09, -20, -0.3 + 0.12 * i)
+# analytics: the curve draws itself, the funnel fills bar by bar, the donuts spin in
+add(lib('piero_cesti_UI_azul/Data_Loading.wav', 0, 1.2, 0.3), ANL['curve'][0], -17, -0.2, 'onset', 'se dibuja la curva')
+for i in range(5): add(pitch(ROWTICK, i), ANL['funnel'][0] + i * 0.15 + 0.05, -17, 0.35, 'onset', 'se llena el embudo' if i == 0 else '')
+add(load('Whooshes/Smooth And Fast Whoosh.wav'), ANL['scroll'][0] + 0.3, -14, 0, 'peak', 'scroll a las donas')
+for i in range(2): add(load('Gear/Soft Gear 1.wav'), ANL['donuts'][0] + 0.05 + i * 0.12, -15, -0.3 + 0.6 * i, 'onset', 'giran las donas' if i == 0 else '')
+# pricing: the prices slam in with money
+p0 = T['pricing'][0]
+add(load('Money/Cinematic Money 2.wav'), p0 + 0.6, -7, 0, 'onset', 'dinero: $0 · $10 · $20 · $200')
+add(lib('shavkat_visuals_azul/Coin_Flip.wav'), p0 + 0.75, -11, 0.3, 'onset')
 add(pitch(TICK, 12), V2['risk'] + 0.05, -13, 0, 'onset', 'riesgo 0 / 100')
 add(SUCCESS, T['verified']['open'] - 1.05, -3, 0, 'onset', "You're verified")
 add(DISCORD, T['dlog']['arrive'] + 0.02, -3, 0.2, 'onset', 'notificación de Discord: llega el log')
 add(SOFTPOP, IP['pin'] + 0.12, -6, 0, 'onset', 'cae el pin en Austin')
 c0 = T['cta']
-add(HIT, c0 + 0.05 + 1.2 * 0.8, -6, 0, 'onset', 'final: el logo encaja (mismo golpe de la intro)')
+add(lib('Premium_verde_UI/Deep_Whoosh.wav'), c0 + 0.45, -8, 0, 'peak', 'final: el logo sale del fondo')
+add(HIT, c0 + 0.55, -7, 0, 'onset')
 add(SPARKLE, c0 + 1.42, -15, 0, 'onset', 'brillo del logo')
 add(DISCORD, c0 + 1.55, -2, 0.35, 'onset', 'notificación de Discord: aparece discord.gg/nexoauth2')
 add(AIR, DUR - 5.0, -19, 0, 'start', 'aire final')

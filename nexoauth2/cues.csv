@@ -16,6 +16,9 @@ segundo,que_suena
 8.24,aparece el resultado: nexoauth2.com
 8.80,clic (search)
 9.22,entra la ventana con la web
+9.67,carga la web
+9.85,"""Verification, Reimagined."""
+10.85,sube el mockup del dashboard
 11.22,una pieza sale de la página en 3D
 12.55,clic (landing)
 13.37,nombre
@@ -79,6 +82,10 @@ segundo,que_suena
 71.95,resultados de la IP
 73.05,montaje: ANALYTICS
 73.20,KPIs de analytics
+73.40,se dibuja la curva
+73.95,se llena el embudo
+75.60,scroll a las donas
+75.75,giran las donas
 76.85,montaje: TEMP MAIL
 77.08,correo temporal
 77.50,clic (tempmail)
@@ -91,8 +98,9 @@ segundo,que_suena
 81.30,clic (transfer)
 81.60,"la ventana se va, entra Pricing"
 82.40,entran los 4 planes
+82.60,dinero: $0 · $10 · $20 · $200
+85.75,final: el logo sale del fondo
 86.00,aire final
-86.31,final: el logo encaja (mismo golpe de la intro)
 86.72,brillo del logo
 86.85,notificación de Discord: aparece discord.gg/nexoauth2
 87.90,clic en Get Started — free
