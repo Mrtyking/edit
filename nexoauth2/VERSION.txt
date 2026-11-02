@@ -1,1 +1,1 @@
-2 nov 2026 - v10.2: sonido cuando las piezas salen de la pagina en 3D
+2 nov 2026 - v10.3: sonido en cada check que pasa la verificacion

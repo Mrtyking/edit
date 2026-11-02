@@ -137,6 +137,11 @@ add(AIR, T['pricing'][0] - 0.4, -14, 0, 'start', 'la ventana se va, entra Pricin
 
 # ================================================================ the big moments
 add(POP, B['done'] + 0.05, -5, 0, 'onset', 'bot conectado')
+# the security checks pass one by one: a clean tick each, a little higher every time (like a progress chime)
+def pitch(x, st): r = 2 ** (st / 12); i = np.arange(0, len(x) - 1, r); return np.stack([np.interp(i, np.arange(len(x)), x[:, c]) for c in (0, 1)], 1)
+TICK = load('Pop/Smooth Pop.wav', 0, 0.3, 0.08); V2 = T['vpage2']
+for k, st in enumerate((0, 3, 7)): add(pitch(TICK, st), V2['checks'][0] + k * 0.22 + 0.08, -9, -0.15 + 0.15 * k, 'onset', 'check: Passed' if k == 0 else '')
+add(pitch(TICK, 12), V2['risk'] + 0.05, -13, 0, 'onset', 'riesgo 0 / 100')
 add(SUCCESS, T['verified']['open'] - 1.05, -3, 0, 'onset', "You're verified")
 add(DISCORD, T['dlog']['arrive'] + 0.02, -3, 0.2, 'onset', 'notificación de Discord: llega el log')
 add(SOFTPOP, IP['pin'] + 0.12, -6, 0, 'onset', 'cae el pin en Austin')
