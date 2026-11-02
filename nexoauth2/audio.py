@@ -145,6 +145,11 @@ TICK = load('Pop/Smooth Pop.wav', 0, 0.3, 0.08); V2 = T['vpage2']
 for k, st in enumerate((0, 3, 7)): add(pitch(TICK, st), V2['checks'][0] + k * 0.22 + 0.08, -9, -0.15 + 0.15 * k, 'onset', 'check: Passed' if k == 0 else '')
 for k, st in enumerate((0, 2, 4, 5, 7, 9, 11)): add(pitch(TICK, st), B['scopes'][0] + k * 0.1 + 0.06, -12, -0.3 + 0.1 * k, 'onset', 'se marcan los 7 permisos' if k == 0 else '')   # the bot's 7 scopes
 add(pitch(TICK, 4), SU['cf'][0] + 0.05, -14, -0.1); add(pitch(TICK, 11), SU['cf'][1], -8, -0.1, 'onset', 'Cloudflare: Success!')   # the security check passes
+# sliders: a fine detent tick on every step of the value (Base radius 10 → 22 px, same easing as the picture)
+ED = T['editor']; DET = load('Ui Sound Effects/Ui Click Digital 03.wav'); last = 10
+for j in range(1, 601):
+    u = j / 600; e = 4 * u ** 3 if u < 0.5 else 1 - (-2 * u + 2) ** 3 / 2; v = round(10 + 12 * e)
+    if v != last: last = v; add(pitch(DET, (v - 10) * 0.6), ED['radius'][0] + u * (ED['radius'][1] - ED['radius'][0]), -17, 0.4, 'onset', 'sube el Base radius (un tic por paso)' if v == 11 else '')
 add(pitch(TICK, 12), V2['risk'] + 0.05, -13, 0, 'onset', 'riesgo 0 / 100')
 add(SUCCESS, T['verified']['open'] - 1.05, -3, 0, 'onset', "You're verified")
 add(DISCORD, T['dlog']['arrive'] + 0.02, -3, 0.2, 'onset', 'notificación de Discord: llega el log')

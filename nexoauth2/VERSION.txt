@@ -1,1 +1,1 @@
-2 nov 2026 - v10.9: sonido en el resultado de la busqueda y al pasar la seguridad de Cloudflare
+2 nov 2026 - v10.10: tic por cada paso al subir el slider
