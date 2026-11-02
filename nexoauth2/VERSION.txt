@@ -1,1 +1,1 @@
-2 nov 2026 - v8: fondo Aurora sin cortes, marco de telefono oscuro, panel de fondo mas compacto
+2 nov 2026 - v9: sonido mas variado (pack + biblioteca), notificacion de Discord, boton de Discord centrado

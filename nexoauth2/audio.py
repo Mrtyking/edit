@@ -1,13 +1,16 @@
 # NexOAuth2 promo — sound design only (no music): every sound comes from the SFX pack the editor shared.
 # Every cue is placed from src/timeline.js (read through node), so picture and sound stay in sync:
 # one key tick per typed character, a click for every click, ticks for checks, whooshes on every move.
-# Output: stems/mix.wav (stereo 48 kHz, 90 s) + cues.csv. The pack is NOT in the repo: set SFX_PACK or keep it at ../../SFX_Pack.
+# Output: stems/mix.wav (stereo 48 kHz, 90 s) + cues.csv. Sources: the SFX pack (SFX_PACK, default ../../SFX_Pack) and our own
+# library of sounds named from the reference videos plus Discord's notification (SFX_LIB, default ../../Biblioteca_SFX).
+# Neither is in the repo; only the final mix is.
 import numpy as np, wave, os, csv, subprocess, json, math
 from scipy.signal import butter, sosfilt
 
 SR = 48000
 HERE = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.join(HERE, 'stems'); os.makedirs(OUT, exist_ok=True)
 PACK = os.environ.get('SFX_PACK', os.path.join(HERE, '..', '..', 'SFX_Pack'))
+LIB = os.environ.get('SFX_LIB', os.path.join(HERE, '..', '..', 'Biblioteca_SFX'))   # our own library (sounds named from the reference videos + Discord's)
 J = json.loads(subprocess.run(['node', '-e', "import('./src/timeline.js').then(m => console.log(JSON.stringify({ TL: m.TL, SCENES: m.SCENES, CARDS: m.CARDS, CAPS: m.CAPS, THEME: m.THEME, DUR: m.DUR })))"],
                               cwd=HERE, capture_output=True, text=True, check=True).stdout)
 TL, SCENES, CARDS, CAPS, DUR = J['TL'], J['SCENES'], J['CARDS'], J['CAPS'], J['DUR']
@@ -20,9 +23,9 @@ def write_wav(path, x):
     with wave.open(path, 'wb') as w: w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())
 
 _cache = {}
-def load(name, a=0.0, b=None, fade=0.03):
+def load(name, a=0.0, b=None, fade=0.03, root=None):
     """Decode with ffmpeg (several pack files carry the wrong extension), stereo 48 kHz, slice [a, b], peak 1."""
-    p = os.path.join(PACK, name)
+    p = os.path.join(root or PACK, name)
     if p not in _cache:
         raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', p, '-ac', '2', '-ar', str(SR), '-f', 'f32le', '-'], capture_output=True, check=True).stdout
         _cache[p] = np.frombuffer(raw, np.float32).reshape(-1, 2).astype(float)
@@ -36,8 +39,14 @@ def onset(x): return np.argmax(np.abs(x).max(1) > 0.03) / SR
 def peak(x): e = np.convolve((x ** 2).sum(1), np.ones(480), 'same'); return np.argmax(e) / SR
 
 MIX = np.zeros((N, 2)); rows = []
+class Pool:
+    """Several takes of the same kind of sound, used in turn so nothing repeats back to back."""
+    def __init__(self, *xs): self.xs, self.i = list(xs), 0
+    def next(self): x = self.xs[self.i % len(self.xs)]; self.i += 1; return x
+def lib(name, a=0.0, b=None, fade=0.03): return load(name, a, b, fade, root=LIB)
 def add(x, t, db=0.0, pan=0.0, at='onset', what=''):
     """Place x so that its onset (or loudness peak, or start) lands on t. pan -1..1 (equal power)."""
+    if isinstance(x, Pool): x = x.next()
     t0 = t - (onset(x) if at == 'onset' else peak(x) if at == 'peak' else 0)
     i = int(round(t0 * SR)); s = x[max(0, -i):]; i = max(0, i); s = s[:max(0, N - i)] * 10 ** (db / 20)
     if pan: th = (pan + 1) * math.pi / 4; s = s * [math.cos(th) * 1.414, math.sin(th) * 1.414]
@@ -54,16 +63,33 @@ SHUT = load(CS + 'Little Bit Hard Cammera Shutter.wav'); SSHUT = load(CS + 'Smoo
 DATA = load(D + 'Data Collect.wav'); CDATA = load(D + 'Cinematic data.wav', 0, 1.6, 0.4); GRAN = load(U + 'Ui Granular, Button, Select.wav'); GRAN9 = load(U + 'Ui Granular, Button, Select   (9).wav')
 GLITCH = load(U + 'Ui Glitch, Flicker, Text  (2).wav'); STRETCH = load(U + 'Ui stretch.wav'); CCLICK = load(Cl + 'Cinematic Click.wav'); HCLICK = load(Cl + 'High Click.wav'); BTN = load(U + 'Ui button.wav')
 
+# ---- the library joins the pack: every family of sounds rotates between several takes
+CLICKS = Pool(CLICK, lib('Premium_verde_UI/Button_1.wav'), lib('HB_Create_naranja/Click.wav', 0, 0.35), lib('Premium_verde_UI/Button_2.wav'), lib('HB_Create_naranja/Cursor_Selection.wav', 0, 0.4), lib('Premium_verde_UI/Button_3.wav'), HCLICK)
+BIGCLICKS = Pool(CCLICK, lib('MrBiss/Camera_Click.wav'), lib('HB_Create_naranja/Select.wav', 0, 0.6, 0.15))
+KEYS = Pool(KEY, lib('Premium_verde_UI/Typing.wav'))
+KEYBOARD = lib('piero_cesti_UI_azul/Macbook_Keyboard.wav'); TYPEBED = lib('aaun_ceo_RealEstate_verde/Typing.wav')
+TOGGLES = Pool(lib('piero_cesti_UI_azul/Switch.wav'), lib('HB_Create_naranja/Switch_On.wav', 0, 0.5, 0.15))
+POP = Pool(POP, lib('Part6_verde/Snap.wav'), lib('Premium_verde_UI/Button_3.wav'))
+TOASTS = Pool(POP2, lib('shavkat_visuals_azul/Approve.wav', 0, 0.6, 0.2), lib('Premium_verde_UI/Sparkle.wav', 0, 0.8, 0.3), lib('shavkat_visuals_azul/Glimmer.wav', 0, 0.8, 0.3))
+WF = Pool(WF, lib('Premium_verde_UI/Deep_Whoosh.wav'), lib('MrBiss/Woosh.wav'), lib('shavkat_visuals_azul/Whoosh.wav'), lib('aaun_ceo_RealEstate_verde/Woosh.wav'))
+WS = Pool(WS, lib('shavkat_visuals_azul/Mini_Whoosh.wav'), lib('MrBiss/Woosh.wav'))
+GLITCH = Pool(GLITCH, lib('shavkat_visuals_azul/Glitch.wav', 0, 0.7, 0.2), lib('piero_cesti_UI_azul/Glitch_Transition.wav', 0, 0.8, 0.25), lib('MrBiss/Digital_Text.wav'))
+DISCORD = lib('Discord/Discord_Notification.wav')
+
 def click(t, db=-4, pan=0.0, what='', big=False):
-    add(CCLICK if big else CLICK, t, db, pan, 'onset', what); add(CLICK2, t + 0.004, db - 9, pan)
+    add(BIGCLICKS if big else CLICKS, t, db, pan, 'onset', what); add(CLICK2, t + 0.004, db - 10, pan)
 def typing(text, a, b, db=-13, what=''):
     """One key tick per character, on the frame it appears (typed() in lib.js), thinned to ≥ 42 ms apart."""
-    n, last = len(text), -1
+    n, last, key = len(text), -1, KEYS.next()
     for k in range(1, n + 1):
         t = a + (k - 0.5) / n * (b - a)
         if t - last < 0.042: continue
-        last = t; add(KEY, t, db + (k * 7 % 5 - 2) * 0.8, ((k * 37) % 9 - 4) * 0.04, 'onset', what if k == 1 else '')
-def toast(t, what=''): add(POP2, t, -10, 0.35, 'onset', what); add(TICK, t + 0.03, -15, 0.35)
+        last = t; add(key, t, db + (k * 7 % 5 - 2) * 0.8, ((k * 37) % 9 - 4) * 0.04, 'onset', what if k == 1 else '')
+    # a real keyboard bed under the ticks (two recordings, each typing run takes a different slice)
+    typing.n = getattr(typing, 'n', 0) + 1; src = KEYBOARD if typing.n % 2 else TYPEBED; L = min(b - a + 0.05, len(src) / SR - 0.05)
+    off = (typing.n * 0.37) % max(0.01, len(src) / SR - L); i0 = int(off * SR); bed = src[i0:i0 + int(L * SR)].copy(); f = int(0.02 * SR); bed[:f] *= np.linspace(0, 1, f)[:, None]; bed[-f:] *= np.linspace(1, 0, f)[:, None]
+    add(bed, a, db - 4, 0, 'start')
+def toast(t, what=''): add(TOASTS, t, -9, 0.35, 'onset', what); add(TICK, t + 0.03, -16, 0.35)
 def scene_cut(t, db=-17): add(WS, t, db, 0, 'peak')
 
 T = TL
@@ -244,6 +270,22 @@ click(c0 + 2.6, -4, -0.2, 'clic en Get Started — free', big=True)
 add(GRAN, c0 + 1.82, -12, 0, 'onset', 'nexoauth2.com')
 add(load(W + 'Cinematic Long Whoosh.wav', 0, 4.4, 1.6), DUR - 4.6, -18, 0, 'start', 'aire final')
 
+# ================================================================ signature moments from our library (and Discord's own notification)
+add(lib('Part6_verde/Metallic_Hit.wav', 0, 1.2, 0.4), I['build'][0] + 1.6 * 0.82, -9, 0, 'onset', 'golpe metálico del logo')
+add(lib('MrBiss/Shine.wav'), I['shine'][0] + 0.25, -9, 0.2, 'peak', 'destello del logo')
+for i, c in enumerate(CARDS): add(lib('Premium_azul_cinematic/Cine_Strike.wav' if i % 2 else 'Premium_azul_cinematic/Basscrack.wav', 0, 1.0, 0.3), c['t'][0] + 0.06, -15, 0, 'onset')
+for tt in (EM['date'], LG['spoiler'], LG['inline'], LG['email']): add(TOGGLES, tt + 0.02, -11, 0.2, 'onset')
+add(lib('shavkat_visuals_azul/Scan.wav', 0, 1.0, 0.3), V2['checks'][0], -13, 0, 'onset', 'escaneo de seguridad')
+for k in range(3): add(lib('shavkat_visuals_azul/Approve.wav', 0, 0.5, 0.2), V2['checks'][0] + k * 0.22 + 0.18, -14, -0.1)
+add(lib('HB_Create_naranja/Bell_Hit.wav', 0, 1.8, 0.8), 53.8, -9, 0, 'onset', 'campana de verificado')
+add(DISCORD, DL['arrive'] + 0.02, -4, 0.2, 'onset', 'notificación de Discord: llega el log')
+add(lib('shavkat_visuals_azul/Scan.wav', 0, 1.2, 0.3), IP['track'] + 0.1, -12, 0.3, 'onset', 'rastreando la IP')
+add(lib('AMANFX_ticks/Sharp_Hit.wav', 0, 0.9, 0.3), IP['pin'] + 0.15, -10, 0, 'onset')
+add(lib('MrBiss/Counter.wav'), AN['kpis'][0] + 0.1, -12, 0.2, 'onset', 'contador de KPIs')
+add(lib('shavkat_visuals_azul/Coin_Flip.wav'), T['pricing'][0] + 0.7, -9, 0.3, 'onset', 'moneda en los precios')
+add(DISCORD, T['cta'] + 1.55, -2, 0.35, 'onset', 'notificación de Discord: aparece discord.gg/nexoauth2')
+add(lib('Premium_verde_UI/Sparkle.wav'), T['cta'] + 1.42, -12, 0, 'onset')
+
 # ================================================================ low air under the quieter stretches (keeps the room alive without music)
 for t0 in (9.9, 12.7, 20.4, 30.6, 59.9, 64.1, 68.3, 72.5, 76.7): add(load(W + 'Cinematic Long Whoosh.wav', 0.4, 4.6, 1.4), t0, -21, 0, 'start')
 add(DATA, T['security']['cards'][0] + 0.5, -13, 0.3, 'onset', 'detectores se calibran'); add(CDATA, T['security']['cards'][1] + 0.35, -15, -0.3)
@@ -251,8 +293,8 @@ add(DATA, T['security']['cards'][0] + 0.5, -13, 0.3, 'onset', 'detectores se cal
 # ================================================================ mix
 out = hp(MIX, 35)
 out = np.tanh(out / np.abs(out).max() * 2.4) / np.tanh(2.4)      # glue on stacked transients (soft clip)
-out *= 10 ** (-1.6 / 20) / np.abs(out).max()     # sample peak −1.6 dBFS so the true peak stays under −0.5 after AAC
+out *= 10 ** (-3.5 / 20) / np.abs(out).max()     # sample peak −1.6 dBFS so the true peak stays under −0.5 after AAC
 fi = np.minimum(1, np.arange(N) / (0.15 * SR)); fo = np.clip((DUR - np.arange(N) / SR) / 0.9, 0, 1); out *= (fi * fo)[:, None]
 write_wav(os.path.join(OUT, 'mix.wav'), out)
 with open(os.path.join(HERE, 'cues.csv'), 'w', newline='') as fh: w = csv.writer(fh); w.writerow(['segundo', 'que_suena']); w.writerows(sorted(rows, key=lambda r: float(r[0])))
-print(f'mix.wav · {DUR:.0f} s · {len(rows)} momentos con sonido · sin música · pico -1.6 dBFS')
+print(f'mix.wav · {DUR:.0f} s · {len(rows)} momentos con sonido · sin música · pico -3.5 dBFS')

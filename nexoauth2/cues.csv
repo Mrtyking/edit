@@ -4,7 +4,9 @@ segundo,que_suena
 0.450,entran las piezas del logo
 0.962,las barras del hexágono encajan
 1.730,el núcleo N2 encaja
+1.762,golpe metálico del logo
 2.100,brillo metálico del logo
+2.350,destello del logo
 2.400,aparece NexOAuth2
 3.030,"""Verification, Reimagined."""
 4.100,"se va la intro, se enciende el estudio blanco"
@@ -91,11 +93,14 @@ segundo,que_suena
 50.550,Continue with Discord
 50.800,pantalla de Discord
 51.950,Authorize
+52.500,escaneo de seguridad
 52.650,checks en verde
 53.300,riesgo 0 / 100
 53.620,sube hacia el verificado
 53.780,You're verified
+53.800,campana de verificado
 54.850,Open Discord
+55.370,notificación de Discord: llega el log
 56.050,el miembro pasa a Verified
 56.450,el log flota en 3D
 57.800,tarjeta: Know every member.
@@ -115,11 +120,13 @@ segundo,que_suena
 68.920,rótulo: IP TRACKER
 68.971,escribe la IP
 69.650,Track IP
+69.750,rastreando la IP
 70.500,zoom del globo a la ciudad
 70.950,cae el pin en Austin
 71.000,resultados de la IP
 72.120,rótulo: ANALYTICS
 72.150,KPIs contando
+72.250,contador de KPIs
 72.500,se dibuja la curva
 73.000,embudo de verificación
 74.600,scroll
@@ -141,6 +148,7 @@ segundo,que_suena
 80.700,"la ventana se va, entra Pricing"
 81.100,PRICING
 81.620,entran los 4 planes
+81.700,moneda en los precios
 81.850,precios $0 · $10 · $20 · $200
 84.200,final: estudio grafito
 84.734,el logo se arma otra vez
@@ -148,5 +156,6 @@ segundo,que_suena
 85.400,aire final
 85.700,brillo
 85.800,botones Get Started y Discord
+85.850,notificación de Discord: aparece discord.gg/nexoauth2
 86.120,nexoauth2.com
 86.900,clic en Get Started — free

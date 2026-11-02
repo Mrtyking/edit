@@ -263,7 +263,8 @@ function drawOverlay(t) {
       const pr = t > c0 + 2.6 && t < c0 + 2.82 ? Math.sin((t - c0 - 2.6) / 0.22 * Math.PI) : 0;
       btn(x, 960 - 400, 668, 380, 66, 'Get Started — free', { iconR: 'arrow', size: 22, prs: pr, glow: 0.6, r: 14 });
       x.save(); x.shadowColor = 'rgba(88,101,242,0.4)'; x.shadowBlur = 22; x.shadowOffsetY = 4; rr(x, 980, 668, 380, 66, 14); x.fillStyle = '#5865F2'; x.fill(); x.restore();
-      ICON(x, 'discord', 1010, 689, 26, '#FFFFFF'); font(x, 21, 700); x.fillStyle = '#fff'; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText('discord.gg/nexoauth2', 1048, 702); x.restore(); }
+      font(x, 21, 700); const dw = x.measureText('discord.gg/nexoauth2').width, dx = 1170 - (30 + 12 + dw) / 2;   // Discord mark + link, centred in the button
+      ICON(x, 'discord', dx, 686, 30, '#FFFFFF'); x.fillStyle = '#fff'; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText('discord.gg/nexoauth2', dx + 42, 702); x.restore(); }
     const up = E.outQuint(prog(t, c0 + 1.8, c0 + 2.3)); font(x, 30, 800); x.globalAlpha = up; x.fillStyle = INK; x.textAlign = 'center'; x.textBaseline = 'alphabetic'; spaced(x, 'nexoauth2.com', 960, 836 + (1 - up) * 10, 3, 'center');
     font(x, 19, 600); x.fillStyle = INK2; x.fillText('Discord verification and member recovery · Free plan available', 960, 878 + (1 - up) * 10); x.globalAlpha = 1;
   }
