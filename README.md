@@ -30,7 +30,3 @@ On Windows: download **[HACER_VIDEO_MFC.bat](https://github.com/Mrtyking/edit/ra
 - `mfc/` – the project: `src/temple.js` (the site's own night temple in 3D: temple, torii, lanterns, maples, blood moon, M·F·C letters), `src/timeline.js` (every timing), `src/scenes_a|b|c.js` (the member panel pages), `src/main.js` (camera, the opening, chapter cards, captions, the oath and the CTA), `stems/mix.wav` (final sound design, no music)
 - `mfc/audio.py` – rebuilds `stems/mix.wav` from the timeline (needs the SFX pack and the SFX library, which are not in this repo)
 - All member names, squads and avatars in the video are invented.
-
-## Lyric edits
-
-On Windows: download **[HACER_VIDEO_LYRICS.bat](https://github.com/Mrtyking/edit/raw/claude/bold-noether-63jrhe/HACER_VIDEO_LYRICS.bat)** and double-click it. It renders the latest song in `lyrics/songs/` (cuts marked in the Editor de Letra). It looks for the original clip by name in `Lyrics_Video\cortes`, next to the .bat, Downloads, Desktop or Videos; if it can't find it, drag the clip into the window. Output (1080x1080, 60 or 30 fps) lands in `Lyrics_Video\videos`.

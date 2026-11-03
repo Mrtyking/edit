@@ -1,6 +1,0 @@
-{
-  "name": "lyric-edits",
-  "private": true,
-  "description": "Render de lyric edits",
-  "dependencies": { "playwright": "1.63.0" }
-}
