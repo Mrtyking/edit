@@ -178,7 +178,16 @@
    ]
   },
   "lastHold": 2.4,
-  "size": 112,
-  "lineChars": 22
+  "size": 120,
+  "lineChars": 16,
+  "big": [
+   4,
+   6,
+   11,
+   22
+  ]
+ },
+ "media": {
+  "name": "Video Project 2.mp4"
  }
 }
