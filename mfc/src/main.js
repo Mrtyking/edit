@@ -144,12 +144,12 @@ function maskLine(x, s, x0, y, size, p, { color = BONE, dot = false } = {}) {
   if (dot) { x.shadowBlur = 0; x.fillStyle = RED; x.beginPath(); x.arc(x0 + w + size * 0.13, y - size * 0.07 + dy, size * 0.09, 0, 7); x.fill(); }
   x.restore();
 }
-function pill(x, x0, y, w, h, label, { red = false, icon = null, iconR = null, a = 1, prs = 0 } = {}) {
+function pill(x, x0, y, w, h, label, { red = false, icon = null, iconR = null, a = 1, prs = 0, fs = 13, sp = 2.6 } = {}) {
   x.save(); x.globalAlpha *= a; const s = 1 - prs * 0.05; x.translate(x0 + w / 2, y + h / 2); x.scale(s, s); x.translate(-(x0 + w / 2), -(y + h / 2));
   if (red) { x.save(); x.shadowColor = 'rgba(255,26,60,0.6)'; x.shadowBlur = 26; x.shadowOffsetY = 8; rr(x, x0, y, w, h, h / 2); x.fillStyle = '#d4142b'; x.fill(); x.restore(); }
   else { rr(x, x0, y, w, h, h / 2); x.fillStyle = 'rgba(5,2,4,0.45)'; x.fill(); x.strokeStyle = 'rgba(243,230,232,0.28)'; x.lineWidth = 1; x.stroke(); }
-  mono(x, 13, 700); const tw = [...label].reduce((a2, ch) => a2 + x.measureText(ch).width + 2.6, 0), iw = icon ? 26 : 0, rw = iconR ? 22 : 0, cx = x0 + (w - tw - iw - rw) / 2;
-  if (icon) ICON(x, icon, cx, y + h / 2 - 9, 18, '#fff', 2); x.fillStyle = '#fff'; x.textBaseline = 'middle'; spaced(x, label, cx + iw, y + h / 2 + 1, 2.6);
+  mono(x, fs, 700); const tw = [...label].reduce((a2, ch) => a2 + x.measureText(ch).width + sp, 0) - sp, iw = icon ? 28 : 0, rw = iconR ? 24 : 0, cx = x0 + (w - tw - iw - rw) / 2;
+  if (icon) ICON(x, icon, cx, y + h / 2 - 9, 18, '#fff', 1.8); x.fillStyle = '#fff'; x.textBaseline = 'middle'; spaced(x, label, cx + iw, y + h / 2 + 1, sp);
   if (iconR) ICON(x, iconR, cx + iw + tw + 8, y + h / 2 - 7, 14, '#fff', 2); x.restore();
 }
 const HERO_SUB = [['Cruza la puerta de ', false], ['Mafia China CTR', true], [': la comunidad más', false]];
@@ -163,7 +163,7 @@ function heroUI(x, t) {
   x.save(); x.globalAlpha *= u; x.translate(0, (1 - u) * 16); font(x, 17.5, 500); x.textBaseline = 'alphabetic'; x.shadowColor = 'rgba(0,0,0,0.9)'; x.shadowBlur = 18;
   let cx = 88; HERO_SUB.forEach(([s, b]) => { font(x, 17.5, b ? 700 : 500); x.fillStyle = b ? '#fff' : '#e4dcdd'; x.textAlign = 'left'; x.fillText(s, cx, 478); cx += x.measureText(s).width; });
   font(x, 17.5, 500); x.fillStyle = '#e4dcdd'; x.fillText('activa de CTR. Rankea, compite y sube de nivel junto a', 88, 504); x.fillText('los mejores.', 88, 530); x.restore();
-  const bp = E.outBack(prog(t, I.ui + 0.15, I.ui + 0.6), 1.5); if (bp > 0) { x.save(); x.globalAlpha *= clamp(bp); pill(x, 88, 565, 218, 46, 'IR A MI DASHBOARD', { red: true, icon: 'grid' }); pill(x, 320, 565, 244, 46, 'UNIRSE AL DISCORD', { icon: null, iconR: 'arrowupright' }); ICON(x, 'discord', 342, 579, 18, '#fff'); x.restore(); }
+  const bp = E.outBack(prog(t, I.ui + 0.15, I.ui + 0.6), 1.5); if (bp > 0) { x.save(); x.globalAlpha *= clamp(bp); pill(x, 88, 565, 236, 48, 'ENTRAR CON DISCORD', { red: true, icon: 'discord', fs: 12.5, sp: 2.4 }); pill(x, 338, 565, 252, 48, 'UNIRSE AL DISCORD', { icon: 'discord', iconR: 'arrowupright', fs: 12.5, sp: 2.4 }); x.restore(); }
   const cp = E.out(prog(t, I.ui + 0.3, I.ui + 0.9)); if (cp > 0) { x.save(); x.globalAlpha *= cp; mono(x, 10.5, 600); x.fillStyle = 'rgba(223,231,224,0.45)'; x.textBaseline = 'middle'; spaced(x, 'DESLIZA PARA ENTRAR', 88, 942, 3.4); x.fillStyle = 'rgba(223,231,224,0.2)'; x.fillRect(272, 942, 56, 1);
     sora(x, 46, 300); x.fillStyle = 'rgba(223,231,224,0.85)'; x.textBaseline = 'alphabetic'; ['01', '02', '03', '04', '05'].forEach((n, i) => { const q = E.outQuint(prog(t, I.ui + 0.35 + i * 0.07, I.ui + 0.85 + i * 0.07)); x.globalAlpha = cp * q; x.fillText(n, 88 + [0, 128, 249, 378, 488][i], 1005 + (1 - q) * 14); }); x.restore(); }
   const kp = E.out(prog(t, I.lines[0], I.lines[0] + 0.9)); if (kp > 0) { x.save(); x.globalAlpha *= kp * 0.92; noto(x, 50, 600); x.fillStyle = '#f3e6e8'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = 'rgba(0,0,0,0.8)'; x.shadowBlur = 20;
@@ -173,7 +173,7 @@ function heroUI(x, t) {
   // the nav bar
   const np = E.outQuint(prog(t, I.ui - 0.1, I.ui + 0.5)); if (np > 0) { x.save(); x.globalAlpha *= np; x.translate(0, (1 - np) * -20);
     rr(x, 249, 20, 42, 42, 10); x.fillStyle = '#2a0a0e'; x.fill(); x.strokeStyle = 'rgba(255,26,60,0.45)'; x.stroke(); mark(x, 270, 41, 38);
-    sora(x, 16, 700); x.fillStyle = '#fff'; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText('MAFIA CHINA', 306, 30); rr(x, 410, 21, 22, 18, 4); x.strokeStyle = RED; x.lineWidth = 1.3; x.stroke(); mono(x, 9, 800); x.fillStyle = RED; x.textAlign = 'center'; x.fillText('CTR', 421, 30.5);
+    sora(x, 16, 700); x.fillStyle = '#fff'; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText('MAFIA CHINA', 306, 30); rr(x, 412, 19, 30, 22, 6); x.fillStyle = 'rgba(255,26,60,0.12)'; x.fill(); x.strokeStyle = 'rgba(255,26,60,0.38)'; x.lineWidth = 1; x.stroke(); x.save(); x.translate(427, 30.5); x.scale(0.82, 1); font(x, 13, 800); x.fillStyle = RED; x.textAlign = 'center'; x.fillText('CTR', 0, 0.5); x.restore();
     x.fillStyle = '#22c55e'; x.beginPath(); x.arc(310, 53, 2.5, 0, 7); x.fill(); mono(x, 10, 600); x.fillStyle = '#a1a1aa'; x.textAlign = 'left'; spaced(x, 'COMUNIDAD OFICIAL', 318, 53, 1.8);
     rr(x, 503, 17, 512, 46, 12); x.fillStyle = 'rgba(10,8,10,0.62)'; x.fill(); x.strokeStyle = 'rgba(255,255,255,0.08)'; x.stroke();
     const menuOn = t >= I.menu && t < I.bam; [['Inicio', 512, 89, true], ['Comunidad', 604, 120], ['Economía XP', 732, 132], ['Postulaciones', 870, 136, false, menuOn]].forEach(([n, bx, bw, on, hot]) => {
@@ -183,9 +183,7 @@ function heroUI(x, t) {
     rr(x, 1066, 20, 236, 42, 11); x.fillStyle = 'rgba(10,8,10,0.62)'; x.fill(); x.strokeStyle = 'rgba(255,26,60,0.3)'; x.stroke(); ICON(x, 'clock', 1078, 31, 18, RED, 2);
     font(x, 13.5, 700); x.fillStyle = '#fff'; x.fillText('7:17 PM', 1104, 34); font(x, 10.5, 500); x.fillStyle = '#a1a1aa'; x.fillText('Lun, 02 Nov 2026', 1104, 50); x.fillStyle = 'rgba(255,255,255,0.1)'; x.fillRect(1204, 28, 1, 26);
     ICON(x, 'restart', 1214, 27, 12, RED, 2); font(x, 13.5, 700); x.fillStyle = '#fff'; x.fillText('17d 15h', 1230, 34); font(x, 10.5, 500); x.fillStyle = '#a1a1aa'; x.fillText('Reinicio día 20', 1214, 50);
-    rr(x, 1313, 20, 40, 40, 10); x.fillStyle = 'rgba(10,8,10,0.62)'; x.fill(); x.strokeStyle = 'rgba(255,255,255,0.1)'; x.stroke(); ICON(x, 'bell', 1324, 31, 18, '#d4d4d8', 1.8);
-    rr(x, 1366, 18, 170, 46, 23); x.fillStyle = 'rgba(10,8,10,0.62)'; x.fill(); x.strokeStyle = 'rgba(255,255,255,0.1)'; x.stroke(); op(x, 1390, 41, 15, 7, { status: '#22c55e' });
-    font(x, 13, 700); x.fillStyle = '#fff'; x.fillText(ME.name, 1414, 34); mono(x, 10.5, 700); x.fillStyle = RED; x.fillText('LVL ' + ME.level, 1414, 51); x.restore(); }
+    pill(x, 1314, 20, 206, 42, 'ENTRAR CON DISCORD', { red: true, icon: 'discord', fs: 10.5, sp: 1.8 }); x.restore(); }
   // the Postulaciones menu, then the click
   const mp = E.outQuint(prog(t, I.menu, I.menu + 0.3)); if (mp > 0 && t < I.bam) { x.save(); x.globalAlpha *= mp; x.translate(0, (1 - mp) * -10);
     x.save(); x.shadowColor = 'rgba(0,0,0,0.6)'; x.shadowBlur = 40; rr(x, 505, 74, 718, 136, 14); x.fillStyle = 'rgba(14,10,12,0.96)'; x.fill(); x.restore(); rr(x, 505.5, 74.5, 717, 135, 14); x.strokeStyle = 'rgba(255,255,255,0.08)'; x.stroke();
@@ -249,7 +247,7 @@ function drawFinale(x, t) {
     [['DONDE LA LEALTAD', 470, BONE, 0.25], ['SE VUELVE LEYENDA', 548, BONE, 0.4]].forEach(([s, y, col, d]) => { const p = prog(t, F.title + d, F.title + d + 0.55), w = x.measureText(s).width; x.save(); x.beginPath(); x.rect(960 - w / 2 - 10, y - 70, w + 60, 88); x.clip(); x.fillStyle = col; x.fillText(s, 960, y + (1 - E.outExpo(p)) * 80);
       if (d > 0.3) { x.shadowBlur = 0; x.fillStyle = RED; x.beginPath(); x.arc(960 + w / 2 + 10, y - 6 + (1 - E.outExpo(p)) * 80, 6, 0, 7); x.fill(); } x.restore(); });
     const bp = E.outBack(prog(t, F.cta, F.cta + 0.45), 1.6); if (bp > 0) { x.save(); x.globalAlpha *= clamp(bp); x.translate(960, 660); x.scale(bp, bp); x.translate(-960, -660);
-      const prs = t > F.cta + 1.2 && t < F.cta + 1.42 ? Math.sin((t - F.cta - 1.2) / 0.22 * Math.PI) : 0; pill(x, 960 - 330, 634, 300, 56, 'ENTRAR CON DISCORD', { red: true, prs }); ICON(x, 'discord', 960 - 304, 652, 20, '#fff');
+      const prs = t > F.cta + 1.2 && t < F.cta + 1.42 ? Math.sin((t - F.cta - 1.2) / 0.22 * Math.PI) : 0; pill(x, 960 - 330, 634, 300, 56, 'ENTRAR CON DISCORD', { red: true, prs, icon: 'discord' });
       x.save(); x.shadowColor = 'rgba(88,101,242,0.45)'; x.shadowBlur = 24; rr(x, 990, 634, 340, 56, 28); x.fillStyle = '#5865F2'; x.fill(); x.restore(); ICON(x, 'discord', 1014, 650, 24, '#fff'); font(x, 19, 700); x.fillStyle = '#fff'; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText('discord.gg/mafiachinactrog', 1048, 663); x.restore(); }
     const up = E.outQuint(prog(t, F.cta + 0.4, F.cta + 0.9)); x.globalAlpha = p2 * up; mono(x, 22, 700); x.fillStyle = '#f5eff0'; x.textAlign = 'center'; x.textBaseline = 'alphabetic'; spaced(x, 'MAFIACHINACTR.COM', 960, 790 + (1 - up) * 10, 6, 'center');
     font(x, 17, 500); x.fillStyle = '#a1a1aa'; x.fillText('Comunidad oficial · Postúlate y gánate tu lugar en la familia', 960, 828 + (1 - up) * 10);

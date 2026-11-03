@@ -98,6 +98,15 @@ function oauth(ctx, t) {
 }
 
 // ---------------------------------------------------------------- Resumen (the member dashboard)
+// the profile hero card (also lifted off the page as a layer): avatar + name on top, the numbers below with room to breathe
+const HC = [284, 160, 1616, 280];
+function heroCard(ctx, t, k) {
+  heroVideo(ctx, ...HC, t);
+  op(ctx, 362, 234, 46, 7, { ring: TH.acc, status: '#22c55e' }); txt(ctx, ME.name, 432, 222, 42, '#fff', 700, 'left', 'OUTFIT');
+  const cw = chip(ctx, 434, 250, 'MFC', { color: TH.acc, icon: 'award', size: 11.5, mono: true }); txt(ctx, '@' + ME.handle, 448 + cw, 262, 14.5, '#a1a1aa', 500);
+  [['Nivel', String(ME.level)], ['XP total', fmt(ME.xp * k)], ['Para subir', fmt(ME.toNext)]].forEach(([l, v], i) => { const xx = [316, 420, 610][i]; txt(ctx, l, xx, 334, 14, '#a1a1aa', 500); const w = txt(ctx, v, xx, 368, 32, '#fff', 800, 'left', 'OUTFIT'); if (i) txt(ctx, 'XP', xx + w + 6, 372, 15, TH.acc, 700); });
+  txt(ctx, 'Progreso al nivel 12', 316, 404, 13.5, '#d4d4d8', 500); txt(ctx, `${Math.round(86 * k)}%`, 1868, 404, 13.5, '#fff', 700, 'right'); bar(ctx, 316, 416, 1552, 8, 0.86 * k);
+}
 const R = TL.resumen, WHEEL = [1770, 105, 130, 38];
 const XPSRC = [['Voz (Discord)', 41, '#a855f7'], ['Otros / Bonos', 41, '#22c55e'], ['Misiones & Quests', 15, '#f5b301'], ['Arena de Batalla', 2, '#14b8a6'], ['Mensajes', 1, '#06b6d4']];
 const SPARK = [120, 180, 90, 240, 310, 200, 420, 380, 290, 510, 460, 620, 540, 700];
@@ -107,31 +116,27 @@ export function resumen(ctx, t, { noToast = false } = {}) {
   btnD(ctx, 1460, 105, 150, 38, 'Editar biolink', { icon: 'gem', size: 13.5 }); btnD(ctx, 1620, 105, 140, 38, 'Perfil público', { icon: 'arrowupright', size: 13.5 });
   btnA(ctx, ...WHEEL, 'Ruleta diaria', { icon: 'restart', size: 13.5, prs: press(t, R.wheel) });
   // the hero card: masked members and lasers behind, tinted with the accent
-  heroVideo(ctx, 284, 160, 1616, 240, t); const k = E.outQuint(prog(t, R.counts[0], R.counts[1]));
-  op(ctx, 360, 250, 50, 7, { ring: TH.acc, status: '#22c55e' }); txt(ctx, ME.name, 434, 236, 44, '#fff', 700, 'left', 'OUTFIT');
-  const cw = chip(ctx, 436, 266, 'MFC', { color: TH.acc, icon: 'award', size: 11.5, mono: true }); txt(ctx, '@' + ME.handle, 450 + cw, 278, 14.5, '#a1a1aa', 500);
-  [['Nivel', String(ME.level)], ['XP total', fmt(ME.xp * k)], ['Para subir', fmt(ME.toNext)]].forEach(([l, v], i) => { const xx = [316, 408, 590][i]; txt(ctx, l, xx, 316, 14, '#a1a1aa', 500); const w = txt(ctx, v, xx, 348, 32, '#fff', 800, 'left', 'OUTFIT'); if (i) txt(ctx, 'XP', xx + w + 6, 352, 15, TH.acc, 700); });
-  txt(ctx, 'Progreso al nivel 12', 316, 376, 13.5, '#d4d4d8', 500); txt(ctx, `${Math.round(86 * k)}%`, 1868, 376, 13.5, '#fff', 700, 'right'); bar(ctx, 316, 388, 1552, 8, 0.86 * k);
+  const k = E.outQuint(prog(t, R.counts[0], R.counts[1])); heroCard(ctx, t, k);
   // stat tiles
   const ST = [['Ranking', '#3', 'trophy', 'de 50 integrantes'], ['Racha de ruleta', '1/7', 'flame', 'días seguidos'], ['Insignias', '7', 'award', 'de 26'], ['XP esta semana', `+${fmt(1240 * k)}`, 'zap', '+18% vs la anterior'], ['Tiempo en voz', '64h 10m', 'headphones', 'este mes'], ['Mensajes', fmt(62 * k), 'message', '+0 de reputación']];
-  ST.forEach(([l, v, ic, s], i) => { const x = 284 + i * 272.7, a = appear(t, R.counts[0] + i * 0.06, 0.4); ctx.save(); ctx.globalAlpha *= a; ctx.translate(0, (1 - a) * 14);
+  ST.forEach(([l, v, ic, s], i) => { const x = 284 + i * 272.7, a = appear(t, R.counts[0] + i * 0.06, 0.4); ctx.save(); ctx.globalAlpha *= a; ctx.translate(0, 40 + (1 - a) * 14);
     card(ctx, x, 418, 260, 104, { r: 14 }); txt(ctx, l, x + 18, 444, 13.5, '#a1a1aa', 500); ICON(ctx, ic, x + 228, 434, 17, TH.acc, 1.8); txt(ctx, v, x + 18, 480, 28, '#fff', 800, 'left', 'OUTFIT'); txt(ctx, s, x + 18, 506, 12, '#71717a', 500); ctx.restore(); });
   // activity chart
-  card(ctx, 284, 540, 960, 500, { r: 16 }); txt(ctx, 'Tu actividad', 306, 570, 16, '#fff', 700); txt(ctx, 'XP ganada por día · últimos 14 días', 306, 592, 12.5, '#8e8e98', 500);
-  const cp = E.inOut(prog(t, R.chart[0], R.chart[1])); const X0 = 320, X1 = 1210, Y0 = 990, HH = 320;
+  card(ctx, 284, 580, 960, 460, { r: 16 }); txt(ctx, 'Tu actividad', 306, 610, 16, '#fff', 700); txt(ctx, 'XP ganada por día · últimos 14 días', 306, 632, 12.5, '#8e8e98', 500);
+  const cp = E.inOut(prog(t, R.chart[0], R.chart[1])); const X0 = 320, X1 = 1210, Y0 = 1000, HH = 300;
   for (let i = 0; i <= 4; i++) { ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(X0, Y0 - i * HH / 4, X1 - X0, 1); }
-  ctx.save(); ctx.beginPath(); ctx.rect(X0 - 10, 600, (X1 - X0 + 20) * cp + 10, 420); ctx.clip();
+  ctx.save(); ctx.beginPath(); ctx.rect(X0 - 10, 650, (X1 - X0 + 20) * cp + 10, 380); ctx.clip();
   const pts = SPARK.map((v, i) => [X0 + i * (X1 - X0) / 13, Y0 - v / 720 * HH]); const ag = ctx.createLinearGradient(0, Y0 - HH, 0, Y0); ag.addColorStop(0, A(0.32)); ag.addColorStop(1, A(0));
   ctx.beginPath(); ctx.moveTo(pts[0][0], Y0); pts.forEach(([x, y], i) => { if (i === 0) ctx.lineTo(x, y); else { const [px, py] = pts[i - 1]; ctx.bezierCurveTo((px + x) / 2, py, (px + x) / 2, y, x, y); } }); ctx.lineTo(X1, Y0); ctx.closePath(); ctx.fillStyle = ag; ctx.fill();
   ctx.beginPath(); pts.forEach(([x, y], i) => { if (i === 0) ctx.moveTo(x, y); else { const [px, py] = pts[i - 1]; ctx.bezierCurveTo((px + x) / 2, py, (px + x) / 2, y, x, y); } }); ctx.strokeStyle = TH.acc; ctx.lineWidth = 3; ctx.stroke(); ctx.restore();
   // where your XP comes from (donut)
-  card(ctx, 1260, 540, 640, 290, { r: 16 }); txt(ctx, 'Origen de tu XP', 1282, 570, 16, '#fff', 700); txt(ctx, 'Este mes', 1282, 592, 12.5, '#8e8e98', 500);
-  let a0 = -Math.PI / 2; const dp = E.inOut(prog(t, R.chart[0] + 0.2, R.chart[1] + 0.3)); XPSRC.forEach(([n, v, c]) => { const a1 = a0 + v / 100 * Math.PI * 2 * dp; ctx.beginPath(); ctx.arc(1380, 700, 82, a0, a1); ctx.strokeStyle = c; ctx.lineWidth = 22; ctx.stroke(); a0 = a1; });
-  txt(ctx, fmt(586 * dp), 1380, 694, 26, '#fff', 800, 'center', 'OUTFIT'); txt(ctx, 'XP', 1380, 718, 12, '#a1a1aa', 600, 'center');
-  XPSRC.forEach(([n, v, c], i) => { const y = 630 + i * 36; ctx.beginPath(); ctx.arc(1508, y, 5, 0, 7); ctx.fillStyle = c; ctx.fill(); txt(ctx, n, 1522, y, 13.5, '#d4d4d8', 500); txt(ctx, `${v}%`, 1876, y, 13.5, '#fff', 700, 'right'); });
+  card(ctx, 1260, 580, 640, 270, { r: 16 }); txt(ctx, 'Origen de tu XP', 1282, 610, 16, '#fff', 700); txt(ctx, 'Este mes', 1282, 632, 12.5, '#8e8e98', 500);
+  let a0 = -Math.PI / 2; const dp = E.inOut(prog(t, R.chart[0] + 0.2, R.chart[1] + 0.3)); XPSRC.forEach(([n, v, c]) => { const a1 = a0 + v / 100 * Math.PI * 2 * dp; ctx.beginPath(); ctx.arc(1380, 735, 76, a0, a1); ctx.strokeStyle = c; ctx.lineWidth = 22; ctx.stroke(); a0 = a1; });
+  txt(ctx, fmt(586 * dp), 1380, 729, 26, '#fff', 800, 'center', 'OUTFIT'); txt(ctx, 'XP', 1380, 753, 12, '#a1a1aa', 600, 'center');
+  XPSRC.forEach(([n, v, c], i) => { const y = 668 + i * 34; ctx.beginPath(); ctx.arc(1508, y, 5, 0, 7); ctx.fillStyle = c; ctx.fill(); txt(ctx, n, 1522, y, 13.5, '#d4d4d8', 500); txt(ctx, `${v}%`, 1876, y, 13.5, '#fff', 700, 'right'); });
   // recent activity
-  card(ctx, 1260, 846, 640, 194, { r: 16 }); txt(ctx, 'Actividad reciente', 1282, 874, 16, '#fff', 700);
-  [['headphones', 'Voz en Sala Principal MFC', '+24 XP', 'hace 4 min'], ['target', 'Misión diaria completada', '+60 XP', 'hace 1 h'], ['message', 'Mensajes en #general-ctr', '+6 XP', 'hace 2 h']].forEach(([ic, s, v, w], i) => { const y = 912 + i * 40;
+  card(ctx, 1260, 866, 640, 174, { r: 16 }); txt(ctx, 'Actividad reciente', 1282, 892, 16, '#fff', 700);
+  [['headphones', 'Voz en Sala Principal MFC', '+24 XP', 'hace 4 min'], ['target', 'Misión diaria completada', '+60 XP', 'hace 1 h'], ['message', 'Mensajes en #general-ctr', '+6 XP', 'hace 2 h']].forEach(([ic, s, v, w], i) => { const y = 930 + i * 36;
     rr(ctx, 1282, y - 14, 28, 28, 8); ctx.fillStyle = A(0.1); ctx.fill(); ICON(ctx, ic, 1288, y - 8, 16, TH.acc, 1.8); txt(ctx, s, 1322, y, 14, '#e4e4e7', 500); txt(ctx, w, 1770, y, 12, '#71717a', 500, 'right'); txt(ctx, v, 1876, y, 13.5, TH.acc, 700, 'right'); });
   if (!noToast) toast(ctx, 1500, 80, 380, '¡Sesión iniciada exitosamente con Discord!', appear(t, R.toast, 0.4) * (1 - prog(t, R.toast + 3.0, R.toast + 3.4)), { sub: 'Bienvenido de vuelta a la familia.' });
 }
@@ -171,15 +176,17 @@ function ruleta(ctx, t) {
   const kick = t > RU.stop ? Math.exp(-(t - RU.stop) * 8) * Math.sin((t - RU.stop) * 40) : 0;
   ctx.save(); ctx.translate(WX, WY - WR - 22); ctx.rotate(kick * 0.3); ctx.beginPath(); ctx.moveTo(0, 18); ctx.bezierCurveTo(-16, 0, -14, -18, 0, -18); ctx.bezierCurveTo(14, -18, 16, 0, 0, 18); ctx.fillStyle = TH.acc; ctx.shadowColor = A(0.8); ctx.shadowBlur = 16; ctx.fill(); ctx.beginPath(); ctx.arc(0, -4, 4, 0, 7); ctx.fillStyle = '#111'; ctx.fill(); ctx.restore();
   if (t < RU.stop) btnA(ctx, ...SPINBTN, spinning ? 'Girando…' : 'Girar ruleta gratis', { icon: 'restart', prs: press(t, RU.spin), size: 15 });
-  else { card(ctx, 592, 830, 380, 92, { r: 12, fill: '#121214' }); ICON(ctx, 'clock', 694, 853, 16, '#f5b301', 2); txt(ctx, 'Próximo giro en', 716, 861, 14, '#f5b301', 600); txt(ctx, '23:59:4' + (9 - Math.min(9, Math.floor((t - RU.stop) * 2))), 830, 861, 14, '#fff', 800); txt(ctx, 'Ya cobraste la ruleta de hoy.', 782, 896, 13, '#a1a1aa', 500, 'center'); }
+  else { card(ctx, 592, 866, 380, 62, { r: 12, fill: '#121214' }); const tm = '23:59:4' + (9 - Math.min(9, Math.floor((t - RU.stop) * 2)));
+    font(ctx, 14, 600); const w1 = ctx.measureText('Próximo giro en').width; font(ctx, 14, 800); const w2 = ctx.measureText(tm).width, gx0 = 782 - (22 + w1 + 8 + w2) / 2;
+    ICON(ctx, 'clock', gx0, 877, 15, '#f5b301', 1.6); txt(ctx, 'Próximo giro en', gx0 + 22, 885, 14, '#f5b301', 600); txt(ctx, tm, gx0 + 22 + w1 + 8, 885, 14, '#fff', 800); txt(ctx, 'Ya cobraste la ruleta de hoy.', 782, 910, 12.5, '#a1a1aa', 500, 'center'); }
   // right column
   const done = t >= RU.prize;
   [['Diario', done ? 'Usado' : 'Listo', 'calendar'], ['Extra', '0 giros', 'sparkles'], ['Media', '~84 XP', 'activity']].forEach(([l, v, ic], i) => { const x = 1106 + i * 112; card(ctx, x, 205, 104, 78, { r: 10, fill: '#141416' }); ICON(ctx, ic, x + 12, 216, 14, TH.acc, 1.8); txt(ctx, l, x + 12, 246, 12, '#a1a1aa', 500); txt(ctx, v, x + 12, 266, 14.5, i === 0 && !done ? TH.acc : '#fff', 700); });
   card(ctx, 1106, 296, 330, 78, { r: 10, fill: '#141416' }); ICON(ctx, 'flame', 1120, 307, 15, TH.acc, 1.8); txt(ctx, 'Racha', 1142, 316, 14, '#fff', 700); txt(ctx, done ? '1/7 días' : '0/7 días', 1422, 316, 13, '#a1a1aa', 500, 'right');
-  for (let i = 0; i < 7; i++) { const x = 1120 + i * 40, lit = done && i === 0, p = lit ? E.outBack(prog(t, RU.prize + 0.3, RU.prize + 0.6), 2) : 1; ctx.save(); ctx.translate(x + 17, 348); ctx.scale(p, p); rr(ctx, -17, -11, 34, 22, 6); ctx.fillStyle = lit ? 'rgba(249,115,22,0.25)' : '#1c1c1f'; ctx.fill(); ctx.strokeStyle = lit ? '#f97316' : 'rgba(255,255,255,0.08)'; ctx.stroke(); if (lit) ICON(ctx, 'flame', -7, -7, 14, '#f97316', 2); if (i === 6) ICON(ctx, 'gift', -7, -7, 14, '#f5b301', 1.8); ctx.restore(); }
+  for (let i = 0; i < 7; i++) { const x = 1122 + i * 44, lit = done && i === 0, p = lit ? E.outBack(prog(t, RU.prize + 0.3, RU.prize + 0.6), 2) : 1; ctx.save(); ctx.translate(x + 16, 350); ctx.scale(p, p); rr(ctx, -16, -14, 32, 28, 8); ctx.fillStyle = lit ? 'rgba(249,115,22,0.22)' : '#1a1a1d'; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = lit ? '#f97316' : 'rgba(255,255,255,0.07)'; ctx.stroke(); if (lit) ICON(ctx, 'flame', -7, -7, 14, '#f97316', 1.6); else if (i === 6) ICON(ctx, 'gift', -7, -7, 14, '#f5b301', 1.5); else txt(ctx, String(i + 1), 0, 1, 11.5, '#52525b', 700, 'center'); ctx.restore(); }
   card(ctx, 1106, 386, 330, 352, { r: 10, fill: '#141416' }); ICON(ctx, 'gift', 1120, 398, 15, TH.acc, 1.8); txt(ctx, 'Premios posibles', 1142, 406, 14, '#fff', 700);
   [['+225 XP', 'Jackpot', 4.1, '#f5b301', 'crown'], ['+165 XP', 'Raro', 10, '#c084fc', 'sparkles'], ['+110 XP', 'Bonus', 18, '#818cf8', 'zap'], ['+90 XP', 'Básico', 29, '#60a5fa', 'coins'], ['+35 XP', 'Básico', 35, '#38bdf8', 'coins'], ['0 XP', 'Sin suerte', 4.1, '#f87171', 'x']].forEach(([v, n, pct, c, ic], i) => { const y = 446 + i * 50, hot = done && i === 0;
-    if (hot) { rr(ctx, 1114, y - 20, 314, 46, 8); ctx.fillStyle = 'rgba(245,179,1,0.1)'; ctx.fill(); ctx.strokeStyle = 'rgba(245,179,1,0.5)'; ctx.stroke(); }
+    if (hot) { const hp = E.out(prog(t, RU.prize + 0.2, RU.prize + 0.6)); ctx.save(); ctx.globalAlpha *= hp; rr(ctx, 1116, y - 19, 310, 44, 8); ctx.fillStyle = 'rgba(245,179,1,0.08)'; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(245,179,1,0.45)'; ctx.stroke(); ctx.restore(); }
     rr(ctx, 1122, y - 12, 26, 26, 7); ctx.fillStyle = rgba(c, 0.14); ctx.fill(); ICON(ctx, ic, 1128, y - 6, 14, c, 2); txt(ctx, v, 1160, y - 4, 13.5, '#fff', 700); txt(ctx, n, 1160, y + 13, 11, c, 600); txt(ctx, `${pct}%`, 1418, y - 4, 12, '#a1a1aa', 600, 'right'); bar(ctx, 1238, y + 10, 180, 4, pct / 35, c); });
   card(ctx, 1106, 750, 330, 72, { r: 10, fill: '#141416' }); ICON(ctx, 'restart', 1120, 762, 14, TH.acc, 1.8); txt(ctx, 'Tus últimos giros', 1142, 770, 13.5, '#fff', 700);
   let gx = 1120; if (done) gx += chip(ctx, gx, 786, '+225  ahora', { color: '#f5b301', icon: 'crown', size: 11 }) + 6; chip(ctx, gx, 786, '+45  hace 2 d', { color: '#60a5fa', icon: 'coins', size: 11 });
@@ -192,11 +199,11 @@ function ruleta(ctx, t) {
       ctx.save(); ctx.translate(x, y); ctx.rotate(ct * (3 + hash(i + 5) * 8)); ctx.globalAlpha *= clamp(1.6 - ct * 0.6); ctx.fillStyle = ['#f5b301', '#ff1a3c', '#22c55e', '#06b6d4', '#c084fc', '#fff', '#ec4899'][i % 7]; ctx.fillRect(-s / 2, -s * 0.3, s, s * 0.6); ctx.restore(); }
     const k = E.outBack(pz, 1.5); ctx.translate(960, 540); ctx.scale(k, k); ctx.translate(-960, -540);
     card(ctx, 770, 362, 380, 354, { r: 16, fill: '#121214', stroke: 'rgba(245,179,1,0.45)', glow: 'rgba(245,179,1,0.35)' });
-    ctx.save(); ctx.translate(960, 430); ctx.rotate(t * 0.4); for (let i = 0; i < 16; i++) { ctx.rotate(Math.PI / 8); ctx.fillStyle = 'rgba(245,179,1,0.07)'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-12, -130); ctx.lineTo(12, -130); ctx.fill(); } ctx.restore();
-    rr(ctx, 918, 390, 84, 84, 18); ctx.fillStyle = 'rgba(245,179,1,0.14)'; ctx.fill(); ctx.strokeStyle = 'rgba(245,179,1,0.6)'; ctx.stroke(); ICON(ctx, 'crown', 938, 410, 44, '#f5b301', 2);
+    ctx.save(); rr(ctx, 771, 363, 378, 352, 15); ctx.clip(); ctx.translate(960, 432); ctx.rotate(t * 0.25); for (let i = 0; i < 16; i++) { ctx.rotate(Math.PI / 8); const g = ctx.createLinearGradient(0, 0, 0, -120); g.addColorStop(0, 'rgba(245,179,1,0.10)'); g.addColorStop(1, 'rgba(245,179,1,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-10, -120); ctx.lineTo(10, -120); ctx.fill(); } ctx.restore();
+    rr(ctx, 918, 390, 84, 84, 18); ctx.fillStyle = 'rgba(245,179,1,0.14)'; ctx.fill(); ctx.strokeStyle = 'rgba(245,179,1,0.6)'; ctx.stroke(); ICON(ctx, 'crown', 940, 412, 40, '#f5b301', 1.25);
     mono(ctx, 12, 800); ctx.fillStyle = '#f5b301'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; spaced(ctx, 'JACKPOT', 960, 497, 3, 'center');
-    txt(ctx, '¡Premio conseguido!', 960, 530, 22, '#fff', 800, 'center'); const n = Math.round(225 * E.out(prog(t, RU.prize + 0.15, RU.prize + 0.8)));
-    sora(ctx, 58, 800); ctx.fillStyle = '#f5b301'; ctx.textAlign = 'center'; ctx.fillText(`+${n}`, 940, 586);  const nw = ctx.measureText(`+${n}`).width; font(ctx, 20, 800); ctx.textAlign = 'left'; ctx.fillText('XP', 940 + nw / 2 + 6, 596);
+    txt(ctx, '¡Premio conseguido!', 960, 530, 22, '#fff', 800, 'center'); const n = 225, np = E.outBack(prog(t, RU.prize + 0.12, RU.prize + 0.5), 2.2);
+    ctx.save(); ctx.translate(960, 572); ctx.scale(np, np); ctx.translate(-960, -572); sora(ctx, 58, 800); ctx.fillStyle = '#f5b301'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText(`+${n}`, 940, 586); const nw = ctx.measureText(`+${n}`).width; font(ctx, 20, 800); ctx.textAlign = 'left'; ctx.fillText('XP', 940 + nw / 2 + 6, 586); ctx.restore();
     txt(ctx, 'La experiencia ya se sumó a tu cuenta.', 960, 628, 13, '#a1a1aa', 500, 'center');
     btnA(ctx, ...CONT, 'Continuar', { prs: press(t, RU.cont), size: 14.5 }); ctx.restore(); }
 }
@@ -209,7 +216,5 @@ export const SCENES = {
 };
 export const LAYERS = [
   // the hero card floats off the page while the counts run
-  { def: { w: 1616, h: 240, tex: 2, draw: (ctx, t) => { ctx.save(); ctx.translate(-284, -160); heroVideo(ctx, 284, 160, 1616, 240, t); const k = E.outQuint(prog(t, R.counts[0], R.counts[1])); op(ctx, 360, 250, 50, 7, { ring: TH.acc, status: '#22c55e' }); txt(ctx, ME.name, 434, 236, 44, '#fff', 700, 'left', 'OUTFIT');
-      [['Nivel', String(ME.level)], ['XP total', fmt(ME.xp * k)], ['Para subir', fmt(ME.toNext)]].forEach(([l, v], i) => { const xx = [316, 408, 590][i]; txt(ctx, l, xx, 316, 14, '#a1a1aa', 500); const w = txt(ctx, v, xx, 348, 32, '#fff', 800, 'left', 'OUTFIT'); if (i) txt(ctx, 'XP', xx + w + 6, 352, 15, TH.acc, 700); });
-      txt(ctx, 'Progreso al nivel 12', 316, 376, 13.5, '#d4d4d8', 500); txt(ctx, `${Math.round(86 * k)}%`, 1868, 376, 13.5, '#fff', 700, 'right'); bar(ctx, 316, 388, 1552, 8, 0.86 * k); ctx.restore(); } }, at: [1092, 280], t: [21.0, 22.7], z: 1.4 },
+  { def: { w: 1616, h: 280, tex: 2, draw: (ctx, t) => { ctx.save(); ctx.translate(-284, -160); heroCard(ctx, t, E.outQuint(prog(t, R.counts[0], R.counts[1]))); ctx.restore(); } }, at: [1092, 300], t: [21.0, 22.7], z: 1.4 },
 ];

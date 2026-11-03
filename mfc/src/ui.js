@@ -49,11 +49,11 @@ export function btnA(ctx, x, y, w, h, label, { icon = null, iconR = null, size =
 }
 export function btnD(ctx, x, y, w, h, label, { icon = null, iconR = null, size = 14, prs = 0, r = 9, white = false, color = null } = {}) {
   ctx.save(); const s = 1 - prs * 0.05; ctx.translate(x + w / 2, y + h / 2); ctx.scale(s, s); ctx.translate(-(x + w / 2), -(y + h / 2));
-  rr(ctx, x, y, w, h, r); ctx.fillStyle = white ? '#f4f4f5' : '#141416'; ctx.fill(); if (!white) { rr(ctx, x + 0.5, y + 0.5, w - 1, h - 1, r); ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.stroke(); }
-  label2(ctx, x, y, w, h, label, color || (white ? '#0a0a0a' : '#f4f4f5'), size, icon, iconR); ctx.restore();
+  rr(ctx, x, y, w, h, r); ctx.fillStyle = white ? '#d9d9de' : '#141416'; ctx.fill(); if (!white) { rr(ctx, x + 0.5, y + 0.5, w - 1, h - 1, r); ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.stroke(); }
+  label2(ctx, x, y, w, h, label, color || (white ? '#000' : '#f4f4f5'), size, icon, iconR, white ? 700 : 600); ctx.restore();
 }
-function label2(ctx, x, y, w, h, label, col, size, icon, iconR) {
-  font(ctx, size, 600); const tw = ctx.measureText(label).width, iw = icon ? size + 8 : 0, rw = iconR ? size + 8 : 0, x0 = x + (w - tw - iw - rw) / 2;
+function label2(ctx, x, y, w, h, label, col, size, icon, iconR, wt = 600) {
+  font(ctx, size, wt); const tw = ctx.measureText(label).width, iw = icon ? size + 8 : 0, rw = iconR ? size + 8 : 0, x0 = x + (w - tw - iw - rw) / 2;
   if (icon) ICON(ctx, icon, x0, y + h / 2 - size * 0.55, size * 1.1, col, 2);
   ctx.fillStyle = col; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(label, x0 + iw, y + h / 2 + 0.5);
   if (iconR) ICON(ctx, iconR, x0 + iw + tw + 8, y + h / 2 - size * 0.5, size, col, 2);

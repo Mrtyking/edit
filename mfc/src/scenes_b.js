@@ -60,7 +60,8 @@ function pase(ctx, t) {
       mono(ctx, 10, 700); ctx.fillStyle = row ? '#c084fc' : '#8e8e98'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; spaced(ctx, lab, x + 14, y + 20, 1.5);
       const it = row ? TIERS[(i + 3) % TIERS.length] : TIERS[i]; rr(ctx, x + 58, y + 40, 80, 80, 16); ctx.fillStyle = rgba(RAR[it[2]] || '#a1a1aa', 0.12); ctx.fill(); ctx.strokeStyle = rgba(RAR[it[2]] || '#a1a1aa', 0.45); ctx.stroke(); ICON(ctx, it[3] === 'circle' ? 'target' : it[3], x + 80, y + 62, 36, RAR[it[2]] || '#a1a1aa', 1.8);
       fit(ctx, it[1], x + 98, y + 140, 176, 13, '#fff', 700, 'center'); rarity(ctx, x + 98 - 30, y + 162, it[2], 11);
-      if (row === 0 && got) { chip(ctx, x + 50, y + 172, now ? 'RECLAMADO' : 'Reclamado', { color: TH.acc, icon: 'circlecheck', size: 10.5, h: 22 }); }
+      if (row === 0 && got) { chip(ctx, x + 50, y + 172, 'Reclamado', { color: TH.acc, icon: 'circlecheck', size: 10.5, h: 22 }); }
+      else if (row === 0 && now) { btnA(ctx, x + 38, y + 166, 120, 30, 'Reclamar', { icon: 'gift', size: 12, prs: press(t, PS.claim) }); }
       if (row && !got) { ICON(ctx, 'lock', x + 168, y + 12, 15, '#71717a', 1.8); }
       ctx.restore(); }); });
 }
@@ -152,12 +153,21 @@ function tienda(ctx, t) {
 }
 function divider(ctx, x0, x1, y, a = 0.07) { ctx.fillStyle = `rgba(255,255,255,${a})`; ctx.fillRect(x0, y, x1 - x0, 1); }
 export function profileCard(ctx, x, y, w, h, t, { banner = 'sky', frame = null, nameStyle = null, title: ttl = 'Leyenda CTR' } = {}) {
-  card(ctx, x, y, w, h, { r: 16 }); ctx.save(); rr(ctx, x, y, w, h, 16); ctx.clip(); bannerArt(ctx, banner, x, y, w, h * 0.62, t); ctx.restore();
-  mono(ctx, 10, 700); rr(ctx, x + 10, y + 12, 108, 20, 6); ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fill(); ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText('Tu perfil actual', x + 18, y + 22.5);
-  const ax = x + 50, ay = y + h * 0.66; if (frame) { ctx.save(); ctx.shadowColor = frame; ctx.shadowBlur = 18; ctx.beginPath(); ctx.arc(ax, ay, 37, 0, 7); ctx.strokeStyle = frame; ctx.lineWidth = 4; ctx.stroke(); ctx.restore(); } op(ctx, ax, ay, 32, 7, { ring: frame ? null : 'rgba(255,255,255,0.25)' });
-  if (nameStyle === 'chrome') { sora(ctx, 19, 800); const g = ctx.createLinearGradient(x + 94, 0, x + 260, 0); const o = (t * 0.6) % 1; g.addColorStop(0, '#9ca3af'); g.addColorStop(clamp(o), '#ffffff'); g.addColorStop(1, '#6b7280'); ctx.fillStyle = g; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(ME.name, x + 94, ay - 12); }
-  else txt(ctx, ME.name, x + 94, ay - 12, 19, TH.acc, 800, 'left', 'OUTFIT');
-  mono(ctx, 10.5, 700); ctx.fillStyle = '#f5b301'; ctx.textAlign = 'left'; ctx.fillText(ttl.toUpperCase(), x + 94, ay + 8); txt(ctx, '@' + ME.handle, x + 94, ay + 26, 12, '#a1a1aa', 500);
+  const bh = Math.round(h * 0.46);
+  card(ctx, x, y, w, h, { r: 16, fill: '#111113' }); ctx.save(); rr(ctx, x, y, w, h, 16); ctx.clip(); bannerArt(ctx, banner, x, y, w, bh, t);
+  const sh = ctx.createLinearGradient(0, y + bh * 0.45, 0, y + bh); sh.addColorStop(0, 'rgba(17,17,19,0)'); sh.addColorStop(1, 'rgba(17,17,19,0.85)'); ctx.fillStyle = sh; ctx.fillRect(x, y, w, bh); ctx.restore();
+  mono(ctx, 9.5, 700); rr(ctx, x + 10, y + 10, 104, 19, 6); ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.fill(); ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText('Tu perfil actual', x + 18, y + 20);
+  const r = Math.min(30, h * 0.17), ax = x + 16 + r, ay = y + bh + 4;
+  ctx.save(); ctx.beginPath(); ctx.arc(ax, ay, r + 5, 0, 7); ctx.fillStyle = '#111113'; ctx.fill(); ctx.restore();
+  if (frame) { ctx.save(); ctx.shadowColor = frame; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(ax, ay, r + 4, 0, 7); ctx.strokeStyle = frame; ctx.lineWidth = 3.5; ctx.stroke(); ctx.restore(); }
+  op(ctx, ax, ay, r, 7, { ring: frame ? null : 'rgba(255,255,255,0.25)' });
+  // name below the banner, always on a dark background; it shrinks to fit
+  const nx = ax + r + 14, nw = x + w - 12 - nx, ny = y + bh + 20; let fs = 18; sora(ctx, fs, 800); while (ctx.measureText(ME.name).width > nw && fs > 11) { fs -= 1; sora(ctx, fs, 800); }
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  if (nameStyle === 'chrome') { const g = ctx.createLinearGradient(nx, 0, nx + nw, 0); const o = (t * 0.6) % 1; g.addColorStop(0, '#9ca3af'); g.addColorStop(clamp(o), '#ffffff'); g.addColorStop(1, '#6b7280'); ctx.fillStyle = g; }
+  else ctx.fillStyle = '#fff';
+  ctx.fillText(ME.name, nx, ny);
+  mono(ctx, 10, 700); ctx.fillStyle = '#f5b301'; ctx.fillText(ttl.toUpperCase(), nx, ny + 20); txt(ctx, '@' + ME.handle, nx, ny + 37, 11.5, '#a1a1aa', 500);
 }
 
 // ---------------------------------------------------------------- Inventario (equip a frame and a name style; the card changes on the spot)
@@ -220,7 +230,7 @@ function personalizar(ctx, t) {
 }
 
 export const SCENES = {
-  pase: { draw: pase, cursor: [[33.6, 1300, 900], [PS.claim, 410, 760, true, 0.6], [35.4, 430, 780]] },
+  pase: { draw: pase, cursor: [[33.6, 1300, 900], [PS.claim, 858, 757, true, 0.6], [35.4, 880, 790]] },
   misiones: { draw: misiones },
   insignias: { draw: insignias },
   tienda: { draw: tienda, cursor: [[41.6, 1100, 700], [TS.banners, 1215, 249, true, 0.5], [TS.tryOn, ...TRY.slice(0, 2), true, 0.55], [TS.buy, ...aim(BUY), true, 0.5], [TS.buy + 0.9, 1360, 960], [47.4, 1400, 900]] },

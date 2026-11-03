@@ -62,9 +62,12 @@ function perfil(ctx, t) {
   else {
     // the CyberPet: it evolves with voice hours (time-lapse of the month)
     const st = petStage(t), ev = PF.evolve, hrs = t < ev[0] ? 91.9 : lerp(91.9, 100, E.inOut(prog(t, ev[0], ev[2]))), fl = Math.max(...ev.map(e => t >= e ? Math.exp(-(t - e) * 5) : 0)), cur = t >= ev[2] ? 3 : 2;
-    const pc = cur === 3 ? '#ff1a3c' : TH.acc; ctx.save(); const q = ctx.createRadialGradient(458, 682, 0, 458, 682, 80 + 30 * fl); q.addColorStop(0, rgba(pc, 0.35 + 0.5 * fl)); q.addColorStop(1, rgba(pc, 0)); ctx.fillStyle = q; ctx.fillRect(360, 580, 200, 200);
-    const s = 1 + 0.3 * fl; ctx.translate(458, 682); ctx.scale(s, s); ICON(ctx, PET[cur][2], -28, -28, 56, pc, 2); ctx.restore();
-    if (fl > 0.02) { ctx.fillStyle = `rgba(255,255,255,${0.5 * fl})`; ctx.beginPath(); ctx.arc(458, 682, 70 * (1 + (1 - fl)), 0, 7); ctx.fill(); }
+    const pc = cur === 3 ? '#ff1a3c' : TH.acc;
+    // the pet lives in its own box: glow and evolution flash stay inside it
+    card(ctx, 392, 612, 132, 124, { r: 14, fill: rgba(pc, 0.06), stroke: rgba(pc, 0.3) });
+    ctx.save(); rr(ctx, 393, 613, 130, 122, 13); ctx.clip(); const q = ctx.createRadialGradient(458, 674, 0, 458, 674, 70 + 20 * fl); q.addColorStop(0, rgba(pc, 0.28 + 0.4 * fl)); q.addColorStop(1, rgba(pc, 0)); ctx.fillStyle = q; ctx.fillRect(392, 612, 132, 124);
+    if (fl > 0.02) { ctx.fillStyle = `rgba(255,255,255,${0.35 * fl})`; ctx.beginPath(); ctx.arc(458, 674, 60 * (1 + (1 - fl)), 0, 7); ctx.fill(); }
+    const s = 1 + 0.25 * fl; ctx.translate(458, 674); ctx.scale(s, s); ICON(ctx, PET[cur][2], -26, -26, 52, pc, 1.6); ctx.restore();
     txt(ctx, `CYBERPET: VEX-BOT`, 542, 646, 17, '#fff', 800, 'left', 'OUTFIT'); chip(ctx, 742, 634, `Etapa ${cur + 1}: ${PET[cur][0]}`, { color: cur === 3 ? '#ff1a3c' : '#e4e4e7', size: 11, h: 24 });
     txt(ctx, cur === 3 ? '¡Evolucionó! El Dragón Cibernético domina los canales de voz.' : 'Un Cyber-Droide adolescente: gana agilidad en los canales de voz.', 542, 676, 13.5, '#a1a1aa', 500);
     txt(ctx, 'Evolución', 542, 708, 12.5, '#d4d4d8', 500); txt(ctx, `${hrs.toFixed(1)} h / 100 h de voz`, 1446, 708, 12.5, '#d4d4d8', 600, 'right'); bar(ctx, 542, 720, 904, 7, hrs / 100, pc);
@@ -230,7 +233,7 @@ export const SCENES = {
   ranking: { draw: ranking, cursor: [[60.9, 1300, 900], [RK.open, 900, rowY(0), true, 0.6], [62.6, 900, rowY(0)]] },
   perfil: { draw: perfil, cursor: [[63.9, 1100, 900], [PF.pet, 560, 570, true, 0.5], [65.0, 760, 680], [67.9, 820, 700]] },
   clanes: { draw: clanes },
-  escuadron: { draw: escuadron, cursor: [[71.3, 1500, 900], [ES.accept, ...ctr(ACC_BTN), true, 0.55], [ES.color - 0.4, ...ctr(TAB_AJ), true, 0.4], [ES.color, 1677, 644, true, 0.35], [74.3, 1677, 644]] },
+  escuadron: { draw: escuadron, cursor: [[71.3, 1500, 900], [ES.accept, ...ctr(ACC_BTN), true, 0.55], [ES.color - 0.4, ...ctr(TAB_AJ), true, 0.4], [ES.color, 1695, 646, true, 0.35], [74.3, 1697, 648]] },
   mas: { draw: mas },
   lideres: { draw: lideres },
   reinicio: { draw: reinicio },
