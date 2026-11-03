@@ -1,5 +1,6 @@
 segundo,que_suena
 0.00,aire nocturno
+0.00,fondo: drone nocturno + viento (todo el video)
 1.55,"carga ""Levantando el templo"""
 1.55,GOLPE: aparece el templo
 2.05,título línea 1
@@ -32,45 +33,65 @@ segundo,que_suena
 14.70,notificación de Discord: te aceptaron
 15.05,YA ERES INTEGRANTE OFICIAL
 16.65,pantalla de Discord
+16.65,cambia la página: oauth
+16.75,aparece la pantalla de Discord
 18.85,clic (oauth)
+18.93,Discord autoriza
 19.35,tarjeta: Tu actividad es tu XP.
+19.50,cambia la página: resumen
 20.60,¡Sesión iniciada con Discord!
 20.65,cuentan los números
 20.80,se dibuja la gráfica
+21.20,se llena el donut
 21.22,la tarjeta del perfil sale en 3D
+22.30,actividad reciente
+23.40,la gráfica se mueve
+25.20,pasa por la Ruleta diaria
 25.75,clic (resumen)
+26.10,cambia la página: ruleta
 26.15,se abre la ruleta
 26.95,clic (ruleta)
 27.02,la ruleta gira (tic por casilla)
+30.03,la ruleta toma tensión
 30.05,se para en JACKPOT
 30.30,¡Premio conseguido! +225 XP
 30.35,confeti
 32.00,clic (ruleta)
 32.65,rótulo: PASE DE BATALLA
+32.65,cambia la página: pase
 34.30,se llena el pase
 34.75,clic (pase)
 34.75,recompensa reclamada
 35.65,rótulo: MISIONES
+35.65,cambia la página: misiones
 35.70,aparecen las misiones
+36.00,se llenan las barras de misiones
 37.35,misión completada
 38.25,rótulo: INSIGNIAS
+38.25,cambia la página: insignias
 38.39,aparecen las insignias
 39.60,¡Insignia desbloqueada!
 40.95,tarjeta: Gánatelo. Lúcelo.
+41.05,cambia la página: tienda
 42.15,clic (tienda)
 42.19,aparecen los banners
 43.25,clic (tienda)
+43.30,vista previa del banner
 43.37,se prueba el banner
+44.20,pasa por Comprar
 44.55,clic (tienda)
 44.60,COMPRA: Banner Animado Fuego CTR
 44.65,baja el saldo
 44.92,toast: comprado
 45.22,la tarjeta sale en 3D
+46.20,la tarjeta flota
 47.65,rótulo: INVENTARIO
+47.65,cambia la página: inventario
 48.55,clic (inventario)
 48.58,equipa el marco
 49.50,clic (inventario)
 49.53,equipa el estilo de nombre
+50.65,cambia la página: personalizar
 51.00,clic (personalizar)
 51.20,se abre Personalizar
 51.95,clic (personalizar)
@@ -83,16 +104,24 @@ segundo,que_suena
 55.62,superficie Carmesí
 56.55,clic (personalizar)
 56.95,tarjeta: La familia se mide.
+57.05,cambia la página: ranking
 57.25,podio del ranking
 57.79,la lista cae
+59.60,recorre el ranking
+61.90,pasa por el integrante
 62.20,clic (ranking)
 62.40,abre el perfil
+62.65,cambia la página: perfil
 64.55,clic (perfil)
+64.57,pestaña Mascota
 65.25,la mascota evoluciona
 66.65,¡Dragón Cibernético!
 68.05,rótulo: ESCUADRONES
+68.05,cambia la página: clanes
 68.15,Escuadrones y guerra de clanes
 68.25,top 3 escuadrones
+68.90,tarjetas de escuadrones
+71.05,cambia la página: escuadron
 72.00,clic (escuadron)
 72.10,aceptó la solicitud
 72.35,@lunawolf se unió
@@ -100,11 +129,15 @@ segundo,que_suena
 73.25,clic (escuadron)
 73.27,color del clan
 74.45,rótulo: Y MUCHO MÁS
+74.45,cambia la página: mas
 74.62,las secciones de la comunidad
+75.30,Arena / Territorios / Memoria...
+78.25,cambia la página: lideres
 78.60,3.º lugar
 78.95,2.º lugar
 79.30,1.º lugar: corona de oro
 81.45,rótulo: REINICIO MENSUAL
+81.45,cambia la página: reinicio
 81.90,cuenta atrás al día 20
 83.50,SELLO: TEMPORADA 7
 84.70,"el panel se va, vuelve el templo"
@@ -115,3 +148,5 @@ segundo,que_suena
 89.00,aire final
 89.40,notificación de Discord: discord.gg/mafiachinactrog
 89.80,clic: Entrar con Discord
+90.50,brillo de la máscara
+90.60,campana final

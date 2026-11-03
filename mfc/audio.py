@@ -1,4 +1,4 @@
-# MFC promo — sound design, no music. Every cue comes from src/ (timeline.js, the cursor keys and typing of the scenes),
+# MFC promo — sound design, no music (a synthesized night drone + wind sits under everything). Every cue comes from src/ (timeline.js, the cursor keys and typing of the scenes),
 # so picture and sound stay in sync. One keystroke and one mouse click for the whole video; a hit for every slam
 # (title lines, M·F·C, the chapter cards, the jackpot, the seal); soft pops for things that appear; Discord's own
 # notification when the bot accepts you and at the end. Output: stems/mix.wav (stereo 48 kHz) + cues.csv.
@@ -166,6 +166,46 @@ slam(F['title'] + 0.35, -7, '"DONDE LA LEALTAD SE VUELVE LEYENDA."', heavy=True)
 add(POP, F['cta'] + 0.05, -7, 0, 'onset', 'botones de Discord'); add(DISCORD, F['discord'], -3, 0.35, 'onset', 'notificación de Discord: discord.gg/mafiachinactrog'); add(SPARKLE, F['cta'] + 0.45, -14, 0)
 add(AIR, DUR - 5.0, -19, 0, 'start', 'aire final')
 
+# ================================================================ v2: fill the silences — a night bed under everything, the camera moves, every page change
+# a dark, slow drone (A1 + fifth + octave, detuned) with night wind: synthesized here, deterministic, sits far below the cues
+ts = np.arange(N) / SR; rng = np.random.default_rng(7)
+dr = sum(a * np.sin(2 * np.pi * f * ts + ph) for a, f, ph in ((1.0, 55.0, 0), (0.7, 55.35, 1.3), (0.55, 82.5, 0.4), (0.4, 110.2, 2.1), (0.18, 164.8, 0.9)))
+dr = sosfilt(butter(2, 320, 'low', fs=SR, output='sos'), dr) * (0.65 + 0.35 * np.sin(2 * np.pi * ts / 11.0))
+wind = sosfilt(butter(2, [180, 1400], 'band', fs=SR, output='sos'), rng.standard_normal(N)) * (0.5 + 0.5 * np.sin(2 * np.pi * ts / 7.3 + 1) ** 2)
+bed = np.stack([dr + 0.35 * wind, dr * 0.96 + 0.35 * np.roll(wind, 2400)], 1); bed /= np.abs(bed).max()
+# the bed breathes: up in the temple, a little lower under the busy panel, and it ducks briefly under every hard hit
+lvl = np.where((ts < I['bam']) | (ts > T['app']['out'][0]), 10 ** (-24 / 20), 10 ** (-29 / 20))
+lvl = np.convolve(lvl, np.ones(SR // 2) / (SR // 2), 'same'); MIX += bed * lvl[:, None]; rows.append(('0.00', 'fondo: drone nocturno + viento (todo el video)'))
+LOWWH = Pool(load('Whooshes/Cinematic Low Whoosh.wav'), load('Whooshes/Cinematic Low Whoosh (2).wav'), load('Whooshes/Cinematic Fast Normal Whoosh.wav'))
+UIOPEN = Pool(load('Ui Sound Effects/UI Premium Open.wav'), load('Pop/Sweet UI Open.wav'), load('Ui Sound Effects/Ui Open.wav'))
+DATA = Pool(load('Data Collect/Cinematic data.wav'), load('Data Collect/Data Collect.wav'), load('Data Collect/Cinematic Data Collect 2.wav'))
+GEAR = Pool(load('Gear/Soft Gear 1.wav'), load('Gear/Soft Gear 2.wav'), load('Gear/Smooth And Premium Gear.wav'))
+HOVER = load('Ui Sound Effects/Ui Digital Click.wav'); GLITCH = lib('piero_cesti_UI_azul/Glitch_Transition.wav'); RIPPLE = lib('Premium_azul_cinematic/Ripple_Texture_2.wav')
+SHUT = load('Camera Shutters/Smooth Cammera Shutter.wav'); RISER2 = load('Risers/Riser 2.wav'); STRETCH = load('Ui Sound Effects/Ui stretch.wav')
+# every page change on the floating panel: a low whoosh and the panel's "open" sound
+for k, (key, a, b) in enumerate(J['SCENES'][1:], 1):
+    add(LOWWH, a + 0.05, -15, (-1) ** k * 0.3, 'peak', f'cambia la página: {key}'); add(UIOPEN, a + 0.12, -15, (-1) ** k * 0.2)
+# the camera never stops: a soft air move on each of its keys inside the panel scenes (skipped next to bigger sounds)
+src = open(os.path.join(HERE, 'src', 'main.js')).read(); import re
+CAM = sorted(float(m) for m in re.findall(r'\bK\((\d+(?:\.\d+)?),', src))
+busy = sorted(float(r[0]) for r in rows)
+for k, tk in enumerate(CAM):
+    if tk < 8.5 or tk > 84.6 or any(abs(tk - b) < 0.35 for b in busy): continue
+    add(LOWWH, tk + 0.1, -22, (-1) ** k * 0.45, 'peak', 'movimiento de cámara' if k == 0 else '')
+# the gaps, one by one
+add(UIOPEN, 16.75, -11, 0, 'onset', 'aparece la pantalla de Discord'); add(DATA, T['oauth']['authorize'] + 0.08, -12, 0.2, 'onset', 'Discord autoriza')
+add(GEAR, T['resumen']['chart'][0] + 0.4, -16, 0.4, 'onset', 'se llena el donut'); [add(pitch(HOVER, k), 22.3 + k * 0.12, -18, 0.4, 'onset', 'actividad reciente' if k == 0 else '') for k in range(3)]
+add(DATA, 23.4, -17, -0.3, 'onset', 'la gráfica se mueve'); add(HOVER, 25.2, -14, 0.5, 'onset', 'pasa por la Ruleta diaria')
+add(RISER2, T['ruleta']['stop'] - 0.02, -17, 0, 'peak', 'la ruleta toma tensión')
+add(DATA, T['misiones']['fill'][0], -16, 0, 'onset', 'se llenan las barras de misiones')
+add(STRETCH, T['tienda']['tryOn'] + 0.05, -14, 0.3, 'onset', 'vista previa del banner'); add(HOVER, 44.2, -14, 0.4, 'onset', 'pasa por Comprar')
+add(GEAR, 46.2, -15, 0.5, 'onset', 'la tarjeta flota'); add(SHUT, 46.9, -16, 0.3, 'onset')
+[add(pitch(HOVER, k * 0.5), 59.6 + k * 0.45, -19, -0.3 + k * 0.1, 'onset', 'recorre el ranking' if k == 0 else '') for k in range(5)]; add(DATA, 60.4, -18, 0)
+add(HOVER, 61.9, -13, 0.2, 'onset', 'pasa por el integrante'); add(SWITCH, T['perfil']['pet'] + 0.02, -11, 0.2, 'onset', 'pestaña Mascota'); add(GEAR, 63.9, -17, 0)
+add(DATA, 68.9, -15, 0, 'onset', 'tarjetas de escuadrones'); [add(pitch(SOFT, k), 69.5 + k * 0.18, -16, -0.4 + k * 0.27, 'onset') for k in range(4)]; add(HOVER, 70.9, -14, 0.3)
+add(GLITCH, 75.3, -16, 0, 'onset', 'Arena / Territorios / Memoria...'); add(RIPPLE, 76.3, -15, 0.2, 'onset'); add(GEAR, 77.1, -16, -0.3, 'onset'); [add(pitch(HOVER, k), 75.9 + k * 0.5, -19, (-1) ** k * 0.4) for k in range(5)]
+add(GLIM, F['cta'] + 1.9, -13, 0, 'onset', 'brillo de la máscara'); add(BELL, DUR - 3.4, -11, 0, 'onset', 'campana final'); add(LOWWH, DUR - 2.9, -14, 0, 'peak')
+
 # ================================================================ mix: lookahead limiter, true peak ≤ −1.3 dBFS
 out = hp(MIX, 35); out *= 10 ** (7.0 / 20) / np.abs(out).max()
 def limit(x, ceil_db=-2.2, look=0.004, rel=0.08):
@@ -179,4 +219,4 @@ out = limit(out); tp = np.abs(resample_poly(out, 4, 1, axis=0)).max(); out *= mi
 fi = np.minimum(1, np.arange(N) / (0.05 * SR)); fo = np.clip((DUR - np.arange(N) / SR) / 0.9, 0, 1); out *= (fi * fo)[:, None]
 write_wav(os.path.join(OUT, 'mix.wav'), out)
 with open(os.path.join(HERE, 'cues.csv'), 'w', newline='') as fh: w = csv.writer(fh); w.writerow(['segundo', 'que_suena']); w.writerows(sorted(rows, key=lambda r: float(r[0])))
-print(f'mix.wav · {DUR:.0f} s · {len(rows)} momentos con sonido · sin música')
+print(f'mix.wav · {DUR:.0f} s · {len(rows)} momentos con sonido · con fondo')
