@@ -6,12 +6,16 @@ import { PW, PH, A, TH, press, appear, fmt, card, btnA, btnD, chip, bar, xp, tab
 const AP = TL.apply;
 // ---------------------------------------------------------------- postulación
 const STEPS = [['Información Personal & Disponibilidad', 'Preguntas 1 a 5'], ['Motivación & Valores Comunitarios', 'Preguntas 6 a 11'], ['Historial, Convivencia & Normas', 'Preguntas 12 a 15'], ['Proyectos & Compromiso Oficial', 'Preguntas 16 a 18']];
-const QS = [
-  [['1. ¿Qué edad tienes?', '19 años', AP.q1], ['2. ¿Qué responsabilidades tienes fuera de Discord?', 'Estudio y trabajo por las tardes.', AP.q2], ['3. ¿Qué te llevó a querer pertenecer a la comunidad?', null], ['4. ¿Qué conocimientos/habilidades aportas?', null]],
-  [['6. ¿Qué esperas de nuestra comunidad?', 'Una familia de verdad, no solo un servidor.', [AP.q6[0], AP.q6[0] + 0.38]], ['9. ¿Por qué deberíamos aceptarte?', 'Soy constante y leal.', [AP.q6[0] + 0.4, AP.q6[1]]], ['10. ¿Cómo llevarías las normas de nuestra comunidad?', null]],
-  [['12. ¿Has tenido problemas en otras comunidades?', 'Nunca. Respeto ante todo.', AP.q12], ['15. ¿Cómo manejarías un conflicto?', null]],
-  [['17. ¿Tienes algún proyecto/idea?', null], ['18. ¿Aceptas llevar el tag?', 'Sí, con orgullo.', AP.q18]],
+// every question of every step gets answered: the answers of a step share that step's typing window (longer answers get more time)
+const QA = [
+  [['1. ¿Qué edad tienes?', '19 años'], ['2. ¿Qué responsabilidades tienes fuera de Discord?', 'Estudio y trabajo por las tardes.'], ['3. ¿Qué te llevó a querer pertenecer a la comunidad?', 'El respeto y la actividad de todos.'], ['4. ¿Qué conocimientos/habilidades aportas?', 'Edición de video y moderación.'], ['5. ¿Cuál es tu disponibilidad horaria?', 'Todas las noches, de 8 a 12.']],
+  [['6. ¿Qué esperas de nuestra comunidad?', 'Una familia de verdad.'], ['7. ¿Qué valoras más en un grupo?', 'La lealtad.'], ['8. ¿Cómo ayudarías a que la comunidad crezca?', 'Invitando gente activa.'], ['9. ¿Por qué deberíamos aceptarte?', 'Soy constante y leal.'], ['10. ¿Cómo llevarías las normas de nuestra comunidad?', 'Al pie de la letra.'], ['11. ¿Qué harías si alguien rompe una regla?', 'Avisar a un oficial.']],
+  [['12. ¿Has tenido problemas en otras comunidades?', 'Nunca. Respeto ante todo.'], ['13. ¿Has sido sancionado alguna vez?', 'No.'], ['14. ¿Cómo tratas a los nuevos integrantes?', 'Les ayudo a integrarse.'], ['15. ¿Cómo manejarías un conflicto?', 'Hablando, con calma.']],
+  [['16. ¿Cuánto tiempo llevas en CTR?', 'Más de un año.'], ['17. ¿Tienes algún proyecto/idea?', 'Torneos semanales de la familia.'], ['18. ¿Aceptas llevar el tag?', 'Sí, con orgullo.']],
 ];
+const QS = QA.map((qs, s) => { const [a, b] = AP.steps[s], tot = qs.reduce((n, q) => n + q[1].length + 6, 0), gap = 0.03; let t = a;
+  return qs.map(([q, ans]) => { const d = (b - a - gap * (qs.length - 1)) * (ans.length + 6) / tot, w = [t, t + d]; t += d + gap; return [q, ans, w]; }); });
+const Q18END = QS[3][2][2][1];
 export const APPLY_TYPING = QS.flat().filter(q => q[1]).map(q => [q[1], ...q[2]]);   // for audio.py
 const stepAt = t => t < AP.next1 + 0.1 ? 0 : t < AP.next2 + 0.1 ? 1 : t < AP.next3 + 0.1 ? 2 : 3;
 const NEXT = [1112, 962, 190, 46], SEND = [1032, 962, 270, 46];
@@ -37,12 +41,12 @@ function apply(ctx, t) {
     ctx.save(); ctx.beginPath(); ctx.rect(385, 340, 936, 600); ctx.clip(); ctx.translate((1 - k) * 160, 0); ctx.globalAlpha *= k;
     mono(ctx, 11, 700); ctx.fillStyle = TH.acc; ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; spaced(ctx, `PASO ${st + 1} DE 4 · ${STEPS[st][1].toUpperCase()}`, 405, 362, 2);
     txt(ctx, STEPS[st][0], 405, 394, 22, '#fff', 700, 'left', 'OUTFIT');
-    let y = 440; QS[st].forEach(([q, ans, win], qi) => { txt(ctx, q, 405, y, 15, '#e4e4e7', 600); const ih = qi === 0 && st !== 3 ? 46 : 78, val = ans ? typed(ans, t, win[0], win[1]) : '', foc = ans && t >= win[0] - 0.05 && t < win[1] + 0.3;
+    let y = 438; QS[st].forEach(([q, ans, win], qi) => { txt(ctx, q, 405, y, 14.5, '#e4e4e7', 600); const ih = 42, val = ans ? typed(ans, t, win[0], win[1]) : '', foc = ans && t >= win[0] - 0.05 && t < win[1] + 0.3;
       card(ctx, 405, y + 16, 896, ih, { r: 10, fill: '#111113', stroke: foc ? A(0.65) : 'rgba(255,255,255,0.09)' }); if (foc) { rr(ctx, 403, y + 14, 900, ih + 4, 12); ctx.strokeStyle = A(0.18); ctx.lineWidth = 3; ctx.stroke(); }
-      txt(ctx, val || (ans ? '' : 'Escribe tu respuesta aquí...'), 421, y + 16 + 23, 15, val ? '#fff' : '#5b5b63', 500);
-      if (foc && Math.floor(t * 2.4) % 2 === 0) { font(ctx, 15, 500); ctx.fillStyle = TH.acc; ctx.fillRect(423 + ctx.measureText(val).width, y + 29, 2, 20); }
-      y += ih + 52; });
-    if (st === 3) { const ck = t >= AP.q18[1] + 0.12; rr(ctx, 405, y - 12, 22, 22, 6); ctx.fillStyle = ck ? TH.acc : '#141416'; ctx.fill(); ctx.strokeStyle = ck ? TH.acc : 'rgba(255,255,255,0.2)'; ctx.stroke();
+      txt(ctx, val || 'Escribe tu respuesta aquí...', 421, y + 16 + 21, 14.5, val ? '#fff' : '#5b5b63', 500);
+      if (foc && Math.floor(t * 2.4) % 2 === 0) { font(ctx, 14.5, 500); ctx.fillStyle = TH.acc; ctx.fillRect(423 + ctx.measureText(val).width, y + 27, 2, 19); }
+      y += 84; });
+    if (st === 3) { y += 6; const ck = t >= Q18END + 0.12; rr(ctx, 405, y - 12, 22, 22, 6); ctx.fillStyle = ck ? TH.acc : '#141416'; ctx.fill(); ctx.strokeStyle = ck ? TH.acc : 'rgba(255,255,255,0.2)'; ctx.stroke();
       if (ck) { ctx.strokeStyle = TH.fg; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(410, y - 1); ctx.lineTo(414, y + 3); ctx.lineTo(422, y - 6); ctx.stroke(); } txt(ctx, 'Acepto las normas de la familia y que los oficiales revisen mi actividad.', 438, y, 14, '#d4d4d8', 500); }
     ctx.restore();
     divider(ctx, 405, 1300, 942); btnD(ctx, 405, 962, 120, 46, 'Atrás');
@@ -209,7 +213,7 @@ function ruleta(ctx, t) {
 }
 
 export const SCENES = {
-  apply: { draw: apply, cursor: [[8.5, 1250, 760], [AP.next1, ...aim(NEXT), true, 0.5], [AP.next2, ...aim(NEXT), true, 0.45], [AP.next3, ...aim(NEXT), true, 0.45], [AP.q18[1] + 0.12, 416, 851, true, 0.3], [AP.send, ...aim(SEND), true, 0.4], [AP.send + 0.8, 1180, 900]] },
+  apply: { draw: apply, cursor: [[8.5, 1250, 760], [AP.next1, ...aim(NEXT), true, 0.5], [AP.next2, ...aim(NEXT), true, 0.45], [AP.next3, ...aim(NEXT), true, 0.45], [Q18END + 0.12, 418, 697, true, 0.3], [AP.send, ...aim(SEND), true, 0.4], [AP.send + 0.8, 1180, 900]] },
   oauth: { draw: oauth, cursor: [[17.4, 1300, 700], [TL.oauth.authorize, ...aim(AUTH), true, 0.6], [19.3, ...aim(AUTH)]] },
   resumen: { draw: resumen, cursor: [[24.6, 1400, 600], [R.wheel, ...aim(WHEEL), true, 0.6], [26.0, ...aim(WHEEL)]] },
   ruleta: { draw: ruleta, cursor: [[26.4, 1300, 700], [RU.spin, ...aim(SPINBTN), true, 0.45], [RU.spin + 0.6, 1000, 940], [RU.cont - 0.5, 1000, 760], [RU.cont, ...aim(CONT), true, 0.4], [32.5, ...aim(CONT)]] },

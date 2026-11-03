@@ -18,7 +18,7 @@ export const sceneAt = t => { for (let i = SCENES.length - 1; i >= 0; i--) if (t
 
 export const TL = {
   app: { in: [7.55, 8.35], out: [84.9, 85.8] },
-  apply: { q1: [8.75, 9.2], q2: [9.3, 9.95], next1: 10.25, q6: [10.5, 11.15], next2: 11.4, q12: [11.6, 12.05], next3: 12.3, q18: [12.5, 12.85],
+  apply: { steps: [[8.6, 10.12], [10.55, 11.3], [11.55, 12.2], [12.45, 12.95]], next1: 10.25, next2: 11.4, next3: 12.3,
            send: 13.15, review: [13.25, 14.35], approved: 14.45, official: 15.05 },
   oauth: { authorize: 18.85 },
   resumen: { toast: 20.55, counts: [20.6, 21.7], chart: [20.8, 22.1], wheel: 25.75 },
