@@ -199,7 +199,7 @@ function lideres(ctx, t) {
     ctx.save(); ctx.globalAlpha *= clamp(k * 2); ctx.translate(0, ry);
     rr(ctx, x + 20, y + 200, 287, bh + 30, 10); const g = ctx.createLinearGradient(0, y + 200, 0, y + 230 + bh); g.addColorStop(0, rgba(col, 0.25)); g.addColorStop(1, rgba(col, 0)); ctx.fillStyle = g; ctx.fill(); txt(ctx, String(n), x + 163, y + 222 + bh / 2, 26, col, 800, 'center', 'OUTFIT');
     leaderCard(ctx, t, L); ctx.restore();
-    if (n === 1 && t >= LD.podium[2]) { const r = prog(t, LD.podium[2], LD.podium[2] + 1.2); ctx.save(); ctx.globalAlpha = 1 - r; ctx.translate(1091, 449); for (let j = 0; j < 14; j++) { ctx.rotate(Math.PI / 7); ctx.fillStyle = 'rgba(245,179,1,0.18)'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-10, -200 * (0.5 + r)); ctx.lineTo(10, -200 * (0.5 + r)); ctx.fill(); } ctx.restore(); } });
+  });
   card(ctx, 804, 840, 576, 122, { r: 14, fill: '#0e0e10' }); mono(ctx, 12, 800); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; spaced(ctx, '¿CÓMO SE ELIGEN LOS LÍDERES?', 1092, 868, 1.6, 'center');
   mono(ctx, 10.5, 500); ctx.fillStyle = '#a1a1aa'; ['Mensualmente, la administración evalúa la participación activa en el chat', 'de Discord, canales de voz y eventos. Los líderes son premiados con', 'marcos cosméticos y rangos temporales VIP.'].forEach((s, i) => ctx.fillText(s, 1092, 896 + i * 18));
 }
