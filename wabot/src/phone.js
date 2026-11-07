@@ -265,16 +265,19 @@ const DLMSGS = [{ side: 'out', kind: 'text', text: TT, link: true, t0: D.send },
 
 // taps (iOS screen-recording touch dots) in screen coords
 export const TAPS = [[S.send, SW - 38, SH - 351], [L.tapLink, SW / 2, 336], [L.tapPhone, SW / 2, 820], [O.swipe, 90, 0], [O.send, SW - 38, SH - 351], [O.tapBanner, SW / 2, 92], [D.paste - 0.2, 190, SH - 51], [D.send, SW - 38, SH - 51], [D.igSend, SW - 38, SH - 51]];
-// macOS-style arrow pointer (black body, white rim, soft shadow): glides to each tap, presses, leaves a ripple
-const ARROW = new Path2D('M0 0 L0 17.2 L4.1 13.3 L6.9 19.9 L9.9 18.6 L7.2 12.2 L12.8 12.2 Z');
+// macOS-style pointing hand (white glove, black outline, three knuckle stripes): glides to each tap, presses, leaves a ripple
+const HAND = new Path2D('M4.6 2.1 A1.75 1.75 0 0 1 8.1 2.1 V8.7 A1.55 1.55 0 0 1 11.2 8.7 V9.5 A1.5 1.5 0 0 1 14.2 9.5 V10.6 A1.3 1.3 0 0 1 16.8 10.6 V15.2 C16.8 17.6 15.9 19.1 14.8 20.4 V22.2 H6.6 V20.9 C5.1 19.6 3.2 17.3 1.4 14.9 A1.55 1.55 0 0 1 3.7 12.9 L4.6 13.9 Z');
+const HAND_HOT = [6.35, 0.4];
 function arrow(c, x, y, s, a) {
-  c.save(); c.globalAlpha = a; c.translate(x, y); c.scale(s, s); c.lineJoin = 'round';
-  c.shadowColor = 'rgba(0,0,0,0.45)'; c.shadowBlur = 5; c.shadowOffsetY = 1.5;
-  c.fillStyle = '#0A0A0A'; c.fill(ARROW); c.shadowColor = 'transparent';
-  c.lineWidth = 1.35; c.strokeStyle = '#fff'; c.stroke(ARROW); c.restore();
+  c.save(); c.globalAlpha = a; c.translate(x, y); c.scale(s, s); c.translate(-HAND_HOT[0], -HAND_HOT[1]); c.lineJoin = 'round'; c.lineCap = 'round';
+  c.shadowColor = 'rgba(0,0,0,0.4)'; c.shadowBlur = 6; c.shadowOffsetY = 2;
+  c.fillStyle = '#fff'; c.fill(HAND); c.shadowColor = 'transparent';
+  c.lineWidth = 1.25; c.strokeStyle = '#0A0A0A'; c.stroke(HAND);
+  c.lineWidth = 1.05; c.beginPath(); for (const x0 of [9.6, 12.2, 14.8]) { c.moveTo(x0, 14.2); c.lineTo(x0, 17.6); } c.stroke();
+  c.restore();
 }
 function taps(c, t) {
-  const P = TAPS.filter(p => p[2] > 0), CS = 1.75, GLIDE = 0.6, LEAD = 0.08, HOLD = 0.45;
+  const P = TAPS.filter(p => p[2] > 0), CS = 2.2, GLIDE = 0.6, LEAD = 0.08, HOLD = 0.45;
   for (let i = 0; i < P.length; i++) {
     const [tt, x, y] = P[i], prev = P[i - 1], next = P[i + 1];
     const chained = prev && tt - prev[0] < 1.6, t0 = tt - LEAD - GLIDE;
