@@ -1,0 +1,6 @@
+{
+  "name": "wabot-promo",
+  "private": true,
+  "description": "Render del promo del bot de WhatsApp",
+  "dependencies": { "playwright": "1.63.0" }
+}

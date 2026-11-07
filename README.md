@@ -30,3 +30,7 @@ On Windows: download **[HACER_VIDEO_MFC.bat](https://github.com/Mrtyking/edit/ra
 - `mfc/` – the project: `src/temple.js` (the site's own night temple in 3D: temple, torii, lanterns, maples, blood moon, M·F·C letters), `src/timeline.js` (every timing), `src/scenes_a|b|c.js` (the member panel pages), `src/main.js` (camera, the opening, chapter cards, captions, the oath and the CTA), `stems/mix.wav` (final sound design, no music)
 - `mfc/audio.py` – rebuilds `stems/mix.wav` from the timeline (needs the SFX pack and the SFX library, which are not in this repo)
 - All member names, squads and avatars in the video are invented.
+
+## WhatsApp bot promo (vertical)
+
+On Windows: download **[HACER_VIDEO_WABOT.bat](https://github.com/Mrtyking/edit/raw/claude/bold-noether-63jrhe/HACER_VIDEO_WABOT.bat)** and double-click it. Same flow as the others (reuses the environment of a video folder next to it). The video (1080x1920, 60 fps, 48 s) lands in `WhatsAppBot_Video\videos`.
