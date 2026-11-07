@@ -81,7 +81,7 @@ function textLay(c, m) {
 }
 function msgHeight(c, m) {
   if (m.kind === 'text' || m.kind === 'wait') { const L = textLay(c, m); return 18 + L.lines.length * 21 + (L.timeRow ? 16 : 0) + (m.quote ? 62 : 0) + 4; }
-  if (m.kind === 'code') return 138; if (m.kind === 'once') return m.quote ? 112 : 52; if (m.kind === 'photo') return 300; if (m.kind === 'video') return 330; return 40;
+  if (m.kind === 'code') return 138; if (m.kind === 'once') return m.quote ? 112 : 52; if (m.kind === 'photo') return 318; if (m.kind === 'video') return 348; return 40;
 }
 function drawMsg(c, m, y, t) {
   const out = m.side === 'out', a = m.t0 === undefined ? 1 : E.outBack(prog(t, m.t0, m.t0 + 0.35), 1.6); if (a <= 0) return;
@@ -106,13 +106,13 @@ function drawMsg(c, m, y, t) {
     const open = m.open && t >= m.open; viewOnceIcon(c, x + 26, y + 24, 11, open, open ? W.sub : W.green);
     txt(c, open ? 'Abierto' : 'Foto', x + 46, y + 24, 16.5, open ? W.sub : W.text, open ? 500 : 600); txt(c, '9:41', x + w - 10, y + 38, 11, W.sub, 500, 'right');
   } else if (m.kind === 'photo' || m.kind === 'video') {
-    const w = 236, x = out ? SW - 14 - w : 14, ih = m.kind === 'photo' ? 250 : 280; bubble(c, m.side, x, y, w, h - 4, col);
+    const w = 256, x = out ? SW - 14 - w : 14, ih = m.kind === 'photo' ? 250 : 280; bubble(c, m.side, x, y, w, h - 4, col);
     c.save(); rr(c, x + 4, y + 4, w - 8, ih, 15); c.clip(); const im = m.img; const s = Math.max((w - 8) / im.width, ih / im.height); c.drawImage(im, x + 4 + (w - 8 - im.width * s) / 2, y + 4 + (ih - im.height * s) / 2, im.width * s, im.height * s);
     if (m.kind === 'video') { c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(x + 4, y + 4, w - 8, ih); c.beginPath(); c.arc(x + w / 2, y + 4 + ih / 2, 26, 0, 7); c.fillStyle = 'rgba(0,0,0,0.45)'; c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.moveTo(x + w / 2 - 8, y + 4 + ih / 2 - 12); c.lineTo(x + w / 2 + 13, y + 4 + ih / 2); c.lineTo(x + w / 2 - 8, y + 4 + ih / 2 + 12); c.fill();
       ICON(c, 'video', x + 14, y + ih - 18, 14, '#fff', 2); txt(c, m.dur, x + 34, y + ih - 11, 12, '#fff', 600); }
     c.restore();
-    if (m.caption) { emo(c, m.capEmoji, x + 20, y + ih + 24, 18); txt(c, m.caption, x + 34, y + ih + 24, 14.5, W.text, 600); txt(c, m.sub, x + 12, y + ih + 44, 12, W.sub, 500); }
-    txt(c, '9:41', x + w - 10, y + h - 14, 11, W.sub, 500, 'right');
+    if (m.caption) { emo(c, m.capEmoji, x + 20, y + ih + 26, 18); txt(c, m.caption, x + 36, y + ih + 26, 14.5, W.text, 600); txt(c, m.sub, x + 12, y + ih + 47, 12, W.sub, 500); }
+    txt(c, '9:41', x + w - 12, y + ih + 47, 11, W.sub, 500, 'right');
   }
   c.restore();
 }
@@ -259,7 +259,7 @@ function banner(c, t, t0, title, body, em) {
 const S = TL.serbot, L = TL.link, O = TL.once, D = TL.dl;
 const BOTMSGS = (() => { const m = [{ side: 'in', kind: 'text', text: 'Hola. Escribe /serbot para vincular tu número.', time: '9:30' }, { side: 'out', kind: 'text', text: '/serbot', t0: S.send, time: '9:41' }, { side: 'in', kind: 'text', text: 'Listo. Abre WhatsApp > Dispositivos vinculados > Vincular con el número.', t0: S.reply }, { side: 'in', kind: 'code', t0: S.code, glow: t => Math.sin(Math.PI * prog(t, S.lift[0], S.lift[0] + 0.8)) }]; m.sys = true; return m; })();
 const VALMSGS = (() => { const m = [{ side: 'in', kind: 'text', text: 'mira lo que te mandé', time: '9:38' }, { side: 'in', kind: 'once', t0: O.arrive, open: O.opened }, { side: 'out', kind: 'text', text: 'que duro', emoji: '🔥', quote: ['Valeria', 'Foto'], t0: O.send }]; m.sys = true; return m; })();
-const SELF = [{ side: 'in', kind: 'photo', img: PHOTO, t0: O.photo, caption: 'Foto de una vez recuperada', capEmoji: '📸', sub: 'De: Valeria · 9:41' }];
+const SELF = [{ side: 'in', kind: 'photo', img: PHOTO, t0: O.photo, caption: 'Foto de una vez recuperada', capEmoji: '📸', sub: 'De: Valeria' }];
 const DLMSGS = [{ side: 'out', kind: 'text', text: TT, link: true, t0: D.send }, { side: 'in', kind: 'wait', text: 'Descargando video de TikTok…', t0: D.wait[0] + 0.05 }, { side: 'in', kind: 'video', img: THUMB_TT, dur: '0:15', t0: D.video, caption: 'Sin marca de agua', capEmoji: '✅', sub: 'TikTok · 1080p' },
   { side: 'out', kind: 'text', text: IG, link: true, t0: D.igSend }, { side: 'in', kind: 'video', img: THUMB_IG, dur: '0:22', t0: D.igVideo, caption: 'Listo', capEmoji: '✅', sub: 'Instagram · Reel' }];
 

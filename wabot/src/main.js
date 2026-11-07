@@ -92,8 +92,8 @@ const recapCard = i => ({ w: 400, h: 150, tex: 2.2, draw(c) { shadowCard(c, 0, 0
   txt(c, RECAP[i][1], 124, 60, 23, '#F5F5F7', 700); txt(c, RECAP[i][2], 124, 92, 17, '#A1A1A6', 500); } });
 const LIFTS = [
   { p: new Panel(codeCard, { dyn: [0, 1], vis: [TL.serbot.lift[0] - 0.05, TL.serbot.lift[1] + 0.05] }), at: [159, 760], t: TL.serbot.lift, to: [0.2, 0.2, 4.2], s: 1.0 },
-  { p: new Panel(photoCard, { dyn: [0, 1], vis: [TL.once.lift[0] - 0.05, TL.once.lift[1] + 0.05] }), at: [132, 660], t: TL.once.lift, to: [0.25, -0.2, 4.6], s: 1.0 },
-  { p: new Panel(videoCard, { dyn: [TL.dl.lift[0], TL.dl.lift[1]], vis: [TL.dl.lift[0] - 0.05, TL.dl.lift[1] + 0.05] }), at: [132, 640], t: TL.dl.lift, to: [0.25, -0.3, 4.4], s: 0.95 },
+  { p: new Panel(photoCard, { dyn: [0, 1], vis: [TL.once.lift[0] - 0.05, TL.once.lift[1] + 0.05] }), at: [142, 660], t: TL.once.lift, to: [0.25, -0.2, 4.6], s: 1.0 },
+  { p: new Panel(videoCard, { dyn: [TL.dl.lift[0], TL.dl.lift[1]], vis: [TL.dl.lift[0] - 0.05, TL.dl.lift[1] + 0.05] }), at: [142, 640], t: TL.dl.lift, to: [0.25, -0.3, 4.4], s: 0.95 },
   ...RECAP.map((_, i) => ({ p: new Panel(recapCard(i), { dyn: [0, 1], vis: [TL.recap.cards[i] - 0.05, TL.recap.out + 0.5] }), recap: i })),
 ];
 const PANELS = [screenP, ...LIFTS.map(l => l.p)];
