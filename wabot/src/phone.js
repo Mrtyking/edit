@@ -265,7 +265,7 @@ const DLMSGS = [{ side: 'out', kind: 'text', text: TT, link: true, t0: D.send },
 
 // taps (iOS screen-recording touch dots) in screen coords
 export const TAPS = [[S.send, SW - 38, SH - 351], [L.tapLink, SW / 2, 336], [L.tapPhone, SW / 2, 820], [O.swipe, 90, 0], [O.send, SW - 38, SH - 351], [O.tapBanner, SW / 2, 92], [D.paste - 0.2, 190, SH - 51], [D.send, SW - 38, SH - 51], [D.igSend, SW - 38, SH - 51]];
-// macOS-style pointing hand (white glove, black outline, three knuckle stripes): glides to each tap, presses, leaves a ripple
+// macOS-style pointing hand (white glove, black outline, three knuckle stripes): glides to each tap, presses
 const HAND = new Path2D('M4.6 2.1 A1.75 1.75 0 0 1 8.1 2.1 V8.7 A1.55 1.55 0 0 1 11.2 8.7 V9.5 A1.5 1.5 0 0 1 14.2 9.5 V10.6 A1.3 1.3 0 0 1 16.8 10.6 V15.2 C16.8 17.6 15.9 19.1 14.8 20.4 V22.2 H6.6 V20.9 C5.1 19.6 3.2 17.3 1.4 14.9 A1.55 1.55 0 0 1 3.7 12.9 L4.6 13.9 Z');
 const HAND_HOT = [6.35, 0.4];
 function arrow(c, x, y, s, a) {
@@ -288,8 +288,6 @@ function taps(c, t) {
     const cx = sx + (x - sx) * e, cy = sy + (y - sy) * e + Math.sin(Math.PI * e) * -14;
     let a = 1; if (!chained) a = clamp((t - (t0 - 0.2)) / 0.25); if (!(next && next[0] - tt < 1.6)) a *= clamp((end - t) / Math.min(0.22, hold - 0.04));
     const pk = (t - tt) / 0.2, press = pk > -0.6 && pk < 1 ? 1 - 0.16 * Math.sin(Math.PI * clamp((pk + 0.6) / 1.6)) : 1;
-    const rk = (t - tt) / 0.45;
-    if (rk >= 0 && rk <= 1) { c.save(); c.globalAlpha = (1 - rk) * 0.7 * a; c.beginPath(); c.arc(x, y, 6 + 24 * (1 - Math.pow(1 - rk, 3)), 0, 7); c.lineWidth = 2; c.strokeStyle = '#fff'; c.stroke(); c.globalAlpha = (1 - rk) * 0.18 * a; c.fillStyle = '#fff'; c.fill(); c.restore(); }
     arrow(c, cx, cy, CS * press, a);
   }
 }
