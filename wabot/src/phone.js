@@ -49,9 +49,10 @@ function doodle(c, n) { c.strokeStyle = '#fff'; c.lineWidth = 1.3; c.beginPath()
   c.stroke(); }
 
 // ---------------------------------------------------------------- small parts
+let ISLAND_BUSY = false;
 function statusBar(c, dark = true) {
   txt(c, '9:41', 52, 27, 17, '#fff', 600, 'center');
-  rr(c, SW / 2 - 63, 11, 126, 37, 19); c.fillStyle = '#000'; c.fill();          // dynamic island
+  if (!ISLAND_BUSY) { rr(c, SW / 2 - 63, 11, 126, 37, 19); c.fillStyle = '#000'; c.fill(); }   // dynamic island (faceIsland draws it while Face ID runs)
   c.fillStyle = '#fff'; for (let i = 0; i < 4; i++) { const h = 4 + i * 2.6; rr(c, 316 + i * 5.2, 32 - h, 3.2, h, 1); c.fill(); }
   c.strokeStyle = '#fff'; c.lineWidth = 2; for (let i = 0; i < 3; i++) { c.beginPath(); c.arc(349, 33, 3 + i * 4.2, -Math.PI * 0.76, -Math.PI * 0.24); c.stroke(); }
   rr(c, 366, 20, 25, 13, 4); c.fillStyle = '#fff'; c.fill(); rr(c, 392.5, 24, 2, 5, 1); c.fill(); txt(c, '85', 378.5, 26.8, 10, '#000', 800, 'center');
@@ -235,24 +236,25 @@ function faceGlyph(c, x, y, s, col, a) {   // the Face ID face: four corners, ey
   for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { c.moveTo(sx * 46, sy * 22); c.lineTo(sx * 46, sy * 34); c.quadraticCurveTo(sx * 46, sy * 46, sx * 34, sy * 46); c.lineTo(sx * 22, sy * 46); }
   c.moveTo(-18, -14); c.lineTo(-18, -4); c.moveTo(18, -14); c.lineTo(18, -4); c.moveTo(2, -14); c.lineTo(2, 6); c.quadraticCurveTo(2, 10, -4, 10); c.moveTo(-16, 20); c.quadraticCurveTo(0, 32, 16, 20); c.stroke(); c.restore();
 }
-function faceIsland(c, t) {   // the island grows into a black square: green Face ID face → its corners bend into arcs that spin and close into a ring → a check draws inside → shrink
+function faceIsland(c, t) {   // the island itself does it all: pill → rounded square with the green Face ID face → it rounds into a circle whose own edge lights up as a spinning green ring → check inside → back into the pill
   const P = TL.phone; if (t < P.face[0] - 0.25 || t > P.shrink[1]) return;
   const g = E.outBack(prog(t, P.face[0] - 0.25, P.face[0] + 0.12), 1.15) * (1 - E.inOut(prog(t, P.shrink[0], P.shrink[1])));
-  const w = lerp(126, 150, g), h = lerp(37, 150, g), x = SW / 2 - w / 2, y = 11, r = lerp(19, 44, g);
-  rr(c, x, y, w, h, r); c.fillStyle = '#000'; c.fill();
-  const cx = SW / 2, cy = y + h / 2, sp = prog(t, P.spin[0], P.spin[1]), GR = '#3DDC84';
+  const sp = prog(t, P.spin[0], P.spin[1]), GR = '#3DDC84';
   const m = E.inOut(clamp(sp / 0.3));                       // face → arcs
-  const close = E.inOut(clamp((sp - 0.15) / 0.5));          // arcs grow into a full ring
+  const close = E.inOut(clamp((sp - 0.1) / 0.55));          // arcs grow into a full ring, the island rounds into a circle
   const rot = E.inOut(clamp(sp / 0.75)) * Math.PI * 1.5;    // the arcs spin while they grow
-  const ck = E.out(clamp((sp - 0.55) / 0.4));               // check draws inside the ring
-  const sc = 74 * g / 100, breathe = sp > 0 ? 1 : 1 + 0.025 * Math.sin((t - P.face[0]) * 9);
+  const ck = E.out(clamp((sp - 0.55) / 0.4));               // check draws inside
+  const w = lerp(126, 150, g), h = lerp(37, 150, g), x = SW / 2 - w / 2, y = 11;
+  const rb = Math.min(h / 2, lerp(19, 44, g)), r = lerp(rb, Math.min(w, h) / 2, close);
+  rr(c, x, y, w, h, r); c.fillStyle = '#000'; c.fill();
+  const cx = SW / 2, cy = y + h / 2, sc = 74 * g / 100, breathe = sp > 0 ? 1 : 1 + 0.025 * Math.sin((t - P.face[0]) * 9);
   c.save(); c.shadowColor = 'rgba(37,211,102,0.55)'; c.shadowBlur = 12 * g;
   if (m < 1) faceGlyph(c, cx, cy, 74 * g * breathe * (1 - 0.12 * m), GR, g * (1 - m));
-  if (m > 0) { c.save(); c.globalAlpha *= g * m; c.translate(cx, cy); c.scale(sc, sc); c.rotate(rot); c.strokeStyle = GR; c.lineWidth = 7; c.lineCap = 'round';
-    const R = lerp(52, 46, m), half = lerp(0.42, Math.PI / 4, close);   // four arcs centred on the old corners, gaps close up
-    for (let i = 0; i < 4; i++) { const a0 = Math.PI / 4 + i * Math.PI / 2; c.beginPath(); c.arc(0, 0, R, a0 - half, a0 + half); c.stroke(); }
+  if (m > 0) { const Rpx = lerp(48 * sc, Math.min(w, h) / 2 - 7, close), half = lerp(0.42, Math.PI / 4, close);   // the arcs ride out to the island's own edge
+    c.save(); c.globalAlpha *= g * g * g * m; c.translate(cx, cy); c.rotate(rot); c.strokeStyle = GR; c.lineWidth = lerp(5.2, 4.2, close); c.lineCap = 'round';
+    for (let i = 0; i < 4; i++) { const a0 = Math.PI / 4 + i * Math.PI / 2; c.beginPath(); c.arc(0, 0, Math.max(1, Rpx), a0 - half, a0 + half); c.stroke(); }
     c.restore(); }
-  if (ck > 0) { const s2 = sc * 0.72; c.save(); c.globalAlpha *= g; c.translate(cx, cy + 2 * sc); c.scale(s2, s2); c.strokeStyle = GR; c.lineWidth = 9; c.lineCap = 'round'; c.lineJoin = 'round';
+  if (ck > 0) { const s2 = sc * 0.95; c.save(); c.globalAlpha *= g * g * g; c.translate(cx + 1, cy + 1 * sc); c.scale(s2, s2); c.strokeStyle = GR; c.lineWidth = 8.5; c.lineCap = 'round'; c.lineJoin = 'round';
     const L1 = Math.hypot(18, 18), L2 = Math.hypot(36, 38), d = ck * (L1 + L2);
     c.beginPath(); c.moveTo(-26, 2); if (d <= L1) c.lineTo(-26 + 18 * d / L1, 2 + 18 * d / L1); else { c.lineTo(-8, 20); const u = (d - L1) / L2; c.lineTo(-8 + 36 * u, 20 - 38 * u); } c.stroke(); c.restore(); }
   c.restore();
@@ -305,6 +307,7 @@ function taps(c, t) {
 
 export function drawScreen(c, t) {
   c.save(); rr(c, 0, 0, SW, SH, 58); c.clip(); c.fillStyle = '#000'; c.fillRect(0, 0, SW, SH);
+  ISLAND_BUSY = t >= TL.phone.face[0] - 0.25 && t <= TL.phone.shrink[1];
   if (t < TL.phone.lock[1]) lockScreen(c, t);
   else if (t < S.chat) chatList(c, t);
   else if (t < L.devices) { const typing = t >= S.type[0] && t < S.send; chatScreen(c, t, 'bot', 'Bot', 'en línea', BOTMSGS, typing ? typed('/serbot', t, S.type[0], S.type[1]) : '', typing ? typingKey('/serbot', t, S.type[0], S.type[1]) : undefined); }
