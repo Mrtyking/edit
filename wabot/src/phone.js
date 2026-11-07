@@ -235,17 +235,19 @@ function faceGlyph(c, x, y, s, col, a) {   // the Face ID face: four corners, ey
   for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { c.moveTo(sx * 46, sy * 22); c.lineTo(sx * 46, sy * 34); c.quadraticCurveTo(sx * 46, sy * 46, sx * 34, sy * 46); c.lineTo(sx * 22, sy * 46); }
   c.moveTo(-18, -14); c.lineTo(-18, -4); c.moveTo(18, -14); c.lineTo(18, -4); c.moveTo(2, -14); c.lineTo(2, 6); c.quadraticCurveTo(2, 10, -4, 10); c.moveTo(-16, 20); c.quadraticCurveTo(0, 32, 16, 20); c.stroke(); c.restore();
 }
-function faceIsland(c, t) {   // like iOS: the island grows into a black square, white Face ID glyph, then it turns into a check and shrinks back
+function faceIsland(c, t) {   // like iOS: the island grows into a black square, green Face ID glyph, then it turns into a green check and shrinks back
   const P = TL.phone; if (t < P.face[0] - 0.25 || t > P.shrink[1]) return;
   const g = E.outBack(prog(t, P.face[0] - 0.25, P.face[0] + 0.12), 1.15) * (1 - E.inOut(prog(t, P.shrink[0], P.shrink[1])));
   const w = lerp(126, 150, g), h = lerp(37, 150, g), x = SW / 2 - w / 2, y = 11, r = lerp(19, 44, g);
   rr(c, x, y, w, h, r); c.fillStyle = '#000'; c.fill();
   const cx = SW / 2, cy = y + h / 2, k = E.inOut(prog(t, P.spin[0], P.spin[0] + 0.18)), ck = E.out(prog(t, P.spin[0] + 0.08, P.spin[1]));
   const breathe = 1 + 0.025 * Math.sin((t - P.face[0]) * 9);
-  if (k < 1) faceGlyph(c, cx, cy, 74 * g * breathe * (1 - 0.3 * k), '#fff', g * (1 - k));
-  if (ck > 0) { const sc = 74 * g / 100; c.save(); c.globalAlpha *= g; c.translate(cx, cy); c.scale(sc, sc); c.strokeStyle = '#fff'; c.lineWidth = 8; c.lineCap = 'round'; c.lineJoin = 'round';
+  c.save(); c.shadowColor = 'rgba(37,211,102,0.55)'; c.shadowBlur = 12 * g;
+  if (k < 1) faceGlyph(c, cx, cy, 74 * g * breathe * (1 - 0.3 * k), '#3DDC84', g * (1 - k));
+  if (ck > 0) { const sc = 74 * g / 100; c.save(); c.globalAlpha *= g; c.translate(cx, cy); c.scale(sc, sc); c.strokeStyle = '#3DDC84'; c.lineWidth = 8; c.lineCap = 'round'; c.lineJoin = 'round';
     const pts = [[-26, 2], [-8, 20], [28, -18]], L1 = Math.hypot(18, 18), L2 = Math.hypot(36, 38), d = ck * (L1 + L2);
     c.beginPath(); c.moveTo(...pts[0]); if (d <= L1) c.lineTo(-26 + 18 * d / L1, 2 + 18 * d / L1); else { c.lineTo(...pts[1]); const u = (d - L1) / L2; c.lineTo(-8 + 36 * u, 20 - 38 * u); } c.stroke(); c.restore(); }
+  c.restore();
 }
 // iOS notification banner sliding down from the top
 function banner(c, t, t0, title, body, em) {
