@@ -228,8 +228,6 @@ function drawOverlay(t) {
     words(x, 'Consíguelo en el Discord de', cx, Y[0], 56, c0.l1, t, { weight: 600, color: '#A1A1A6' });
     words(x, 'Mafia China.', cx, Y[1], 132, c0.l2, t, { weight: 800, color: '#F5F5F7' });
     discordBtn(x, cx, Y[2], t, c0.btn);
-    const hp = E.outQuint(prog(t, c0.hint, c0.hint + 0.6)); if (hp > 0) { x.save(); x.globalAlpha *= hp; x.translate(0, (1 - hp) * 16); font(x, 34, 500); x.fillStyle = '#A1A1A6'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('Después escríbele al bot', cx, Y[3]);
-      rr(x, cx - 150, Y[4], 300, 76, 38); x.fillStyle = 'rgba(37,211,102,0.14)'; x.fill(); x.strokeStyle = 'rgba(37,211,102,0.6)'; x.lineWidth = 2; x.stroke(); mono(x, 40, 600); x.fillStyle = GREEN; x.fillText('/serbot', cx, Y[4] + 40); x.restore(); }
   }
   ovTex.needsUpdate = true;
 }
