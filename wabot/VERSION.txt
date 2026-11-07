@@ -1,1 +1,1 @@
-7 nov 2026 - v2: Face ID en la isla dinamica al abrir WhatsApp (bloqueado -> cara -> anillo -> desbloqueado); version horizontal 1920x1080 para PC/Discord; el .bat pregunta formato (vertical, horizontal o los dos)
+7 nov 2026 - v3: los clicks usan cursor de flecha tipo Mac (negro con borde blanco, se desliza al boton y deja una onda); icono de la pestana Tu

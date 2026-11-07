@@ -261,7 +261,31 @@ const DLMSGS = [{ side: 'out', kind: 'text', text: TT, link: true, t0: D.send },
 
 // taps (iOS screen-recording touch dots) in screen coords
 export const TAPS = [[S.send, SW - 38, SH - 351], [L.tapLink, SW / 2, 336], [L.tapPhone, SW / 2, 820], [O.swipe, 90, 0], [O.send, SW - 38, SH - 351], [O.tapBanner, SW / 2, 92], [D.paste - 0.2, 190, SH - 51], [D.send, SW - 38, SH - 51], [D.igSend, SW - 38, SH - 51]];
-function taps(c, t) { for (const [tt, x, y] of TAPS) { const k = (t - tt) / 0.4; if (k < -0.25 || k > 1) continue; const a = k < 0 ? clamp((k + 0.25) / 0.25) : 1 - k; c.save(); c.globalAlpha = 0.55 * a; c.beginPath(); c.arc(x, y, 18 + (k > 0 ? 10 * k : 0), 0, 7); c.fillStyle = '#E5E5EA'; c.fill(); c.restore(); } }
+// macOS-style arrow pointer (black body, white rim, soft shadow): glides to each tap, presses, leaves a ripple
+const ARROW = new Path2D('M0 0 L0 17.2 L4.1 13.3 L6.9 19.9 L9.9 18.6 L7.2 12.2 L12.8 12.2 Z');
+function arrow(c, x, y, s, a) {
+  c.save(); c.globalAlpha = a; c.translate(x, y); c.scale(s, s); c.lineJoin = 'round';
+  c.shadowColor = 'rgba(0,0,0,0.45)'; c.shadowBlur = 5; c.shadowOffsetY = 1.5;
+  c.fillStyle = '#0A0A0A'; c.fill(ARROW); c.shadowColor = 'transparent';
+  c.lineWidth = 1.35; c.strokeStyle = '#fff'; c.stroke(ARROW); c.restore();
+}
+function taps(c, t) {
+  const P = TAPS.filter(p => p[2] > 0), CS = 1.75, GLIDE = 0.6, LEAD = 0.08, HOLD = 0.45;
+  for (let i = 0; i < P.length; i++) {
+    const [tt, x, y] = P[i], prev = P[i - 1], next = P[i + 1];
+    const chained = prev && tt - prev[0] < 1.6, t0 = tt - LEAD - GLIDE;
+    const hold = y === SH - 351 ? 0.2 : HOLD, end = next && next[0] - tt < 1.6 ? next[0] - LEAD - GLIDE : tt + hold;
+    if (t < t0 - (chained ? 0 : 0.2) || t >= end) continue;
+    const sx = chained ? prev[1] : Math.min(SW - 30, x + 80), sy = chained ? prev[2] : Math.min(SH - 40, y + 110);
+    const u = clamp((t - t0) / GLIDE), e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+    const cx = sx + (x - sx) * e, cy = sy + (y - sy) * e + Math.sin(Math.PI * e) * -14;
+    let a = 1; if (!chained) a = clamp((t - (t0 - 0.2)) / 0.25); if (!(next && next[0] - tt < 1.6)) a *= clamp((end - t) / Math.min(0.22, hold - 0.04));
+    const pk = (t - tt) / 0.2, press = pk > -0.6 && pk < 1 ? 1 - 0.16 * Math.sin(Math.PI * clamp((pk + 0.6) / 1.6)) : 1;
+    const rk = (t - tt) / 0.45;
+    if (rk >= 0 && rk <= 1) { c.save(); c.globalAlpha = (1 - rk) * 0.7 * a; c.beginPath(); c.arc(x, y, 6 + 24 * (1 - Math.pow(1 - rk, 3)), 0, 7); c.lineWidth = 2; c.strokeStyle = '#fff'; c.stroke(); c.globalAlpha = (1 - rk) * 0.18 * a; c.fillStyle = '#fff'; c.fill(); c.restore(); }
+    arrow(c, cx, cy, CS * press, a);
+  }
+}
 
 export function drawScreen(c, t) {
   c.save(); rr(c, 0, 0, SW, SH, 58); c.clip(); c.fillStyle = '#000'; c.fillRect(0, 0, SW, SH);
