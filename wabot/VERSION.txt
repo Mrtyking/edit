@@ -1,1 +1,1 @@
-7 nov 2026 - v3: los clicks usan cursor de flecha tipo Mac (negro con borde blanco, se desliza al boton y deja una onda); icono de la pestana Tu
+7 nov 2026 - v3: los clicks usan cursor de flecha tipo Mac (negro con borde blanco, se desliza al boton y deja una onda); icono de la pestana Tu; la pastilla del encabezado del chat cubre todo el subtitulo

@@ -117,7 +117,7 @@ function drawMsg(c, m, y, t) {
 function chatHeader(c, who, name, sub) {
   c.fillStyle = 'rgba(11,11,12,0.94)'; c.fillRect(0, 0, SW, 112);
   glassPill(c, 16, 56, 58, 44); c.strokeStyle = '#fff'; c.lineWidth = 2.6; c.lineCap = 'round'; c.beginPath(); c.moveTo(38, 68); c.lineTo(30, 78); c.lineTo(38, 88); c.stroke(); txt(c, '2', 52, 78.5, 17, '#fff', 500);
-  font(c, 17, 700); const nw = c.measureText(name).width; glassPill(c, 80, 56, nw + 72, 44); avatar(c, who, 102, 78, 17); txt(c, name, 128, sub ? 71 : 78.5, 17, '#fff', 700); if (sub) txt(c, sub, 128, 88, 11.5, W.sub, 500);
+  font(c, 17, 700); let nw = c.measureText(name).width; if (sub) { font(c, 11.5, 500); nw = Math.max(nw, c.measureText(sub).width); } glassPill(c, 80, 56, Math.min(nw + 66, SW - 108 - 80 - 8), 44); avatar(c, who, 102, 78, 17); txt(c, name, 128, sub ? 71 : 78.5, 17, '#fff', 700); if (sub) txt(c, sub, 128, 88, 11.5, W.sub, 500);
   glassPill(c, SW - 108, 56, 92, 44); ICON(c, 'video', SW - 96, 67, 22, '#fff', 1.8); ICON(c, 'phone', SW - 56, 67, 21, '#fff', 1.8);
 }
 function inputBar(c, text, t, focus) {
