@@ -118,7 +118,7 @@ R = T['recap']; add(LOWWH, R['in'], -12, 0, 'peak', 'resumen')
 for i, tc in enumerate(R['cards']): add(pitch(POP, i * 1.5), tc + 0.08, -10, (-0.4, 0.4, -0.4, 0.4)[i], 'onset', 'tarjetas' if i == 0 else '')
 # ---- G · CTA
 C = T['cta']; add(AIR, C['in'] - 0.2, -14, 0, 'start', 'se va el teléfono'); add(WH, C['in'], -9, 0, 'peak')
-add(TICK, C['l1'] + 0.05, -14, 0); slam(C['l2'] + 0.1, -5, '"Mafia China."', heavy=True); add(DISCORD, C['btn'] + 0.15, -5, 0.3, 'onset', 'botón del Discord')
+add(TICK, C['l1'] + 0.05, -14, 0); slam(C['l2'] + 0.1, -5, '"Mafia China."', heavy=True); add(DISCORD, C['btn'] + 0.15, -5, 0.3, 'onset', 'botón del Discord'); add(POP, C['web'] + 0.05, -10, 0, 'onset', 'web del bot')
 add(BELL, DUR - 2.0, -13, 0, 'onset', 'campana final')
 # every tap on the screen
 for t0, x, y in TAPS: add(MOUSE, t0, -15, (x / 215 - 1) * 0.4)

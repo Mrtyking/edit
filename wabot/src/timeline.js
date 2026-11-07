@@ -15,8 +15,8 @@ export const TL = {
   dl: { chat: 30.6, paste: 31.15, send: 31.75, wait: [32.05, 33.55], video: 33.6, lift: [34.0, 36.4], ig: 36.6, igSend: 37.1, igVideo: 38.0, end: 39.6 },
   // F · recap: feature cards orbit the phone
   recap: { in: 39.8, cards: [40.3, 40.5, 40.7, 40.9], out: 43.3 },
-  // G · CTA (black): Discord of Mafia China, then /serbot
-  cta: { in: 43.5, l1: 44.15, l2: 44.6, btn: 45.3, hint: 46.0 },
+  // G · CTA (black): Discord of Mafia China, then the bot's website
+  cta: { in: 43.5, l1: 44.15, l2: 44.6, btn: 45.3, web: 45.75 },
 };
 
 // background: 0 = white studio, 1 = graphite (Apple-style alternating sections)

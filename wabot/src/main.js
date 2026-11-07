@@ -164,8 +164,8 @@ function animate(t) {
 const ov = document.createElement('canvas'); ov.width = RW; ov.height = RH; const octx = ov.getContext('2d');
 const ovTex = new THREE.CanvasTexture(ov); ovTex.colorSpace = THREE.NoColorSpace; ovTex.premultiplyAlpha = true; ovTex.generateMipmaps = false; ovTex.minFilter = THREE.LinearFilter;
 let DK = 0;
-const LY = HZ ? { cx: 960, l1: 430, l2: 540, card: 720, gone: 560, cap: { x: 150, lab: 430, head: 528, size: 66, align: 'left', max: 900 }, rec: { lab: 92, head: 178, size: 62 }, cta: [370, 505, 690, 845, 885] }
-  : { cx: 540, l1: 760, l2: 870, card: 1010, gone: 980, cap: { x: 540, lab: 196, head: 300, size: 70, align: 'center', max: 1000 }, rec: { lab: 196, head: 300, size: 74 }, cta: [780, 920, 1110, 1280, 1320] };
+const LY = HZ ? { cx: 960, l1: 430, l2: 540, card: 720, gone: 560, cap: { x: 150, lab: 430, head: 528, size: 66, align: 'left', max: 900 }, rec: { lab: 92, head: 178, size: 62 }, cta: [300, 435, 620, 780] }
+  : { cx: 540, l1: 760, l2: 870, card: 1010, gone: 980, cap: { x: 540, lab: 196, head: 300, size: 70, align: 'center', max: 1000 }, rec: { lab: 196, head: 300, size: 74 }, cta: [700, 840, 1030, 1205] };
 const inkC = () => mixHex(INK, '#F5F5F7', DK), subC = () => mixHex('#86868B', '#A1A1A6', DK);
 // words rise out of a blur, one after another (and leave the same way)
 function words(x, s, cx, y, size, t0, t, { accent = [], weight = 700, out = null, color = null, gap = 0.075, align = 'center' } = {}) {
@@ -202,6 +202,12 @@ function discordBtn(x, cx, y, t, t0) { const bp = E.outBack(prog(t, t0, t0 + 0.5
   x.save(); x.shadowColor = 'rgba(88,101,242,0.55)'; x.shadowBlur = 50; x.shadowOffsetY = 10; rr(x, cx - w / 2, y - h / 2, w, h, h / 2); x.fillStyle = '#5865F2'; x.fill(); x.restore();
   font(x, 40, 700); const tw = x.measureText('discord.gg/mafiachinactrog').width, ix = cx - (60 + 20 + tw) / 2; ICON(x, 'discord', ix, y - 30, 60, '#fff'); x.fillStyle = '#fff'; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText('discord.gg/mafiachinactrog', ix + 80, y + 2); x.restore(); }
 
+const WEB = 'stealthybotwhatsapp.veltramon.com';
+function webBtn(x, cx, y, t, t0) { const bp = E.outBack(prog(t, t0, t0 + 0.55), 1.6); if (bp <= 0) return; font(x, 34, 600); const tw = x.measureText(WEB).width, h = 96, w = tw + 46 + 18 + 96;
+  x.save(); x.globalAlpha *= clamp(bp * 1.5); x.translate(cx, y); x.scale(bp, bp); x.translate(-cx, -y);
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.35)'; x.shadowBlur = 40; x.shadowOffsetY = 10; rr(x, cx - w / 2, y - h / 2, w, h, h / 2); x.fillStyle = '#F5F5F7'; x.fill(); x.restore();
+  const ix = cx - (46 + 18 + tw) / 2; ICON(x, 'globe', ix, y - 23, 46, '#1D1D1F', 2); font(x, 34, 600); x.fillStyle = '#1D1D1F'; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText(WEB, ix + 64, y + 1); x.restore(); }
+
 function drawOverlay(t) {
   const x = octx; x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, RW, RH); x.setTransform(PX, 0, 0, PX, 0, 0); DK = darkAt(t);
   const H0 = TL.hook;
@@ -228,6 +234,7 @@ function drawOverlay(t) {
     words(x, 'Consíguelo en el Discord de', cx, Y[0], 56, c0.l1, t, { weight: 600, color: '#A1A1A6' });
     words(x, 'Mafia China.', cx, Y[1], 132, c0.l2, t, { weight: 800, color: '#F5F5F7' });
     discordBtn(x, cx, Y[2], t, c0.btn);
+    webBtn(x, cx, Y[3], t, c0.web);
   }
   ovTex.needsUpdate = true;
 }
