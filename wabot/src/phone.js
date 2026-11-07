@@ -231,30 +231,27 @@ function lockScreen(c, t) {
   txt(c, 'WhatsApp bloqueado', SW / 2, cy + 74, 31, '#fff', 800, 'center'); rr(c, SW / 2 - 132, cy + 114, 264, 46, 23); c.fillStyle = '#5BBE70'; c.fill(); txt(c, 'Desbloquear WhatsApp', SW / 2, cy + 137.5, 15.5, '#0B0B0C', 700, 'center');
   homeBar(c);
 }
-function faceGlyph(c, x, y, s, col, a) {   // the Face ID face: four corners, eyes, nose, smile
-  c.save(); c.globalAlpha *= a; c.translate(x, y); c.scale(s / 100, s / 100); c.strokeStyle = col; c.lineWidth = 7; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath();
+function faceGlyph(c, x, y, s, col, a, lw = 7) {   // the Face ID face: four corners, eyes, nose, smile
+  c.save(); c.globalAlpha *= a; c.translate(x, y); c.scale(s / 100, s / 100); c.strokeStyle = col; c.lineWidth = lw; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath();
   for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { c.moveTo(sx * 46, sy * 22); c.lineTo(sx * 46, sy * 34); c.quadraticCurveTo(sx * 46, sy * 46, sx * 34, sy * 46); c.lineTo(sx * 22, sy * 46); }
   c.moveTo(-18, -14); c.lineTo(-18, -4); c.moveTo(18, -14); c.lineTo(18, -4); c.moveTo(2, -14); c.lineTo(2, 6); c.quadraticCurveTo(2, 10, -4, 10); c.moveTo(-16, 20); c.quadraticCurveTo(0, 32, 16, 20); c.stroke(); c.restore();
 }
-function faceIsland(c, t) {   // the island itself does it all: pill → rounded square with the green Face ID face → it rounds into a circle whose own edge lights up as a spinning green ring → check inside → back into the pill
+function faceIsland(c, t) {   // like the real iPhone: the island grows into a big rounded square with a faint green rim; inside, the green Face ID face → its corners bend into arcs that spin and close into a thin ring → check inside → back into the pill
   const P = TL.phone; if (t < P.face[0] - 0.25 || t > P.shrink[1]) return;
   const g = E.outBack(prog(t, P.face[0] - 0.25, P.face[0] + 0.12), 1.15) * (1 - E.inOut(prog(t, P.shrink[0], P.shrink[1])));
-  const sp = prog(t, P.spin[0], P.spin[1]), GR = '#3DDC84';
-  const m = E.inOut(clamp(sp / 0.3));                       // face → arcs
-  const close = E.inOut(clamp((sp - 0.1) / 0.55));          // arcs grow into a full ring, the island rounds into a circle
-  const rot = E.inOut(clamp(sp / 0.75)) * Math.PI * 1.5;    // the arcs spin while they grow
-  const ck = E.out(clamp((sp - 0.55) / 0.4));               // check draws inside
-  const w = lerp(126, 150, g), h = lerp(37, 150, g), x = SW / 2 - w / 2, y = 11;
-  const rb = Math.min(h / 2, lerp(19, 44, g)), r = lerp(rb, Math.min(w, h) / 2, close);
+  const sp = prog(t, P.spin[0], P.spin[1]), GR = '#8FE8A2';
+  const m = E.inOut(clamp(sp / 0.3)), close = E.inOut(clamp((sp - 0.1) / 0.55)), rot = E.inOut(clamp(sp / 0.75)) * Math.PI * 1.5, ck = E.out(clamp((sp - 0.55) / 0.4));
+  const w = lerp(126, 156, g), h = lerp(37, 156, g), x = SW / 2 - w / 2, y = 9, r = Math.min(h / 2, lerp(19, 48, g));
   rr(c, x, y, w, h, r); c.fillStyle = '#000'; c.fill();
-  const cx = SW / 2, cy = y + h / 2, sc = 74 * g / 100, breathe = sp > 0 ? 1 : 1 + 0.025 * Math.sin((t - P.face[0]) * 9);
-  c.save(); c.shadowColor = 'rgba(37,211,102,0.55)'; c.shadowBlur = 12 * g;
-  if (m < 1) faceGlyph(c, cx, cy, 74 * g * breathe * (1 - 0.12 * m), GR, g * (1 - m));
-  if (m > 0) { const Rpx = lerp(48 * sc, Math.min(w, h) / 2 - 7, close), half = lerp(0.42, Math.PI / 4, close);   // the arcs ride out to the island's own edge
-    c.save(); c.globalAlpha *= g * g * g * m; c.translate(cx, cy); c.rotate(rot); c.strokeStyle = GR; c.lineWidth = lerp(5.2, 4.2, close); c.lineCap = 'round';
+  if (g > 0.25) { rr(c, x + 0.75, y + 0.75, w - 1.5, h - 1.5, r - 0.75); c.strokeStyle = `rgba(52,170,90,${0.45 * clamp((g - 0.25) / 0.5)})`; c.lineWidth = 1.5; c.stroke(); }
+  const cx = SW / 2, cy = y + h / 2, sc = 70 * g / 100, a3 = g * g * g, breathe = sp > 0 ? 1 : 1 + 0.025 * Math.sin((t - P.face[0]) * 9);
+  c.save(); c.shadowColor = 'rgba(80,220,120,0.35)'; c.shadowBlur = 6 * g;
+  if (m < 1) faceGlyph(c, cx, cy, 70 * g * breathe * (1 - 0.12 * m), GR, g * (1 - m), 5.5);
+  if (m > 0) { const Rpx = lerp(48 * sc, 38 * g, close), half = lerp(0.42, Math.PI / 4, close);
+    c.save(); c.globalAlpha *= a3 * m; c.translate(cx, cy); c.rotate(rot); c.strokeStyle = GR; c.lineWidth = 3.8; c.lineCap = 'round';
     for (let i = 0; i < 4; i++) { const a0 = Math.PI / 4 + i * Math.PI / 2; c.beginPath(); c.arc(0, 0, Math.max(1, Rpx), a0 - half, a0 + half); c.stroke(); }
     c.restore(); }
-  if (ck > 0) { const s2 = sc * 0.95; c.save(); c.globalAlpha *= g * g * g; c.translate(cx + 1, cy + 1 * sc); c.scale(s2, s2); c.strokeStyle = GR; c.lineWidth = 8.5; c.lineCap = 'round'; c.lineJoin = 'round';
+  if (ck > 0) { const s2 = 0.62 * g; c.save(); c.globalAlpha *= a3; c.translate(cx + 1, cy + 1); c.scale(s2, s2); c.strokeStyle = GR; c.lineWidth = 3.8 / s2; c.lineCap = 'round'; c.lineJoin = 'round';
     const L1 = Math.hypot(18, 18), L2 = Math.hypot(36, 38), d = ck * (L1 + L2);
     c.beginPath(); c.moveTo(-26, 2); if (d <= L1) c.lineTo(-26 + 18 * d / L1, 2 + 18 * d / L1); else { c.lineTo(-8, 20); const u = (d - L1) / L2; c.lineTo(-8 + 36 * u, 20 - 38 * u); } c.stroke(); c.restore(); }
   c.restore();
