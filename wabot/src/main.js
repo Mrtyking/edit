@@ -125,7 +125,7 @@ const kick = t => 0.35 * after(t, TL.hook.gone, 9) + 0.5 * after(t, TL.phone.in[
 let FOCUS = 20, APER = 4;
 function setCamera(t) {   // for the CTA the camera stays put and lets the phone go
   let [sx, sy, dist, yaw, pitch, fov, ap] = herm(KEYS, t, k => [...k.s, k.dist, k.yaw, k.pitch, k.fov, k.ap]);
-  if (HZ) { const rc = E.inOut(prog(t, TL.recap.in - 0.4, TL.recap.in + 0.4)) * (1 - E.inOut(prog(t, TL.recap.out, TL.recap.out + 0.4))); sy = lerp(sy, SH / 2, 0.7); dist *= lerp(1.12, 0.82, rc); }   // 16:9 is short: keep the whole phone in frame
+  if (HZ) { const rc = E.inOut(prog(t, TL.recap.in - 0.4, TL.recap.in + 0.4)) * (1 - E.inOut(prog(t, TL.recap.out, TL.recap.out + 0.4))); const w = E.inOut(prog(t, TL.phone.in[1] - 0.4, 8.6)) * (1 - E.inOut(prog(t, TL.cta.in - 0.6, TL.cta.in))) * (1 - rc); sy = lerp(sy, SH / 2, lerp(0.7, 0.88, w)); dist = lerp(dist * 1.12, 21.3 + (dist - 24) * 0.25, w) * lerp(1, 0.9, rc); }   // 16:9 is short: big phone, whole screen in frame
   phone.updateMatrixWorld(true); const l = P3(sx, sy).applyMatrix4(phone.matrixWorld).lerp(new THREE.Vector3(0, 0, 0), E.inOut(prog(t, TL.cta.in - 0.4, TL.cta.in))); const a = yaw * Math.PI / 180, b = pitch * Math.PI / 180;
   const free = (1 - E.inOut(prog(t, TL.cta.in - 0.3, TL.cta.in + 0.6))), rcp = E.inOut(prog(t, TL.recap.in - 0.4, TL.recap.in + 0.4)) * (1 - E.inOut(prog(t, TL.recap.out, TL.recap.out + 0.4)));
   const hv = dist * Math.tan(fov * Math.PI / 360);
