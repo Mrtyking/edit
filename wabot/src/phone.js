@@ -69,12 +69,18 @@ function avatar(c, who, x, y, r) {
 function ticks(c, x, y, read = true) { c.strokeStyle = read ? W.tick : W.sub; c.lineWidth = 1.5; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath(); c.moveTo(x, y); c.lineTo(x + 3.5, y + 3.5); c.lineTo(x + 9.5, y - 3.5); c.moveTo(x + 5, y + 2); c.lineTo(x + 6.5, y + 3.5); c.lineTo(x + 12.5, y - 3.5); c.stroke(); }
 // a chat bubble with WhatsApp's little tail; returns its height
 function bubble(c, side, x, y, w, h, color) { rr(c, x, y, w, h, 18); c.fillStyle = color; c.fill(); c.beginPath(); if (side === 'out') { c.moveTo(x + w - 14, y + h - 14); c.quadraticCurveTo(x + w + 2, y + h + 2, x + w + 8, y + h); c.quadraticCurveTo(x + w - 4, y + h - 2, x + w - 2, y + h - 18); } else { c.moveTo(x + 14, y + h - 14); c.quadraticCurveTo(x - 2, y + h + 2, x - 8, y + h); c.quadraticCurveTo(x + 4, y + h - 2, x + 2, y + h - 18); } c.fill(); }
-function wrap(c, s, maxW) { const out = []; let line = ''; for (const w of s.split(' ')) { const t = line ? line + ' ' + w : w; if (c.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t; } if (line) out.push(line); return out; }
+function wrap(c, s, maxW) { const out = []; let line = ''; for (let w of s.split(' ')) { while (!line && c.measureText(w).width > maxW) { let k = w.length; while (k > 1 && c.measureText(w.slice(0, k)).width > maxW) k--; out.push(w.slice(0, k)); w = w.slice(k); } const t = line ? line + ' ' + w : w; if (c.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t; } if (line) out.push(line); return out; }
 function viewOnceIcon(c, x, y, r, open, col) { c.save(); c.strokeStyle = col; c.lineWidth = 1.8; if (open) { c.setLineDash([3, 3.2]); c.beginPath(); c.arc(x, y, r, 0, 7); c.stroke(); } else { c.beginPath(); c.arc(x, y, r, -Math.PI * 0.4, Math.PI * 1.55); c.stroke(); c.setLineDash([2, 3]); c.beginPath(); c.arc(x, y, r, Math.PI * 1.6, Math.PI * 1.95); c.stroke(); c.setLineDash([]); font(c, r * 1.15, 700); c.fillStyle = col; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('1', x, y + 0.5); } c.restore(); }
 
 // messages: { side, kind: 'text'|'code'|'once'|'photo'|'video'|'wait', ... }; each returns its height when drawn at (top y)
+function textLay(c, m) {
+  const out = m.side === 'out', pad = out ? 92 : 74; font(c, 16, 500);
+  const lines = wrap(c, m.text, m.link ? 276 : 250), tw = Math.max(...lines.map(l => c.measureText(l).width));
+  const w = Math.min(300, Math.max(tw + pad, m.quote ? 250 : 0)), last = c.measureText(lines[lines.length - 1]).width;
+  return { lines, w: m.link ? Math.max(w, Math.min(300, tw + 30)) : w, timeRow: !!m.link && last + pad - 10 > Math.min(300, tw + pad) };
+}
 function msgHeight(c, m) {
-  if (m.kind === 'text' || m.kind === 'wait') { font(c, 16, 500); const lines = wrap(c, m.text, 250); return 18 + lines.length * 21 + (m.quote ? 62 : 0) + 4; }
+  if (m.kind === 'text' || m.kind === 'wait') { const L = textLay(c, m); return 18 + L.lines.length * 21 + (L.timeRow ? 16 : 0) + (m.quote ? 62 : 0) + 4; }
   if (m.kind === 'code') return 138; if (m.kind === 'once') return m.quote ? 112 : 52; if (m.kind === 'photo') return 300; if (m.kind === 'video') return 330; return 40;
 }
 function drawMsg(c, m, y, t) {
@@ -83,13 +89,11 @@ function drawMsg(c, m, y, t) {
   const ox = out ? SW - 14 : 14; c.translate(ox, y + h); c.scale(0.85 + 0.15 * a, 0.85 + 0.15 * a); c.translate(-ox, -(y + h));
   const col = out ? W.out : W.in;
   if (m.kind === 'text' || m.kind === 'wait') {
-    font(c, 16, 500); const lines = wrap(c, m.text, 250); const tw = Math.max(...lines.map(l => c.measureText(l).width)) + (m.quote ? 0 : 0);
-    let w = Math.min(300, Math.max(tw + (out ? 92 : 74), m.quote ? 250 : 0, m.bar ? 230 : 0)); const x = out ? SW - 14 - w : 14;
+    const { lines, w } = textLay(c, m); font(c, 16, 500); const x = out ? SW - 14 - w : 14;
     bubble(c, m.side, x, y, w, h - 4, col); let ty = y + 21;
     if (m.quote) { rr(c, x + 6, y + 6, w - 12, 54, 10); c.fillStyle = out ? '#0E3A29' : '#1B1B1D'; c.fill(); c.fillStyle = W.green; rr(c, x + 6, y + 6, 4, 54, 2); c.fill();
       txt(c, m.quote[0], x + 18, y + 22, 13.5, W.green, 700); viewOnceIcon(c, x + 26, y + 43, 7, false, '#B8C4BE'); txt(c, m.quote[1], x + 38, y + 43, 14, '#C9D1CD', 500); ty += 60; }
     lines.forEach((l, i) => { if (m.link) { c.fillStyle = W.tick; font(c, 16, 500); c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText(l, x + 12, ty + i * 21); c.fillRect(x + 12, ty + i * 21 + 9, c.measureText(l).width, 1); } else { if (m.emoji && i === lines.length - 1) { txt(c, l, x + 12, ty + i * 21, 16, W.text, 500); emo(c, m.emoji, x + 18 + c.measureText(l).width + 12, ty + i * 21, 22); } else txt(c, l, x + 12, ty + i * 21, 16, W.text, 500); } });
-    if (m.bar !== undefined) { const p = m.bar(t); rr(c, x + 12, y + h - 26, w - 70, 5, 3); c.fillStyle = 'rgba(255,255,255,0.12)'; c.fill(); rr(c, x + 12, y + h - 26, (w - 70) * p, 5, 3); c.fillStyle = W.green; c.fill(); }
     txt(c, m.time || '9:41', x + w - (out ? 30 : 10), y + h - 15, 11, out ? '#9DC4B2' : W.sub, 500, 'right'); if (out) ticks(c, x + w - 25, y + h - 15);
   } else if (m.kind === 'code') {
     const w = 290, x = 14; bubble(c, 'in', x, y, w, h - 4, col);
@@ -256,7 +260,7 @@ const S = TL.serbot, L = TL.link, O = TL.once, D = TL.dl;
 const BOTMSGS = (() => { const m = [{ side: 'in', kind: 'text', text: 'Hola. Escribe /serbot para vincular tu número.', time: '9:30' }, { side: 'out', kind: 'text', text: '/serbot', t0: S.send, time: '9:41' }, { side: 'in', kind: 'text', text: 'Listo. Abre WhatsApp > Dispositivos vinculados > Vincular con el número.', t0: S.reply }, { side: 'in', kind: 'code', t0: S.code, glow: t => Math.sin(Math.PI * prog(t, S.lift[0], S.lift[0] + 0.8)) }]; m.sys = true; return m; })();
 const VALMSGS = (() => { const m = [{ side: 'in', kind: 'text', text: 'mira lo que te mandé', time: '9:38' }, { side: 'in', kind: 'once', t0: O.arrive, open: O.opened }, { side: 'out', kind: 'text', text: 'que duro', emoji: '🔥', quote: ['Valeria', 'Foto'], t0: O.send }]; m.sys = true; return m; })();
 const SELF = [{ side: 'in', kind: 'photo', img: PHOTO, t0: O.photo, caption: 'Foto de una vez recuperada', capEmoji: '📸', sub: 'De: Valeria · 9:41' }];
-const DLMSGS = [{ side: 'out', kind: 'text', text: TT, link: true, t0: D.send }, { side: 'in', kind: 'wait', text: 'Descargando video de TikTok…', t0: D.wait[0] + 0.05, bar: t => E.inOut(prog(t, D.wait[0] + 0.2, D.wait[1])) }, { side: 'in', kind: 'video', img: THUMB_TT, dur: '0:15', t0: D.video, caption: 'Sin marca de agua', capEmoji: '✅', sub: 'TikTok · 1080p' },
+const DLMSGS = [{ side: 'out', kind: 'text', text: TT, link: true, t0: D.send }, { side: 'in', kind: 'wait', text: 'Descargando video de TikTok…', t0: D.wait[0] + 0.05 }, { side: 'in', kind: 'video', img: THUMB_TT, dur: '0:15', t0: D.video, caption: 'Sin marca de agua', capEmoji: '✅', sub: 'TikTok · 1080p' },
   { side: 'out', kind: 'text', text: IG, link: true, t0: D.igSend }, { side: 'in', kind: 'video', img: THUMB_IG, dur: '0:22', t0: D.igVideo, caption: 'Listo', capEmoji: '✅', sub: 'Instagram · Reel' }];
 
 // taps (iOS screen-recording touch dots) in screen coords
