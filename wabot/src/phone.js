@@ -146,8 +146,8 @@ function chatList(c, t) {
   glassPill(c, 16, 58, 44, 44); txt(c, '•••', 38, 79, 15, '#fff', 800, 'center'); glassPill(c, SW - 110, 58, 44, 44); ICON(c, 'camera2', SW - 99, 69, 22, '#fff', 1.8);
   c.beginPath(); c.arc(SW - 38, 80, 22, 0, 7); c.fillStyle = W.green2; c.fill(); c.strokeStyle = '#0B0B0C'; c.lineWidth = 2.6; c.beginPath(); c.moveTo(SW - 46, 80); c.lineTo(SW - 30, 80); c.moveTo(SW - 38, 72); c.lineTo(SW - 38, 88); c.stroke();
   txt(c, 'Chats', 18, 140, 34, '#fff', 800); rr(c, 16, 170, SW - 32, 38, 19); c.fillStyle = '#1C1C1E'; c.fill(); ICON(c, 'search', 30, 179, 18, W.sub, 2); txt(c, 'Buscar', 56, 189, 16, W.sub, 500);
-  const L = [['val', 'Valeria', 'Foto', '9:38', 1, true], ['bot', 'Bot', 'Escribe /serbot para vincularte', '9:30'], ['nico', 'Nico', 'Mañana paso por ti', '8:12'], ['team', 'Equipo', 'Andrea: ya llegamos', 'Ayer'], ['abu', 'Abuela', 'Mensaje de voz (0:12)', 'Ayer'], ['me', 'Tú', 'Mensajes a ti mismo', 'Ayer']];
-  L.forEach(([who, n, last, tm, badge, once], i) => { const y = 228 + i * 82, a = E.outQuint(prog(t, TL.phone.in[0] + 0.5 + i * 0.06, TL.phone.in[0] + 1.0 + i * 0.06)); c.save(); c.globalAlpha *= a; c.translate(0, (1 - a) * 16);
+  const L0 = [['val', 'Valeria', 'Foto', '9:38', 1, true], ['bot', 'Bot', 'Escribe /serbot para vincularte', '9:30'], ['nico', 'Nico', 'Mañana paso por ti', '8:12'], ['team', 'Equipo', 'Andrea: ya llegamos', 'Ayer'], ['abu', 'Abuela', 'Mensaje de voz (0:12)', 'Ayer'], ['me', 'Tú', 'Mensajes a ti mismo', 'Ayer']];
+  L0.forEach(([who, n, last, tm, badge, once], i) => { const y = 228 + i * 82, a = E.outQuint(prog(t, TL.phone.lock[1] - 0.15 + i * 0.05, TL.phone.lock[1] + 0.35 + i * 0.05)); c.save(); c.globalAlpha *= a; c.translate(0, (1 - a) * 16);
     avatar(c, who, 48, y + 38, 28); txt(c, n, 90, y + 26, 17, '#fff', 700); if (once) { viewOnceIcon(c, 98, y + 50, 7, false, W.sub); txt(c, last, 112, y + 50, 15, W.sub, 500); } else txt(c, last, 90, y + 50, 15, W.sub, 500);
     txt(c, tm, SW - 18, y + 26, 13, badge ? W.green : W.sub, 500, 'right'); if (badge) { c.beginPath(); c.arc(SW - 30, y + 52, 11, 0, 7); c.fillStyle = W.green; c.fill(); txt(c, String(badge), SW - 30, y + 52.5, 12, '#0B0B0C', 800, 'center'); }
     c.fillStyle = W.line; c.fillRect(90, y + 80, SW - 90, 1); c.restore(); });
@@ -219,6 +219,29 @@ function codeSheet(c, t) {
     txt(c, 'Vinculando…', SW / 2, 586, 15, '#fff', 600, 'center'); c.restore(); }
   homeBar(c);
 }
+// WhatsApp locked (app lock), then Face ID grows out of the Dynamic Island
+function lockScreen(c, t) {
+  c.fillStyle = '#0B0B0C'; c.fillRect(0, 0, SW, SH); statusBar(c);
+  const cy = 420; c.fillStyle = '#5BD37A'; rr(c, SW / 2 - 17, cy - 2, 34, 28, 6); c.fill(); c.strokeStyle = '#5BD37A'; c.lineWidth = 5; c.beginPath(); c.arc(SW / 2, cy - 4, 11, Math.PI, 0); c.stroke(); c.fillStyle = '#0B0B0C'; c.beginPath(); c.arc(SW / 2, cy + 11, 4, 0, 7); c.fill();
+  txt(c, 'WhatsApp bloqueado', SW / 2, cy + 74, 31, '#fff', 800, 'center'); rr(c, SW / 2 - 132, cy + 114, 264, 46, 23); c.fillStyle = '#5BBE70'; c.fill(); txt(c, 'Desbloquear WhatsApp', SW / 2, cy + 137.5, 15.5, '#0B0B0C', 700, 'center');
+  homeBar(c);
+}
+function faceGlyph(c, x, y, s, col, a) {   // the Face ID face: four corners, eyes, nose, smile
+  c.save(); c.globalAlpha *= a; c.translate(x, y); c.scale(s / 100, s / 100); c.strokeStyle = col; c.lineWidth = 7; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath();
+  for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { c.moveTo(sx * 46, sy * 22); c.lineTo(sx * 46, sy * 34); c.quadraticCurveTo(sx * 46, sy * 46, sx * 34, sy * 46); c.lineTo(sx * 22, sy * 46); }
+  c.moveTo(-18, -14); c.lineTo(-18, -4); c.moveTo(18, -14); c.lineTo(18, -4); c.moveTo(2, -14); c.lineTo(2, 6); c.quadraticCurveTo(2, 10, -4, 10); c.moveTo(-16, 20); c.quadraticCurveTo(0, 32, 16, 20); c.stroke(); c.restore();
+}
+function faceIsland(c, t) {
+  const P = TL.phone; if (t < P.face[0] - 0.25 || t > P.shrink[1]) return;
+  const g = E.outBack(prog(t, P.face[0] - 0.25, P.face[0] + 0.1), 1.3) * (1 - E.inOut(prog(t, P.shrink[0], P.shrink[1])));
+  const w = lerp(126, 170, g), h = lerp(37, 170, g), x = SW / 2 - w / 2, y = 11, r = lerp(19, 42, g);
+  c.save(); c.shadowColor = `rgba(37,211,102,${0.25 * g})`; c.shadowBlur = 30 * g; rr(c, x, y, w, h, r); c.fillStyle = '#000'; c.fill(); c.restore();
+  rr(c, x + 0.5, y + 0.5, w - 1, h - 1, r); c.strokeStyle = `rgba(37,211,102,${0.28 * g})`; c.lineWidth = 1.5; c.stroke();
+  const cx = SW / 2, cy = y + h / 2, sp = prog(t, P.spin[0], P.spin[1]);
+  if (t < P.spin[0]) { const pulse = 0.75 + 0.25 * Math.sin((t - P.face[0]) * 18); faceGlyph(c, cx, cy, 100 * g, '#4FAE6A', g * pulse); }
+  else { c.save(); c.globalAlpha = g; c.translate(cx, cy); c.rotate(sp * 5); c.scale(1, 1.25); c.strokeStyle = '#7CF29A'; c.shadowColor = '#3CE07A'; c.shadowBlur = 14; c.lineWidth = 7; c.beginPath(); c.ellipse(0, 0, 30 * g, 42 * g, 0.5, 0, 7); c.stroke(); c.restore(); }
+}
+
 // iOS notification banner sliding down from the top
 function banner(c, t, t0, title, body, em) {
   const a = E.outBack(prog(t, t0, t0 + 0.45), 1.3) * (1 - E.inOut(prog(t, t0 + 1.7, t0 + 2.0))); if (a <= 0) return;
@@ -242,7 +265,8 @@ function taps(c, t) { for (const [tt, x, y] of TAPS) { const k = (t - tt) / 0.4;
 
 export function drawScreen(c, t) {
   c.save(); rr(c, 0, 0, SW, SH, 58); c.clip(); c.fillStyle = '#000'; c.fillRect(0, 0, SW, SH);
-  if (t < S.chat) chatList(c, t);
+  if (t < TL.phone.lock[1]) lockScreen(c, t);
+  else if (t < S.chat) chatList(c, t);
   else if (t < L.devices) { const typing = t >= S.type[0] && t < S.send; chatScreen(c, t, 'bot', 'Bot', 'en línea', BOTMSGS, typing ? typed('/serbot', t, S.type[0], S.type[1]) : '', typing ? typingKey('/serbot', t, S.type[0], S.type[1]) : undefined); }
   else if (t < L.qr) devices(c, t, 0);
   else if (t < L.code) qrSheet(c, t);
@@ -254,6 +278,6 @@ export function drawScreen(c, t) {
   else if (t < D.chat) chatScreen(c, t, 'me', 'Tú', 'Mensajes a ti mismo', SELF, '', undefined);
   else { const pasting = t >= D.paste && t < D.send; chatScreen(c, t, 'me', 'Tú', 'Mensajes a ti mismo', [SELF[0], ...DLMSGS].map((m, i) => i === 0 ? { ...m, t0: undefined } : m), pasting ? TT : (t >= D.ig && t < D.igSend ? IG : ''), undefined);
     if (t >= D.paste - 0.35 && t < D.paste + 0.1) { const k = E.outBack(prog(t, D.paste - 0.35, D.paste - 0.15), 2); c.save(); c.globalAlpha = clamp(k); rr(c, 150, SH - 120, 84, 36, 10); c.fillStyle = '#3A3A3C'; c.fill(); txt(c, 'Pegar', 192, SH - 101.5, 15, '#fff', 500, 'center'); c.restore(); } }
-  taps(c, t);
+  taps(c, t); faceIsland(c, t);
   c.restore();
 }

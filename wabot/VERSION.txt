@@ -1,1 +1,1 @@
-7 nov 2026 - v1: primera version del promo vertical del bot de WhatsApp (gancho, iPhone 3D, /serbot y codigo, foto de una vez, TikTok/Instagram sin marca, resumen, Discord de Mafia China)
+7 nov 2026 - v2: Face ID en la isla dinamica al abrir WhatsApp (bloqueado -> cara -> anillo -> desbloqueado); version horizontal 1920x1080 para PC/Discord; el .bat pregunta formato (vertical, horizontal o los dos)

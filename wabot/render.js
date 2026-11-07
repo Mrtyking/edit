@@ -9,7 +9,7 @@ const http = require('http'), path = require('path'), fs = require('fs');
 
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : d; };
-const SCALE = +opt('scale', 1), SUB = +opt('sub', 4), WORKERS = +opt('workers', 2);
+const SCALE = +opt('scale', 1), SUB = +opt('sub', 4), WORKERS = +opt('workers', 2), FMT = opt('fmt', 'v');   // --fmt v (1080x1920) | h (1920x1080)
 const ROOT = __dirname;
 // --gpu uses the computer's graphics card (default on Windows/Mac); --cpu forces software rendering (cloud servers without GPU).
 const GPU = args.includes('--gpu') || (!args.includes('--cpu') && process.platform !== 'linux'); let shown = false;
@@ -31,14 +31,14 @@ async function openPage(port) {
   const page = await browser.newPage({ viewport: { width: 540, height: 960 } });
   page.on('console', m => { if (m.type() === 'error' && !/status of 404/.test(m.text())) console.error('[page]', m.text()); });
   page.on('pageerror', e => console.error('[page error]', e.message));
-  await page.goto(`http://127.0.0.1:${port}/wabot.html?scale=${SCALE}&sub=${SUB}`);
+  await page.goto(`http://127.0.0.1:${port}/wabot.html?scale=${SCALE}&sub=${SUB}&fmt=${FMT}`);
   await page.waitForFunction(() => window.READY === true, null, { timeout: 120000 });
   if (!shown) { shown = true; const gpu = await page.evaluate(() => { const g = document.createElement('canvas').getContext('webgl2'), e = g.getExtension('WEBGL_debug_renderer_info'); return e ? g.getParameter(e.UNMASKED_RENDERER_WEBGL) : g.getParameter(g.RENDERER); });
     const name = (gpu.match(/^ANGLE \([^,]+, (.+?)(?: \(0x[0-9a-f]+\))?(?: Direct3D| \(|,|$)/i) || [])[1] || gpu;
     console.log(`  Tarjeta grafica   ${name}`); if (GPU && /swiftshader|llvmpipe|basic render/i.test(gpu)) console.log('  (aviso: no se esta usando la tarjeta grafica, ira mas lento)'); }
   return { browser, page };
 }
-const RW = 1080 * SCALE, RH = 1920 * SCALE;   // the page renders at this size too
+const RW = (FMT === 'h' ? 1920 : 1080) * SCALE, RH = (FMT === 'h' ? 1080 : 1920) * SCALE;   // the page renders at this size too
 // frames arrive already converted to YUV 4:2:0 (BT.709) by the GPU (see grabYUV in src/main.js): 1.5 bytes/pixel, no colour conversion in ffmpeg
 const RAWIN = ['-f', 'rawvideo', '-pix_fmt', 'yuv420p', '-s', `${RW}x${RH}`, '-framerate', '60', '-i', '-'];
 const TAGS = ['-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv'];
@@ -75,7 +75,7 @@ const pickEncoder = () => new Promise(res => {
   const walk = d => fs.readdirSync(d, { withFileTypes: true }).sort((x, y) => x.name < y.name ? -1 : 1).forEach(e => { const f = path.join(d, e.name); if (e.isDirectory()) walk(f); else { h.update(e.name); h.update(fs.readFileSync(f)); } });
   for (const d of ['src', 'assets', 'fonts', 'vendor']) if (fs.existsSync(path.join(ROOT, d))) walk(path.join(ROOT, d));
   const ENC = await pickEncoder(); console.log(`  Codificador       ${ENC === 'nvenc' ? 'NVENC (en la tarjeta grafica)' : 'x264 (en el procesador)'}`);
-  h.update(fs.readFileSync(path.join(ROOT, 'wabot.html'))); h.update(`${SCALE}|${SUB}|${CH}|${ENC}`);
+  h.update(fs.readFileSync(path.join(ROOT, 'wabot.html'))); h.update(`${SCALE}|${SUB}|${CH}|${ENC}|${FMT}`);
   const sig = h.digest('hex'), sigFile = path.join(tmp, 'firma.txt');
   if (!fs.existsSync(sigFile) || fs.readFileSync(sigFile, 'utf8') !== sig) {
     for (const f of fs.readdirSync(tmp)) fs.rmSync(path.join(tmp, f), { force: true, recursive: true });

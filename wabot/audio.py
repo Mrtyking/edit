@@ -89,7 +89,8 @@ add(POP, H['bubble'] + 0.05, -8, 0, 'onset', 'aparece la foto de una vez'); add(
 add(LOWWH, H['gone'] + 0.05, -9, 0, 'peak', '"Y se fue."'); slam(H['never'] + 0.1, -6, '"Ya no más."', heavy=True)
 # ---- B · the phone rises
 P = T['phone']; add(RISER, P['in'][1] - 0.15, -12, 0, 'peak', 'sube el iPhone'); add(EPIC, P['in'][0] + 0.3, -9, 0, 'peak'); add(HIT, P['in'][1] - 0.15, -6, 0, 'onset', 'el iPhone llega'); add(GLIM, P['sweep'], -12, 0, 'onset', 'luz sobre la pantalla')
-for k in range(6): add(pitch(DET, k * 0.7), P['in'][0] + 0.55 + k * 0.06, -21, -0.3 + k * 0.12)
+add(UIOPEN, P['face'][0] - 0.2, -11, 0, 'onset', 'Face ID en la isla dinámica'); add(GLIM, P['spin'][0], -13, 0); add(SUCCESS, P['spin'][1], -9, 0, 'onset', 'desbloqueado')
+for k in range(6): add(pitch(DET, k * 0.7), P['lock'][1] - 0.1 + k * 0.05, -21, -0.3 + k * 0.12)
 # captions
 for i, (a, b, lab, head, acc) in enumerate(CAPS): add(WH, a + 0.05, -15, (-1) ** i * 0.25, 'peak', f'título: {head}')
 # ---- C · /serbot → code → link

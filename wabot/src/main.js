@@ -7,7 +7,8 @@ import { E, clamp, lerp, prog, hash, rr, rgba, font, mono, txt, ICON } from './l
 import { drawScreen, setEmoji, SW, SH, PHOTO, THUMB_TT, CODE } from './phone.js';
 
 const Q = new URLSearchParams(location.search);
-const W = 1080, H = 1920, PX = +(Q.get('scale') || 1), SUB = +(Q.get('sub') || 4);
+const HZ = Q.get('fmt') === 'h';   // horizontal 16:9 (PC / Discord): phone on the right, words on the left
+const W = HZ ? 1920 : 1080, H = HZ ? 1080 : 1920, PX = +(Q.get('scale') || 1), SUB = +(Q.get('sub') || 4);
 const RW = Math.round(W * PX), RH = Math.round(H * PX);
 THREE.ColorManagement.enabled = false;
 const GREEN = '#25D366', INK = '#1D1D1F';
@@ -123,11 +124,15 @@ const after = (t, a, k) => t < a ? 0 : Math.exp(-(t - a) * k);
 const kick = t => 0.35 * after(t, TL.hook.gone, 9) + 0.5 * after(t, TL.phone.in[1] - 0.15, 8) + 0.3 * after(t, TL.link.done, 9) + 0.3 * after(t, TL.once.photo, 9) + 0.5 * after(t, TL.cta.l2, 9);
 let FOCUS = 20, APER = 4;
 function setCamera(t) {   // for the CTA the camera stays put and lets the phone go
-  const [sx, sy, dist, yaw, pitch, fov, ap] = herm(KEYS, t, k => [...k.s, k.dist, k.yaw, k.pitch, k.fov, k.ap]);
+  let [sx, sy, dist, yaw, pitch, fov, ap] = herm(KEYS, t, k => [...k.s, k.dist, k.yaw, k.pitch, k.fov, k.ap]);
+  if (HZ) { const rc = E.inOut(prog(t, TL.recap.in - 0.4, TL.recap.in + 0.4)) * (1 - E.inOut(prog(t, TL.recap.out, TL.recap.out + 0.4))); sy = lerp(sy, SH / 2, 0.7); dist *= lerp(1.12, 0.82, rc); }   // 16:9 is short: keep the whole phone in frame
   phone.updateMatrixWorld(true); const l = P3(sx, sy).applyMatrix4(phone.matrixWorld).lerp(new THREE.Vector3(0, 0, 0), E.inOut(prog(t, TL.cta.in - 0.4, TL.cta.in))); const a = yaw * Math.PI / 180, b = pitch * Math.PI / 180;
-  const up = dist * Math.tan(fov * Math.PI / 360) * 0.3 * (1 - E.inOut(prog(t, TL.cta.in - 0.3, TL.cta.in + 0.6)));   // subject sits below centre, the caption has the top
-  const sh = 0.02 + 0.14 * kick(t); camera.position.set(l.x + dist * Math.sin(a) * Math.cos(b) + noise(t, 1) * sh, l.y + up + dist * Math.sin(b) + noise(t, 2) * sh, l.z + dist * Math.cos(a) * Math.cos(b));
-  camera.lookAt(l.x + noise(t, 3) * sh, l.y + up + noise(t, 4) * sh, l.z); camera.fov = fov; camera.updateProjectionMatrix();
+  const free = (1 - E.inOut(prog(t, TL.cta.in - 0.3, TL.cta.in + 0.6))), rcp = E.inOut(prog(t, TL.recap.in - 0.4, TL.recap.in + 0.4)) * (1 - E.inOut(prog(t, TL.recap.out, TL.recap.out + 0.4)));
+  const hv = dist * Math.tan(fov * Math.PI / 360);
+  const up = HZ ? hv * 0.06 * rcp : hv * 0.3 * free;   // vertical: subject below centre, caption on top
+  const side = HZ ? -hv * (W / H) * 0.36 * free * (1 - rcp) * prog(t, TL.phone.in[0] - 0.2, TL.phone.in[0] + 0.3) : 0;   // horizontal: phone on the right third
+  const sh = 0.02 + 0.14 * kick(t); camera.position.set(l.x + side + dist * Math.sin(a) * Math.cos(b) + noise(t, 1) * sh, l.y + up + dist * Math.sin(b) + noise(t, 2) * sh, l.z + dist * Math.cos(a) * Math.cos(b));
+  camera.lookAt(l.x + side + noise(t, 3) * sh, l.y + up + noise(t, 4) * sh, l.z); camera.fov = fov; camera.updateProjectionMatrix();
   FOCUS = dist; APER = ap;
 }
 
@@ -159,6 +164,8 @@ function animate(t) {
 const ov = document.createElement('canvas'); ov.width = RW; ov.height = RH; const octx = ov.getContext('2d');
 const ovTex = new THREE.CanvasTexture(ov); ovTex.colorSpace = THREE.NoColorSpace; ovTex.premultiplyAlpha = true; ovTex.generateMipmaps = false; ovTex.minFilter = THREE.LinearFilter;
 let DK = 0;
+const LY = HZ ? { cx: 960, l1: 430, l2: 540, card: 720, gone: 560, cap: { x: 150, lab: 430, head: 528, size: 66, align: 'left', max: 900 }, rec: { lab: 92, head: 178, size: 62 }, cta: [370, 505, 690, 845, 885] }
+  : { cx: 540, l1: 760, l2: 870, card: 1010, gone: 980, cap: { x: 540, lab: 196, head: 300, size: 70, align: 'center', max: 1000 }, rec: { lab: 196, head: 300, size: 74 }, cta: [780, 920, 1110, 1280, 1320] };
 const inkC = () => mixHex(INK, '#F5F5F7', DK), subC = () => mixHex('#86868B', '#A1A1A6', DK);
 // words rise out of a blur, one after another (and leave the same way)
 function words(x, s, cx, y, size, t0, t, { accent = [], weight = 700, out = null, color = null, gap = 0.075, align = 'center' } = {}) {
@@ -169,13 +176,19 @@ function words(x, s, cx, y, size, t0, t, { accent = [], weight = 700, out = null
     x.fillStyle = accent.includes(i) ? GREEN : (color || inkC()); x.fillText(w, px, y + (1 - p) * size * 0.45 - o * size * 0.3); x.restore(); }
     px += wd[i] + sp; });
 }
-function label(x, s, cx, y, t0, t, out) { const p = E.outExpo(prog(t, t0, t0 + 0.6)) * (1 - E.inOut(prog(t, out, out + 0.4))); if (p <= 0) return;
+// a headline that wraps to two lines when it does not fit (accent indexes count across lines)
+function head(x, s, cx, y, size, t0, t, { accent = [], out = null, align = 'center', max = 1000 } = {}) {
+  font(x, size, 700); const ws = s.split(' '), lines = []; let cur = [];
+  for (const w of ws) { const tryL = [...cur, w].join(' '); if (cur.length && x.measureText(tryL).width > max) { lines.push(cur); cur = [w]; } else cur.push(w); } lines.push(cur);
+  let k = 0; lines.forEach((ln, i) => { const acc = accent.filter(a => a >= k && a < k + ln.length).map(a => a - k); words(x, ln.join(' '), cx, y + i * size * 1.12, size, t0 + i * 0.12, t, { accent: acc, out, align }); k += ln.length; });
+}
+function label(x, s, cx, y, t0, t, out, align = 'center') { const p = E.outExpo(prog(t, t0, t0 + 0.6)) * (1 - E.inOut(prog(t, out, out + 0.4))); if (p <= 0) return;
   x.save(); x.globalAlpha *= p; mono(x, 22, 600); x.fillStyle = GREEN; x.textAlign = 'center'; x.textBaseline = 'middle'; let w = -4; for (const ch of s) w += x.measureText(ch).width + 4;
-  let px = cx - w / 2; for (const ch of s) { x.fillText(ch, px + x.measureText(ch).width / 2, y); px += x.measureText(ch).width + 4; } x.restore(); }
+  let px = align === 'center' ? cx - w / 2 : cx; for (const ch of s) { x.fillText(ch, px + x.measureText(ch).width / 2, y); px += x.measureText(ch).width + 4; } x.restore(); }
 // the hook's floating card: one WhatsApp row with a view-once photo
 function onceCard(x, t) {
   const H0 = TL.hook, a = E.outBack(prog(t, H0.bubble, H0.bubble + 0.55), 1.3), o = E.inOut(prog(t, H0.gone, H0.gone + 0.5)); if (a <= 0 || o >= 1) return;
-  const cx = 540, cy = 1010, w = 700, h = 170, sc = (0.86 + 0.14 * a) * (1 - 0.25 * o);
+  const cx = LY.cx, cy = LY.card, w = 700, h = 170, sc = (0.86 + 0.14 * a) * (1 - 0.25 * o);
   x.save(); x.globalAlpha *= clamp(a * 1.5) * (1 - o); x.translate(cx, cy + o * 40); x.scale(sc, sc); x.translate(-cx, -cy); if (o > 0) x.filter = `blur(${(o * 14 * PX).toFixed(1)}px)`;
   x.save(); x.shadowColor = 'rgba(0,0,0,0.16)'; x.shadowBlur = 70; x.shadowOffsetY = 26; rr(x, cx - w / 2, cy - h / 2, w, h, 44); x.fillStyle = '#FFFFFF'; x.fill(); x.restore();
   const ax = cx - w / 2 + 92; x.save(); x.beginPath(); x.arc(ax, cy, 50, 0, 7); const g = x.createLinearGradient(ax - 50, cy - 50, ax + 50, cy + 50); g.addColorStop(0, '#FF7EB3'); g.addColorStop(1, '#FF9E5E'); x.fillStyle = g; x.fill(); txt(x, 'V', ax, cy + 2, 46, '#fff', 700, 'center'); x.restore();
@@ -194,28 +207,29 @@ function drawOverlay(t) {
   const H0 = TL.hook;
   // ---- A · hook (white → graphite)
   if (t < TL.phone.in[0] + 0.3) {
-    words(x, 'Te mandaron una foto', 540, 760, 92, H0.l1, t, { out: H0.gone });
-    words(x, 'de una sola vez.', 540, 870, 92, H0.l2, t, { accent: [1, 2, 3], out: H0.gone });
+    words(x, 'Te mandaron una foto', LY.cx, LY.l1, 92, H0.l1, t, { out: H0.gone });
+    words(x, 'de una sola vez.', LY.cx, LY.l2, 92, H0.l2, t, { accent: [1, 2, 3], out: H0.gone });
     onceCard(x, t);
-    words(x, 'Y se fue.', 540, 980, 104, H0.gone + 0.15, t, { out: H0.dark - 0.1 });
-    words(x, 'Ya no más.', 540, 980, 132, H0.never, t, { out: TL.phone.in[0] - 0.2, weight: 800 });
+    words(x, 'Y se fue.', LY.cx, LY.gone, 104, H0.gone + 0.15, t, { out: H0.dark - 0.1 });
+    words(x, 'Ya no más.', LY.cx, LY.gone, 132, H0.never, t, { out: TL.phone.in[0] - 0.2, weight: 800 });
   }
   // ---- captions above the phone (over a soft scrim: the top of the phone fades into the studio)
   { let sc = 0; for (const [a, b] of CAPS) sc = Math.max(sc, E.inOut(prog(t, a - 0.3, a + 0.2)) * (1 - E.inOut(prog(t, b, b + 0.5))));
     sc = Math.max(sc, E.inOut(prog(t, TL.recap.in - 0.3, TL.recap.in + 0.2)) * (1 - E.inOut(prog(t, TL.recap.out, TL.recap.out + 0.5))));
-    if (sc > 0) { const bg = mixHex('#F7F7F9', '#151517', DK), g = x.createLinearGradient(0, 0, 0, 520); g.addColorStop(0, bg); g.addColorStop(0.62, bg); g.addColorStop(1, bg.replace('rgb', 'rgba').replace(')', ',0)'));
+    if (sc > 0 && !HZ) { const bg = mixHex('#F7F7F9', '#151517', DK), g = x.createLinearGradient(0, 0, 0, 520); g.addColorStop(0, bg); g.addColorStop(0.62, bg); g.addColorStop(1, bg.replace('rgb', 'rgba').replace(')', ',0)'));
       x.save(); x.globalAlpha = sc * 0.97; x.fillStyle = g; x.fillRect(0, 0, 1080, 520); x.restore(); } }
-  for (const [a, b, lab, head, acc] of CAPS) { if (t < a - 0.1 || t > b + 0.6) continue; label(x, lab, 540, 196, a, t, b); words(x, head, 540, 300, head.length > 26 ? 60 : 70, a + 0.08, t, { accent: acc, out: b }); }
+  for (const [a, b, lab, hd, acc] of CAPS) { if (t < a - 0.1 || t > b + 0.6) continue; const C = LY.cap; label(x, lab, C.x, C.lab, a, t, b, C.align); head(x, hd, C.x, C.head, HZ ? C.size : (hd.length > 26 ? 60 : 70), a + 0.08, t, { accent: acc, out: b, align: C.align, max: C.max }); }
   // ---- recap title
-  if (t > TL.recap.in - 0.1 && t < TL.recap.out + 0.7) { label(x, 'TODO DESDE TU WHATSAPP', 540, 196, TL.recap.in, t, TL.recap.out); words(x, 'Un bot. Tu número.', 540, 300, 74, TL.recap.in + 0.1, t, { out: TL.recap.out, accent: [2, 3] }); }
+  if (t > TL.recap.in - 0.1 && t < TL.recap.out + 0.7) { label(x, 'TODO DESDE TU WHATSAPP', W / 2, LY.rec.lab, TL.recap.in, t, TL.recap.out); words(x, 'Un bot. Tu número.', W / 2, LY.rec.head, LY.rec.size, TL.recap.in + 0.1, t, { out: TL.recap.out, accent: [2, 3] }); }
   // ---- G · CTA (black)
   const c0 = TL.cta;
   if (t > c0.in) {
-    words(x, 'Consíguelo en el Discord de', 540, 780, 56, c0.l1, t, { weight: 600, color: '#A1A1A6' });
-    words(x, 'Mafia China.', 540, 920, 132, c0.l2, t, { weight: 800, color: '#F5F5F7' });
-    discordBtn(x, 540, 1110, t, c0.btn);
-    const hp = E.outQuint(prog(t, c0.hint, c0.hint + 0.6)); if (hp > 0) { x.save(); x.globalAlpha *= hp; x.translate(0, (1 - hp) * 16); font(x, 34, 500); x.fillStyle = '#A1A1A6'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('Después escríbele al bot', 540, 1280);
-      rr(x, 540 - 150, 1320, 300, 76, 38); x.fillStyle = 'rgba(37,211,102,0.14)'; x.fill(); x.strokeStyle = 'rgba(37,211,102,0.6)'; x.lineWidth = 2; x.stroke(); mono(x, 40, 600); x.fillStyle = GREEN; x.fillText('/serbot', 540, 1360); x.restore(); }
+    const Y = LY.cta, cx = W / 2;
+    words(x, 'Consíguelo en el Discord de', cx, Y[0], 56, c0.l1, t, { weight: 600, color: '#A1A1A6' });
+    words(x, 'Mafia China.', cx, Y[1], 132, c0.l2, t, { weight: 800, color: '#F5F5F7' });
+    discordBtn(x, cx, Y[2], t, c0.btn);
+    const hp = E.outQuint(prog(t, c0.hint, c0.hint + 0.6)); if (hp > 0) { x.save(); x.globalAlpha *= hp; x.translate(0, (1 - hp) * 16); font(x, 34, 500); x.fillStyle = '#A1A1A6'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('Después escríbele al bot', cx, Y[3]);
+      rr(x, cx - 150, Y[4], 300, 76, 38); x.fillStyle = 'rgba(37,211,102,0.14)'; x.fill(); x.strokeStyle = 'rgba(37,211,102,0.6)'; x.lineWidth = 2; x.stroke(); mono(x, 40, 600); x.fillStyle = GREEN; x.fillText('/serbot', cx, Y[4] + 40); x.restore(); }
   }
   ovTex.needsUpdate = true;
 }
@@ -292,7 +306,7 @@ function renderSub(t, jx, jy, seed) {
   renderer.setRenderTarget(rtScene); renderer.clear(); renderer.autoClear = false; renderer.render(bgP.s, fsCam); renderer.render(scene, camera); renderer.autoClear = true;
   copyP.u.tSrc.value = rtScene.texture; copyP.u.uTx.value.set(1 / RW, 1 / RH); run(copyP, rtHalf);
   copyP.u.tSrc.value = rtHalf.texture; copyP.u.uTx.value.set(2 / RW, 2 / RH); run(copyP, rtQ);
-  const apQ = APER * (RW / 4) / 1080, maxQ = 11 * (RW / 4) / 540;
+  const MN = Math.min(RW, RH), apQ = APER * (MN / 4) / 1080, maxQ = 11 * (MN / 4) / 540;
   dofP.u.uFocus.value = FOCUS; dofP.u.uAp.value = apQ; dofP.u.uMax.value = maxQ; dofP.u.tColor.value = rtQ.texture; run(dofP, rtDof);
   brightP.u.tSrc.value = rtHalf.texture; brightP.u.uTx.value.set(2 / RW, 2 / RH); brightP.u.uTh.value = lerp(0.95, 0.7, D); run(brightP, BL[0].d);
   for (let i = 1; i < BL.length; i++) { downP.u.tSrc.value = BL[i - 1].d.texture; downP.u.uTx.value.set(1 / BL[i - 1].d.width, 1 / BL[i - 1].d.height); run(downP, BL[i].d); }

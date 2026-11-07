@@ -59,17 +59,27 @@ echo ok> "%ENV%\navegador_ok_%PWV%"
 echo         %OK%OK%R%  Listo
 
 echo.
-echo   %C1%[3/4]%R% Calidad
-echo         %B%1%R%  1080x1920 60 fps          %DIM%recomendado%R%
-echo         %B%2%R%  1080x1920 60 fps Ultra    %DIM%el doble de muestras de movimiento, usa mas la grafica%R%
-echo         %B%3%R%  4K vertical 60 fps             %DIM%mas lento%R%
-echo         %B%4%R%  Vista previa 540x960     %DIM%para revisar cambios, muy rapido%R%
+echo   %C1%[3/4]%R% Formato y calidad
+echo         %B%1%R%  Vertical 1080x1920      %DIM%TikTok, Reels, estados%R%
+echo         %B%2%R%  Horizontal 1920x1080    %DIM%PC, Discord, YouTube%R%
+echo         %B%3%R%  Los dos                 %DIM%primero vertical y luego horizontal%R%
 echo.
-choice /c 1234 /n /t 20 /d 1 /m "        Elige 1-4 (en 20 s se elige 1): "
-if errorlevel 4 (set "SCALE=0.5" & set "SUB=1" & set "NAME=wabot_vista_previa_540p.mp4" & set "QN=Vista previa 540x960" & goto q_ok)
-if errorlevel 3 (set "SCALE=2" & set "SUB=8" & set "NAME=wabot_promo_4K.mp4" & set "QN=4K vertical 60 fps" & goto q_ok)
-if errorlevel 2 (set "SCALE=1" & set "SUB=16" & set "NAME=wabot_promo_1080p_ultra.mp4" & set "QN=1080x1920 60 fps Ultra" & goto q_ok)
-set "SCALE=1" & set "SUB=8" & set "NAME=wabot_promo_1080p.mp4" & set "QN=1080x1920 60 fps"
+choice /c 123 /n /t 20 /d 3 /m "        Formato 1-3 (en 20 s se elige 3): "
+set "FMTS=v h"
+if errorlevel 1 set "FMTS=v"
+if errorlevel 2 set "FMTS=h"
+if errorlevel 3 set "FMTS=v h"
+echo.
+echo         %B%1%R%  60 fps                  %DIM%recomendado%R%
+echo         %B%2%R%  60 fps Ultra            %DIM%el doble de muestras de movimiento, usa mas la grafica%R%
+echo         %B%3%R%  4K 60 fps               %DIM%mas lento%R%
+echo         %B%4%R%  Vista previa            %DIM%mitad de resolucion, muy rapido%R%
+echo.
+choice /c 1234 /n /t 20 /d 1 /m "        Calidad 1-4 (en 20 s se elige 1): "
+if errorlevel 4 (set "SCALE=0.5" & set "SUB=1" & set "Q=vista_previa" & goto q_ok)
+if errorlevel 3 (set "SCALE=2" & set "SUB=8" & set "Q=4K" & goto q_ok)
+if errorlevel 2 (set "SCALE=1" & set "SUB=16" & set "Q=1080p_ultra" & goto q_ok)
+set "SCALE=1" & set "SUB=8" & set "Q=1080p"
 :q_ok
 
 rem procesos en paralelo segun los hilos del procesador (la tarjeta codifica con NVENC si es NVIDIA)
@@ -77,33 +87,39 @@ set /a W=%NUMBER_OF_PROCESSORS%/3
 if %W% LSS 2 set W=2
 if %W% GTR 6 set W=6
 if "%SCALE%"=="2" if %W% GTR 3 set W=3
+
+for %%F in (%FMTS%) do call :render %%F || goto fail
+echo   %DIM%Pulsa una tecla para cerrar.%R%
+pause >nul
+exit /b 0
+
+:render
+set "FMT=%~1"
+if "%FMT%"=="h" (set "FN=horizontal") else (set "FN=vertical")
+set "NAME=wabot_promo_%FN%_%Q%.mp4"
 set "TMPD=%BASE%\temp\%NAME:.mp4=%"
 if not exist "%TMPD%" mkdir "%TMPD%"
-
 echo.
-echo   %C1%[4/4]%R% Render  %DIM%- %QN%%R%
+echo   %C1%[4/4]%R% Render  %DIM%- %FN%, %Q%%R%
 echo         %DIM%No apagues ni suspendas el PC. Si lo cierras, vuelve a abrirlo y sigue donde se quedo.%R%
 echo.
-node render.js "%TMPD%\sin_audio.mp4" --gpu --scale %SCALE% --sub %SUB% --workers %W% 2>>"%LOG%" || goto fail
+node render.js "%TMPD%\sin_audio.mp4" --gpu --fmt %FMT% --scale %SCALE% --sub %SUB% --workers %W% 2>>"%LOG%" || exit /b 1
 if not exist "%TMPD%\sin_audio.mp4" (
   echo.
   echo         Se quedo a medias. Vuelve a abrir el .bat para terminarlo.
   pause >nul
-  exit /b 0
+  exit /b 1
 )
 echo         Mezclando el audio...
-ffmpeg -v error -y -i "%TMPD%\sin_audio.mp4" -i "stems\mix.wav" -map 0:v -map 1:a -c:v copy -ar 48000 -c:a aac -b:a 320k -shortest -movflags +faststart "%OUT%\%NAME%" >>"%LOG%" 2>&1 || goto fail
+ffmpeg -v error -y -i "%TMPD%\sin_audio.mp4" -i "stems\mix.wav" -map 0:v -map 1:a -c:v copy -ar 48000 -c:a aac -b:a 320k -shortest -movflags +faststart "%OUT%\%NAME%" >>"%LOG%" 2>&1 || exit /b 1
 del /q "%TMPD%\sin_audio.mp4"
 for %%A in ("%OUT%\%NAME%") do set /a MB=%%~zA/1048576
-
 echo.
 echo   %DIM%------------------------------------------------------------%R%
 echo   %OK%LISTO%R%  %B%%NAME%%R%  %DIM%(%MB% MB)%R%
 echo         %DIM%%OUT%%R%
 echo.
 start "" "%OUT%\%NAME%"
-echo   %DIM%Pulsa una tecla para cerrar.%R%
-pause >nul
 exit /b 0
 
 :fail

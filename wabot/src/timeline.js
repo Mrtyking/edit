@@ -5,7 +5,7 @@ export const TL = {
   // A · hook (white): "Te mandaron una foto / de una sola vez." → the view-once bubble → "Abierto" → "Y se fue."
   hook: { l1: 0.35, l2: 1.15, bubble: 2.0, open: 3.25, gone: 3.75, dark: 4.55, never: 4.7 },
   // B · the phone rises out of the dark
-  phone: { in: [5.6, 7.2], sweep: 6.6, t1: 7.0, t2: 7.6 },
+  phone: { in: [5.6, 7.2], sweep: 6.6, lock: [5.6, 7.05], face: [6.0, 6.55], spin: [6.55, 6.85], shrink: [6.85, 7.05] },   // WhatsApp locked → Face ID in the island → unlocked
   // C · connect: write /serbot to the owner's bot → 8-digit code → Linked devices → link with phone number → type the code → linked
   serbot: { chat: 8.9, type: [9.6, 10.3], send: 10.45, reply: 11.05, code: 11.45, lift: [11.7, 13.5] },
   link: { devices: 13.7, tapLink: 14.35, qr: 14.55, tapPhone: 15.2, code: 15.45, type: [15.9, 17.3], linking: 17.35, done: 18.1, banner: 18.3, out: 19.9 },
